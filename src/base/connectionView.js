@@ -203,7 +203,9 @@ class ConnectionView extends BaseView {
       const centerY = (startPosition.y + endPosition.y) / 2;
       this.centerVector = new THREE.Vector3(centerX, centerY, this.depth);
       const end = new THREE.Vector3(endPosition.x, endPosition.y, this.depth);
-      const direction = new THREE.Vector3().copy(end).sub(start).normalize();
+      const direction = new THREE.Vector3().copy(end)
+                                           .sub(start)
+                                           .normalize();
       this.length = start.distanceTo(end);
       this.particles.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), direction);
     }

@@ -3,7 +3,7 @@
     "browser": true
   },
   "extends": [
-    "airbnb/base"
+    "airbnb-base"
   ],
   "rules": {
     "indent": [
