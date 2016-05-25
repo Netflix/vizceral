@@ -92,7 +92,7 @@ View [USAGE.md](./USAGE.md)
 
 To see your changes to `vizceral` locally, you'll need to link the package with bower:
 
-    $ git clone ssh://git@stash.corp.netflix.com:7999/traffic/vizceral.git
+    $ git clone git@github.com:Netflix/vizceral.git
     $ cd vizceral
     $ npm link
     $ npm run dev
