@@ -79,6 +79,7 @@ class TrafficGraph extends EventEmitter {
       if (current) {
         this.loadedOnce = true;
         this.updateView();
+        this.emitNodeUpdated();
       } else {
         _.each(this.connections, connection => connection.cleanup());
         _.each(this.nodes, node => node.cleanup());
@@ -313,12 +314,13 @@ class TrafficGraph extends EventEmitter {
         this._updateFilteredElements();
       }
     }
+    this.emitNodeUpdated();
+  }
 
+  emitNodeUpdated () {
     if (this.highlightedNode) {
-      // TODO: Only emit nodeUpdated if the highlighted node was actually updated
-      this.emit('nodeUpdated', this.highlightedNode);
+      this.emit('nodeHighlighted', this.highlightedNode);
     } else if (this.getSelectedNode && this.getSelectedNode()) {
-      // TODO: Only emit nodeUpdated if the selected node was actually updated
       this.emit('nodeUpdated', this.getSelectedNode());
     }
   }

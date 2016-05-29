@@ -30,7 +30,7 @@ import RendererUtils from './rendererUtils';
 * The `nodeHighlighted` event is fired whenever a node is highlighted.
 *
 * @event nodeHighlighted
-* @property {object} node - The node object that has been highlighted/selected.
+* @property {object} node - The node object that has been highlighted, or the highlighted node that has been updated.
 */
 /**
 * The `rendered` event is fired whenever a graph is rendered.
@@ -46,16 +46,22 @@ import RendererUtils from './rendererUtils';
 * @property {array} view - The currently selected view (e.g. [] for global, ['us-east-1'] for regional, ['us-east-1', 'api'] for node level)
 */
 /**
-* The `nodeUpdated` event is fired whenever a node that is highlighted or selected is updated.
+* The `nodeFocused` event is fired whenever a node gains focus or the currently focused node is updated
 *
-* @event nodeUpdated
-* @property {object} node - The node object that has been highlighted/selected.
+* @event nodeFocused
+* @property {object} node - The node object that has been focused, or the focused node that has been updated.
 */
 /**
 * The `regionContextSizeChanged` event is fired whenever the context panel size for regional context changes
 *
 * @event regionContextSizeChanged
 * @property {object} dimensions - The dimensions of the region context panels
+*/
+/**
+* The `matchesFound` event is fired whenever nodes are found via findNodes().
+*
+* @event matchesFound
+* @property {object} matches - The matches object { total, visible }
 */
 
 
@@ -66,12 +72,14 @@ const graphHeight = 1100;
 const Console = console;
 
 class Vizceral extends EventEmitter {
-  constructor (width, height) {
+  constructor (width, height, canvas) {
     super();
+    const parameters = { alpha: true, antialias: true };
+    if (canvas) { parameters.canvas = canvas; }
 
     // Initial three.js setup
     this.scene = new THREE.Scene();
-    this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    this.renderer = new THREE.WebGLRenderer(parameters);
     this.renderer.autoClear = false;
     this.renderer.setClearColor(0x2d2d2d, 1);
     this.renderer.domElement.style.width = '100%';
@@ -145,7 +153,7 @@ class Vizceral extends EventEmitter {
   _attachGraphHandlers (graph) {
     graph.on('rendered', renderInfo => this.emit('rendered', renderInfo));
     graph.on('nodeHighlighted', node => this.emit('nodeHighlighted', node));
-    graph.on('nodeUpdated', node => this.emit('nodeUpdated', node));
+    graph.on('nodeFocused', node => this.emit('nodeFocused', node));
     graph.on('setView', view => this.setView(view));
   }
 
@@ -174,35 +182,40 @@ class Vizceral extends EventEmitter {
    * @param {array} excludedEdgeNodes - An array of node names that are at the edge that you want excluded from the global totals
    */
   updateData (trafficData, excludedEdgeNodes) {
-    if (trafficData) {
-      if (trafficData.regions) {
-        _.each(trafficData.regions, (regionData, region) => {
-          if (this.graphs.regions[region] === undefined) {
-            this.graphs.regions[region] = new RegionTrafficGraph(region, this, graphWidth, graphHeight);
-            this._attachGraphHandlers(this.graphs.regions[region]);
-            this.graphs.regions[region].setFilters(this.filters);
-            this.graphs.regions[region].showLabels(this.options.showLabels);
-          }
-          this.graphs.regions[region].setState(regionData);
-        });
-        // Update the edge graph with appropriate edge data
-        this.graphs.global.updateData(trafficData.regions, excludedEdgeNodes);
-
-        // Now that the initial data is loaded, check if we can set the initial node
-        const nodeArray = this.checkInitialNode();
-        if (nodeArray) {
-          this.setView(nodeArray);
+    if (trafficData && trafficData.regions) {
+      let newGraphs = false;
+      _.each(trafficData.regions, (regionData, region) => {
+        if (this.graphs.regions[region] === undefined) {
+          newGraphs = true;
+          this.graphs.regions[region] = new RegionTrafficGraph(region, this, graphWidth, graphHeight);
+          this._attachGraphHandlers(this.graphs.regions[region]);
+          this.graphs.regions[region].setFilters(this.filters);
+          this.graphs.regions[region].showLabels(this.options.showLabels);
         }
+        this.graphs.regions[region].setState(regionData);
+      });
+      // Update the edge graph with appropriate edge data
+      this.graphs.global.updateData(trafficData.regions, excludedEdgeNodes);
+
+      // Now that the initial data is loaded, check if we can set the initial node
+      const nodeArray = this.checkInitialNode();
+      if (nodeArray) {
+        this.setView(nodeArray);
+      }
+
+      if (newGraphs) {
+        this.emit('graphsUpdated', this.graphs);
       }
     }
   }
 
   /**
-   * Clears the highlighted node, if there is one.  If a node is not highlighted,
-   * this is a noop.
+   * Sets the highlighted node.  If the node is undefined, clears any highlighting.
+   *
+   * @param {object} node - The node to highlight
    */
-  clearHighlightedNode () {
-    this.currentGraph.highlightNode(undefined);
+  setHighlightedNode (node) {
+    this.currentGraph.highlightNode(node);
   }
 
   /**
@@ -210,10 +223,19 @@ class Vizceral extends EventEmitter {
    * of clusters, if nodes have one.
    *
    * @param {string} searchString - The string to match against the nodes.
+   *
+   * @returns {object} - { total, totalMatches, visible, visibleMatches }
    */
   findNodes (searchString) {
     this.disableHoverInteractions = !!searchString;
-    return this.currentGraph.highlightMatchedNodes(searchString);
+    const matchesFound = this.currentGraph.highlightMatchedNodes(searchString);
+    if (this.currentGraph) {
+      matchesFound.total = this.currentGraph.nodeCounts.total;
+      matchesFound.visible = this.currentGraph.nodeCounts.visible;
+    }
+
+    this.emit('matchesFound', matchesFound);
+    return matchesFound;
   }
 
   calculateIntersectedObject (x, y) {
@@ -344,7 +366,7 @@ class Vizceral extends EventEmitter {
       }
       this.currentView = currentView;
       this.calculateMouseOver();
-      this.emit('viewChanged', this.currentView);
+      this.emit('viewChanged', { view: this.currentView, graph: this.currentGraph });
     }
   }
 
@@ -368,7 +390,7 @@ class Vizceral extends EventEmitter {
       const currentViewLength = this.currentView ? this.currentView.length : 0;
 
       if (this.currentGraph && this.currentGraph.highlightedNode) {
-        this.clearHighlightedNode();
+        this.setHighlightedNode(undefined);
       } else if (currentViewLength > 0) {
         this.currentView = this.currentView.slice(0, -1);
         this.setView(this.currentView);
@@ -410,7 +432,7 @@ class Vizceral extends EventEmitter {
     parametersTo.toGraphOpacity = 1;
 
     // clear any highlighting on current graph
-    this.clearHighlightedNode();
+    this.setHighlightedNode(undefined);
 
     // Remove the current graph
     this.currentGraph.setCurrent(false);
@@ -569,8 +591,8 @@ class Vizceral extends EventEmitter {
     TWEEN.update();
 
     // Check size
-    if (this.width !== this.renderer.domElement.offsetWidth ||
-        this.height !== this.renderer.domElement.offsetHeight) {
+    if ((this.renderer.domElement.offsetWidth !== 0 && this.width !== this.renderer.domElement.offsetWidth) ||
+        (this.renderer.domElement.offsetHeight !== 0 && this.height !== this.renderer.domElement.offsetHeight)) {
       this.setSize(this.renderer.domElement.offsetWidth, this.renderer.domElement.offsetHeight);
     }
 

@@ -31,13 +31,13 @@ class RegionTrafficGraph extends TrafficGraph {
     if (changed) {
       // Remove the mouseover effect
       this.setIntersectedObject(undefined);
+      this.highlightNode(undefined);
 
       // If there was a node selected...
       if (this.nodeName) {
         // make sure to reset the node view
         this.view.removeObject(this.nodes[this.nodeName]);
         this.nodes[this.nodeName].showDetailedView(false);
-        this.highlightNode(undefined);
       }
 
       this.nodeName = nodeName;
@@ -47,6 +47,9 @@ class RegionTrafficGraph extends TrafficGraph {
         // switch to the detailed node view
         this.view.removeObject(this.nodes[this.nodeName]);
         this.nodes[this.nodeName].showDetailedView(true);
+        this.emit('nodeFocused', this.nodes[this.nodeName]);
+      } else {
+        this.emit('nodeFocused', undefined);
       }
 
       this.updateVisibleInfo();

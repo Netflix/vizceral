@@ -14,11 +14,6 @@ Copyright 2016 Netflix, Inc.
     See the License for the specific language governing permissions and
     limitations under the License.
 
-# clearHighlightedNode
-
-Clears the highlighted node, if there is one.  If a node is not highlighted,
-this is a noop.
-
 # findNodes
 
 Highlight nodes that match searchString.  Searches the node name and the list
@@ -27,6 +22,8 @@ of clusters, if nodes have one.
 **Parameters**
 
 -   `searchString` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** The string to match against the nodes.
+
+Returns **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** { total, totalMatches, visible, visibleMatches }
 
 # getNode
 
@@ -49,6 +46,14 @@ Set the set of filters to apply along with their current values.
 **Parameters**
 
 -   `filters` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The filters that match the format in DATAFORMATS.md
+
+# setHighlightedNode
+
+Sets the highlighted node.  If the node is undefined, clears any highlighting.
+
+**Parameters**
+
+-   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node to highlight
 
 # setView
 
@@ -101,21 +106,29 @@ Update the global styles
 If zoomed into a region or a service, zoom out one level up.
 If in the global view, this is a noop.
 
+# matchesFound
+
+The `matchesFound` event is fired whenever nodes are found via findNodes().
+
+**Properties**
+
+-   `matches` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The matches object { total, visible }
+
+# nodeFocused
+
+The `nodeFocused` event is fired whenever a node gains focus or the currently focused node is updated
+
+**Properties**
+
+-   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node object that has been focused, or the focused node that has been updated.
+
 # nodeHighlighted
 
 The `nodeHighlighted` event is fired whenever a node is highlighted.
 
 **Properties**
 
--   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node object that has been highlighted/selected.
-
-# nodeUpdated
-
-The `nodeUpdated` event is fired whenever a node that is highlighted or selected is updated.
-
-**Properties**
-
--   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node object that has been highlighted/selected.
+-   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node object that has been highlighted, or the highlighted node that has been updated.
 
 # regionContextSizeChanged
 
