@@ -72,7 +72,12 @@ const graphHeight = 1100;
 const Console = console;
 
 class Vizceral extends EventEmitter {
-  constructor (width, height, canvas) {
+  /**
+   * Represents a Vizceral component.
+   * @constructor
+   * @param {object} [canvas] - The canvas to render the graph onto; if not provided, will create a canvas accessible by this.renderer.domElement
+   */
+  constructor (canvas) {
     super();
     const parameters = { alpha: true, antialias: true };
     if (canvas) { parameters.canvas = canvas; }
@@ -87,7 +92,7 @@ class Vizceral extends EventEmitter {
     this.geometry = new THREE.Geometry();
 
     // Camera
-    this.camera = new THREE.OrthographicCamera(width / -2, width / 2, height / 2, height / -2, 1, 60000);
+    this.camera = new THREE.OrthographicCamera(0, 0, 0, 0, 1, 60000);
     this.cameraTarget = new THREE.Vector3(0, 0, 0);
     this.camera.position.set(0, 0, 600);
     this.camera.lookAt(this.cameraTarget);
@@ -98,7 +103,7 @@ class Vizceral extends EventEmitter {
 
     // Update the size of the renderer and the camera perspective
     // this.renderer.setSize(width, height);
-    this.setSize(width, height);
+    this.setSize(0, 0);
 
     // Setup lighting
     this.scene.add(new THREE.AmbientLight(0xffffff));

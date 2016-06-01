@@ -14,6 +14,14 @@ Copyright 2016 Netflix, Inc.
     See the License for the specific language governing permissions and
     limitations under the License.
 
+# constructor
+
+Represents a Vizceral component.
+
+**Parameters**
+
+-   `canvas` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)=** The canvas to render the graph onto; if not provided, will create a canvas accessible by this.renderer.domElement
+
 # findNodes
 
 Highlight nodes that match searchString.  Searches the node name and the list
