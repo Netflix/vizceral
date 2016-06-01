@@ -170,7 +170,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Vizceral = function (_EventEmitter) {
 	  _inherits(Vizceral, _EventEmitter);
 
-	  function Vizceral(width, height, canvas) {
+	  /**
+	   * Represents a Vizceral component.
+	   * @constructor
+	   * @param {object} [canvas] - The canvas to render the graph onto; if not provided, will create a canvas accessible by this.renderer.domElement
+	   */
+
+	  function Vizceral(canvas) {
 	    _classCallCheck(this, Vizceral);
 
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Vizceral).call(this));
@@ -190,7 +196,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _this.geometry = new _three2.default.Geometry();
 
 	    // Camera
-	    _this.camera = new _three2.default.OrthographicCamera(width / -2, width / 2, height / 2, height / -2, 1, 60000);
+	    _this.camera = new _three2.default.OrthographicCamera(0, 0, 0, 0, 1, 60000);
 	    _this.cameraTarget = new _three2.default.Vector3(0, 0, 0);
 	    _this.camera.position.set(0, 0, 600);
 	    _this.camera.lookAt(_this.cameraTarget);
@@ -201,7 +207,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    // Update the size of the renderer and the camera perspective
 	    // this.renderer.setSize(width, height);
-	    _this.setSize(width, height);
+	    _this.setSize(0, 0);
 
 	    // Setup lighting
 	    _this.scene.add(new _three2.default.AmbientLight(0xffffff));
@@ -69635,10 +69641,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    key: 'emitNodeUpdated',
 	    value: function emitNodeUpdated() {
 	      if (this.highlightedNode) {
-	        // TODO: Only emit nodeUpdated if the highlighted node was actually updated
 	        this.emit('nodeHighlighted', this.highlightedNode);
 	      } else if (this.getSelectedNode && this.getSelectedNode()) {
-	        // TODO: Only emit nodeUpdated if the selected node was actually updated
 	        this.emit('nodeUpdated', this.getSelectedNode());
 	      }
 	    }
