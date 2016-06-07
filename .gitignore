@@ -8,9 +8,5 @@ npm-debug.log
 /dist
 *.map
 
-# Internal release helpers
-/release
-
-
 # System files
 .DS_Store
