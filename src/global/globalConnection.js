@@ -26,7 +26,7 @@ class GlobalConnection extends Connection {
 
   update (data) {
     super.update(data);
-    if (data.metrics) {
+    if (this.source.isEntryNode() && data.metrics) {
       this.target.loaded = true;
     }
   }
