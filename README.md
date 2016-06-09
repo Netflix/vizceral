@@ -5,11 +5,12 @@ vizceral is a component for displaying traffic data on a webgl canvas. If a grap
 This component can take multiple traffic graphs and will generate a 'global' graph showing all incoming traffic into each of the 'regions', with support for cross-region traffic.
 
 ## Using
-If you are using either [React](https://facebook.github.io/react/) or [web components](http://webcomponents.org/), there are some helper modules to get started easier:
+If you are using either [React](https://facebook.github.io/react/) or [web components](http://webcomponents.org/), there are some helper modules that make it easier to get started:
 * React: https://github.com/Netflix/vizceral-react
 * Web Components: https://github.com/Netflix/vizceral-component
 
 Otherwise, to integrate it from scratch:
+
 1.  Add vizceral to package.json
 
     ```js
@@ -58,7 +59,7 @@ Note: The component will not show anything unless you call `updateData` on the c
 
 ## Data Structures
 
-See [DATAFORMATS.md](./DATAFORMATS.md) for example data in the format expected by the component
+See [DATAFORMATS.md](./DATAFORMATS.md) for example data in the format expected by the component.
 
 ## Styling
 
