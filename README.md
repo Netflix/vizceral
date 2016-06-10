@@ -7,7 +7,7 @@ This component can take multiple traffic graphs and will generate a 'global' gra
 There are three levels of information, global, regional, and service-level, with clicking or double-clicking on a node bringing you one level deeper.
 
 ## Using
-If you are using either [React](https://facebook.github.io/react/) or [web components](http://webcomponents.org/), there are some helper modules to get started easier:
+If you are using either [React](https://facebook.github.io/react/) or [web components](http://webcomponents.org/), there are some helper modules that make it easier to get started:
 * React: https://github.com/Netflix/vizceral-react
 * Web Components: https://github.com/Netflix/vizceral-component
 
@@ -63,7 +63,7 @@ Note: The component will not show anything unless you call `updateData` on the c
 
 ## Data Structures
 
-See [DATAFORMATS.md](./DATAFORMATS.md) for example data in the format expected by the component
+See [DATAFORMATS.md](./DATAFORMATS.md) for example data in the format expected by the component.
 
 ## Styling
 
