@@ -4,15 +4,20 @@ vizceral is a component for displaying traffic data on a webgl canvas. If a grap
 
 This component can take multiple traffic graphs and will generate a 'global' graph showing all incoming traffic into each of the 'regions', with support for cross-region traffic.
 
+There are three levels of information, global, regional, and service-level, with clicking or double-clicking on a node bringing you one level deeper.
+
 ## Using
 If you are using either [React](https://facebook.github.io/react/) or [web components](http://webcomponents.org/), there are some helper modules to get started easier:
 * React: https://github.com/Netflix/vizceral-react
 * Web Components: https://github.com/Netflix/vizceral-component
 
+There is an [example](https://github.com/Netflix/vizceral-example) app using the react wrapper with some sample data to show how the component works. It would also be an easy jumping off point for building your own UI.
+
 Otherwise, to integrate it from scratch:
+
 1.  Add vizceral to package.json
 
-    ```js
+    ```sh
     npm install vizceral --save
     ```
 
@@ -115,13 +120,14 @@ To see your changes to `vizceral` locally, you'll need to link the package with 
 
 Currently only developing with Chrome in mind. Seems to work in Safari and Firefox, but more testing is needed.
 
-## Outstanding Work
+## TODO
 
 - Unit Tests
 - Modular layout algorithms
   - Smarter current layout algorithm
 - Cross-browser support / testing
 - Create predefined locations and design styles to modularly represent custom metadata
+- Implement redesigned third-level view
 
 ## License
 
