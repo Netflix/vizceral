@@ -88,8 +88,7 @@ with the complete set of traffic data anytime there is an update.
 **Parameters**
 
 -   `data` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The traffic data that matches the format in DATAFORMATS.md
--   `trafficData`  
--   `excludedEdgeNodes` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** An array of node names that are at the edge that you want excluded from the global totals
+-   `trafficData`
 
 # updateRegions
 
@@ -98,7 +97,7 @@ Update the regions that are known, whether they have data or not
 **Parameters**
 
 -   `Array` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** of region names that we are expecting data for
--   `regions`  
+-   `regions`
 
 # updateStyles
 
@@ -107,7 +106,7 @@ Update the global styles
 **Parameters**
 
 -   `An` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** object map of style names to values
--   `styles`  
+-   `styles`
 
 # zoomOutViewLevel
 
@@ -138,9 +137,9 @@ The `nodeHighlighted` event is fired whenever a node is highlighted.
 
 -   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node object that has been highlighted, or the highlighted node that has been updated.
 
-# regionContextSizeChanged
+# nodeContextSizeChanged
 
-The `regionContextSizeChanged` event is fired whenever the context panel size for regional context changes
+The `nodeContextSizeChanged` event is fired whenever the context panel size for regional context changes
 
 **Properties**
 

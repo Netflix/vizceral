@@ -24,6 +24,7 @@ class GraphObject extends EventEmitter {
   constructor () {
     super();
     this.minimumNoticeLevel = 1;
+    this.metadata = {};
   }
 
   getName () {

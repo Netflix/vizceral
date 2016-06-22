@@ -32,7 +32,7 @@ Otherwise, to integrate it from scratch:
     viz.on('viewChanged', view => {});
     viz.on('nodeHighlighted', node => {});
     viz.on('rendered', data => {});
-    viz.on('regionContextSizeChanged', dimensions => {});
+    viz.on('nodeContextSizeChanged', dimensions => {});
 
     // Sample data
     viz.updateData({

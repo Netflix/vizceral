@@ -37,6 +37,8 @@ class TrafficGraph extends EventEmitter {
     this.ConnectionClass = ConnectionClass;
     this.rps = { max: 0, current: 0 };
 
+    this.graphs = {};
+
     this.view = new TrafficGraphView(this);
     this.presetLayout = presetLayout;
 
@@ -429,6 +431,9 @@ class TrafficGraph extends EventEmitter {
     connection.target.removeIncomingConnection(connection);
   }
 
+  setFilters () {
+    // noop
+  }
 
   /**
    * Update the connection filters with the passed in filter configuration.

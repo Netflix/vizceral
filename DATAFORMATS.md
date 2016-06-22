@@ -4,9 +4,13 @@ The traffic data expected to be passed in regularly to `ele.updateData(traffic)`
 
 ```js
 {
-  regions: {
-    'us-west-2': { // AWS Region (or other logical grouping of servers)
-      updated: 1462471847, // Unix timestamp. Last time the data was updated (Needed because the client could be passed stale data when loaded)
+  defaultRenderer: 'global', // Which graph renderer to use for this graph
+  name: 'edge',
+  nodes: [
+    {
+      defaultRenderer: 'region',
+      name: 'us-west-2',
+      updated: 1462471847, // Unix timestamp. Only checked on the top-level list of nodes. Last time the data was updated (Needed because the client could be passed stale data when loaded)
       maxRPS: 100000, // The maximum RPS seen recently to relatively measure particle density
       nodes: [
         {
@@ -21,15 +25,12 @@ The traffic data expected to be passed in regularly to `ele.updateData(traffic)`
               severity: 1 // OPTIONAL 0(default) for info level, 1 for warning level, 2 for error level
             }
           ],
-          crossregion: { // OPTIONAL Outgoing cross region traffic to the same node in a different region, if any
-            'us-east-1': { // The name of the region traffic is being sent to
-              total: 1,
-              success: 1, // OPTIONAL (If not provided, will be calculated using total - (degraded + error))
-              error: 0, // OPTIONAL (If not provided, assumed 0)
-              degraded: 0 // OPTIONAL (If not provided, assumed 0)
-            }
+          score: 0, // OPTIONAL The score of the node. 0(default) for normal, 1 for warning, 2 for error. This is what the node color is based on.
+          metadata: { // OPTIONAL // TODO: metadata 'plugin' support...
+            streaming: 1 // OPTIONAL 1 if this connection is in the streaming path, 0 if not
           },
-          score: 0 // OPTIONAL The score of the node. 0(default) for normal, 1 for warning, 2 for error. This is what the node color is based on.
+          nodes: [],
+          connections: []
         }
       ],
       connections: [
@@ -42,25 +43,21 @@ The traffic data expected to be passed in regularly to `ele.updateData(traffic)`
             error: 5, // OPTIONAL Number of error requests (If not provided, assumed 0)
             degraded: 0 // OPTIONAL Number of degraded requests (If not provided, assumed 0)
           },
-          streaming: 1, // OPTIONAL 1 if this connection is in the streaming path, 0 if not
           notices: [ // OPTIONAL Any notices that you want to show up in the sidebar
             {
               title: 'Notice about something',
+              subtitle: 'Subtitle', // OPTIONAL
               link: 'http://link/to/relevant/thing', // OPTIONAL
               severity: 1 // OPTIONAL 0(default) for info level, 1 for warning level, 2 for error level
             }
           ],
           metadata: { // OPTIONAL // TODO: metadata 'plugin' support...
-            'hystrix': [
-              {
-                'name': 'DoSomethingDepCmd'
-              }
-            ]
+            streaming: 1 // OPTIONAL 1 if this connection is in the streaming path, 0 if not
           }
         }
       ]
     }
-  }
+  ]
 }
 ```
 

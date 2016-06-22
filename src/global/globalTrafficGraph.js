@@ -68,108 +68,6 @@ class GlobalTrafficGraph extends TrafficGraph {
     this.hasPositionData = true;
   }
 
-  reduceEdgeData (edgeData, regionalData, region, excludedEdgeNodes = []) {
-    if (regionalData) {
-      const connections = [];
-
-      // Incoming
-      const incomingConnection = {
-        source: 'INTERNET',
-        target: region
-      };
-      const globalConnections = _.filter(regionalData.connections, ['source', 'INTERNET']);
-      const globalConnectionsScore = globalConnections.length > 0 ? _.maxBy(globalConnections, c => c.score).score : 0;
-      // Combine all the metrics into the single global connection
-      if (globalConnections.length > 0) {
-        incomingConnection.metrics = _.reduce(globalConnections, (result, globalConnection) => {
-          if (excludedEdgeNodes.indexOf(globalConnection.target) === -1) {
-            // First check if there is a 'status' object.  If there is a status object,
-            // this is more indicative of overall region health than the node metrics
-            // themselves.
-            const metrics = globalConnection.status || globalConnection.metrics;
-            _.each(metrics, (v, k) => {
-              result[k] = result[k] || 0;
-              result[k] += v;
-            });
-          }
-          return result;
-        }, {});
-      }
-      // Combine all the notices into the single global connection
-      incomingConnection.notices = _.reduce(globalConnections, (result, globalConnection) => {
-        // Reduce all the edge notices into one array since they should all apply at the global level
-        if (globalConnection.notices) {
-          const notices = _.map(globalConnection.notices, notice => {
-            const newNotice = _.clone(notice);
-            newNotice.subtitle = globalConnection.target;
-            return newNotice;
-          });
-          Array.prototype.push.apply(result, notices);
-        }
-        return result;
-      }, []);
-
-      connections.push(incomingConnection);
-
-      // Create the node
-      const nodes = {};
-      nodes[region] = {
-        name: region,
-        hold: true,
-        maxRPS: regionalData.maxRPS || 0,
-        score: globalConnectionsScore
-      };
-
-      // Crossregion
-      const globalNodeNames = _.map(globalConnections, 'target');
-      const edgeNodes = _.filter(regionalData.nodes, node => _.indexOf(globalNodeNames, node.name) !== -1);
-
-
-      const otherRegionNodes = _.filter(this.state.nodes, node => node.name !== 'INTERNET' && node.name !== region);
-      let crossregionConnections = _.reduce(otherRegionNodes, (result, node) => {
-        result[node.name] = {};
-        return result;
-      }, {});
-      crossregionConnections = _.reduce(edgeNodes, (result, globalNode) => {
-        if (!excludedEdgeNodes[globalNode.name] && globalNode.crossregion) {
-          _.each(globalNode.crossregion, (regionData, crossregion) => {
-            result[crossregion] = result[crossregion] || {};
-            result[crossregion].metrics = result[crossregion].metrics || {};
-            _.mergeWith(result[crossregion].metrics, regionData.metrics, (a, b) => (a || 0) + b);
-            if (regionData.notices) {
-              result[crossregion].notices = result[crossregion].notices || [];
-              const newNotices = _.map(regionData.notices, notice => {
-                const newNotice = _.clone(notice);
-                newNotice.subtitle = globalNode.name;
-                return newNotice;
-              });
-              Array.prototype.push.apply(result[crossregion].notices, newNotices);
-            }
-          });
-        }
-        return result;
-      }, crossregionConnections);
-      _.each(crossregionConnections, (regionData, targetRegion) => {
-        connections.push({
-          source: region,
-          target: targetRegion,
-          metrics: regionData.metrics,
-          notices: regionData.notices
-        });
-      });
-
-      edgeData.nodes = edgeData.nodes.concat(_.values(nodes));
-      edgeData.connections = edgeData.connections.concat(connections);
-    }
-  }
-
-  updateData (regionalData, excludedEdgeNodes) {
-    // Populate the edge graph with the regional endpoint reduction
-    const edgeData = { nodes: [{ name: 'INTERNET', hold: true, score: 0 }], connections: [], maxRPS: 0 };
-    _.each(regionalData, (regionData, region) => this.reduceEdgeData(edgeData, regionData, region, excludedEdgeNodes));
-    this.setState(edgeData);
-  }
-
   setState (state) {
     _.each(state.nodes, node => {
       const existingNodeIndex = _.findIndex(this.state.nodes, { name: node.name });
@@ -259,7 +157,7 @@ class GlobalTrafficGraph extends TrafficGraph {
     });
 
     if (changed) {
-      this.emit('regionContextSizeChanged', dimensions);
+      this.emit('nodeContextSizeChanged', dimensions);
     }
   }
 

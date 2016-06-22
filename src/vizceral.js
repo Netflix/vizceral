@@ -22,8 +22,7 @@ import TWEEN from 'tween.js';
 import Hammer from 'hammerjs';
 
 import GlobalStyles from './globalStyles';
-import GlobalTrafficGraph from './global/globalTrafficGraph';
-import RegionTrafficGraph from './region/regionTrafficGraph';
+import { NewTrafficGraph } from './trafficGraphFactory';
 import RendererUtils from './rendererUtils';
 
 /**
@@ -40,10 +39,10 @@ import RendererUtils from './rendererUtils';
 * @property (boolean} rendered - true only if the graph has been rendered AND has position data
 */
 /**
-* The `viewChanged` event is fired whenever the view changes between global, regional, and node
+* The `viewChanged` event is fired whenever the view changes
 *
 * @event viewChanged
-* @property {array} view - The currently selected view (e.g. [] for global, ['us-east-1'] for regional, ['us-east-1', 'api'] for node level)
+* @property {array} view - The currently selected view (e.g. [] for global, ['us-east-1'] for one node deep, ['us-east-1', 'api'] for two nodes deep)
 */
 /**
 * The `nodeFocused` event is fired whenever a node gains focus or the currently focused node is updated
@@ -52,10 +51,10 @@ import RendererUtils from './rendererUtils';
 * @property {object} node - The node object that has been focused, or the focused node that has been updated.
 */
 /**
-* The `regionContextSizeChanged` event is fired whenever the context panel size for regional context changes
+* The `nodeContextSizeChanged` event is fired whenever the context panel size for node context size changes
 *
-* @event regionContextSizeChanged
-* @property {object} dimensions - The dimensions of the region context panels
+* @event nodeContextSizeChanged
+* @property {object} dimensions - The dimensions of the node context panels
 */
 /**
 * The `matchesFound` event is fired whenever nodes are found via findNodes().
@@ -122,15 +121,7 @@ class Vizceral extends EventEmitter {
     this.hammertime.on('doubletap', event => this.onDocumentDoubleClick(event), false);
     this.hammertime.on('singletap', event => this.onDocumentClick(event), false);
 
-    this.graphs = {
-      global: new GlobalTrafficGraph('edge', this, graphWidth, graphHeight),
-      regions: {}
-    };
-    this._attachGraphHandlers(this.graphs.global);
-    this.graphs.global.on('regionContextSizeChanged', dimensions => this.emit('regionContextSizeChanged', dimensions));
-
-    this.selectGraph(this.graphs.global);
-
+    this.graphs = {};
     this.options = {};
     this.filters = {};
   }
@@ -160,23 +151,35 @@ class Vizceral extends EventEmitter {
     graph.on('nodeHighlighted', node => this.emit('nodeHighlighted', node));
     graph.on('nodeFocused', node => this.emit('nodeFocused', node));
     graph.on('setView', view => this.setView(view));
+    graph.on('nodeContextSizeChanged', dimensions => this.emit('nodeContextSizeChanged', dimensions));
   }
 
-  /**
-   * Update the regions that are known, whether they have data or not
-   *
-   * @param  {array} Array of region names that we are expecting data for
-   */
-  updateRegions (regions) {
-    if (regions.length > 0) {
-      const trafficData = { regions: regions.reduce((acc, region) => {
-        if (this.graphs.regions[region] === undefined) {
-          acc[region] = {};
-        }
-        return acc;
-      }, {}) };
-      this.updateData(trafficData);
+  createAndUpdateGraphs (graphData, baseGraphObject) {
+    let graphCreated = false;
+    if (graphData && graphData.nodes && graphData.nodes.length > 0) {
+      if (!graphData.name) {
+        Console.log('Attempted to create a new graph that does not have a name');
+        return graphCreated;
+      }
+      // Create a graph
+      if (!baseGraphObject[graphData.name]) {
+        graphCreated = true;
+        baseGraphObject[graphData.name] = NewTrafficGraph(graphData, this, graphWidth, graphHeight);
+        this._attachGraphHandlers(baseGraphObject[graphData.name]);
+        baseGraphObject[graphData.name].setFilters(this.filters);
+        baseGraphObject[graphData.name].showLabels(this.options.showLabels);
+      }
+
+      // Update the data
+      baseGraphObject[graphData.name].setState(graphData);
+
+      // create sub graphs
+      _.each(graphData.nodes, nodeData => {
+        const subGraphCreated = this.createAndUpdateGraphs(nodeData, baseGraphObject[graphData.name].graphs);
+        graphCreated = graphCreated || subGraphCreated;
+      });
     }
+    return graphCreated;
   }
 
   /**
@@ -184,23 +187,11 @@ class Vizceral extends EventEmitter {
    * with the complete set of traffic data anytime there is an update.
    *
    * @param {object} data - The traffic data that matches the format in DATAFORMATS.md
-   * @param {array} excludedEdgeNodes - An array of node names that are at the edge that you want excluded from the global totals
    */
-  updateData (trafficData, excludedEdgeNodes) {
-    if (trafficData && trafficData.regions) {
-      let newGraphs = false;
-      _.each(trafficData.regions, (regionData, region) => {
-        if (this.graphs.regions[region] === undefined) {
-          newGraphs = true;
-          this.graphs.regions[region] = new RegionTrafficGraph(region, this, graphWidth, graphHeight);
-          this._attachGraphHandlers(this.graphs.regions[region]);
-          this.graphs.regions[region].setFilters(this.filters);
-          this.graphs.regions[region].showLabels(this.options.showLabels);
-        }
-        this.graphs.regions[region].setState(regionData);
-      });
-      // Update the edge graph with appropriate edge data
-      this.graphs.global.updateData(trafficData.regions, excludedEdgeNodes);
+  updateData (trafficData) {
+    if (trafficData && trafficData.nodes) {
+      this.rootGraphName = trafficData.name;
+      const newGraphs = this.createAndUpdateGraphs(trafficData, this.graphs);
 
       // Now that the initial data is loaded, check if we can set the initial node
       const nodeArray = this.checkInitialNode();
@@ -264,27 +255,32 @@ class Vizceral extends EventEmitter {
     let initialNodeArray;
     // If there is an initial node to set and there is not a current selected node
     if (this.initialNode && !this.currentView) {
-      const region = this.initialNode && this.initialNode[0];
+      const topLevelNode = this.initialNode && this.initialNode[0];
       const nodeName = this.initialNode && this.initialNode[1];
 
-      // Is the set of regions loaded yet?
-      if (Object.keys(this.graphs.regions).length > 0) {
-        // Does the specified region exist?
-        if (region && this.graphs.regions[region]) {
-          // If a node name was not passed in...
-          if (!nodeName) {
-            initialNodeArray = [region];
-          } else if (this.graphs.regions[region].isPopulated()) {
-            // Is there data loaded for the specified region?
-            // TODO: Get multiple matches and set filters if there are multiple?
-            const node = this.graphs.regions[region].getNode(nodeName);
-            // if a node was matched, navigate to the node
-            if (node) {
-              initialNodeArray = [region, node.name];
-            } else {
-              // Navigate to the region since the node was not found.
-              initialNodeArray = [region];
+      // Is the root graph loaded yet?
+      if (Object.keys(this.graphs).length > 0) {
+        // Is the set of top level nodes loaded yet?
+        if (Object.keys(this.graphs[this.rootGraphName].graphs).length > 0) {
+          // Does the specified node exist?
+          if (topLevelNode && this.graphs[this.rootGraphName].graphs[topLevelNode]) {
+            // If a node name was not passed in...
+            if (!nodeName) {
+              initialNodeArray = [topLevelNode];
+            } else if (this.graphs[this.rootGraphName].graphs[topLevelNode].isPopulated()) {
+              // Is there data loaded for the specified topLevelNode?
+              // TODO: Get multiple matches and set filters if there are multiple?
+              const node = this.graphs[this.rootGraphName].graphs[topLevelNode].getNode(nodeName);
+              // if a node was matched, navigate to the node
+              if (node) {
+                initialNodeArray = [topLevelNode, node.name];
+              } else {
+                // Navigate to the topLevelNode since the node was not found.
+                initialNodeArray = [topLevelNode];
+              }
             }
+          } else {
+            initialNodeArray = [];
           }
         } else {
           // Load the global view
@@ -299,14 +295,14 @@ class Vizceral extends EventEmitter {
 
   /**
    * Set the current view of the component to the passed in array. If the passed
-   * in array does not match an existing region or node, the component will try
+   * in array does not match an existing node at the passed in depth, the component will try
    * each level up the array until it finds a match, defaulting to the global
    * view.
    *
    * Ex:
    * [] - show the base global view
-   * ['us-east-1'] - show the regional view for 'us-east-1' if it exists
-   * ['us-east-1', 'api'] - show the api node in the us-east-1 region if it exists
+   * ['us-east-1'] - show the graph view for 'us-east-1' if it exists
+   * ['us-east-1', 'api'] - show the view for the api node in the us-east-1 graph if it exists
    *
    * @param {array} viewArray - the array containing the view to set.
    */
@@ -318,55 +314,55 @@ class Vizceral extends EventEmitter {
       if (!nodeArray) { return; }
     }
 
-    let newRegion = nodeArray[0];
-    let newNodeName = nodeArray[1];
+    let newTopLevelNode = nodeArray[0];
+    let newSecondLevelNode = nodeArray[1];
 
     let viewChanged = false;
-    let regionChanged = false;
+    let topLevelNodeChanged = false;
 
-    // Check if it is a valid region. Also catch if no region...
-    const regionGraph = this.graphs.regions[newRegion];
-    if (regionGraph !== undefined) {
-      // Switch to the region view
-      if (!this.currentGraph || this.currentGraph.name !== newRegion) {
-        regionChanged = true;
+    // Check if it is a valid top level node. Also catch if no top level node...
+    const topLevelNodeGraph = this.graphs[this.rootGraphName].graphs[newTopLevelNode];
+    if (topLevelNodeGraph !== undefined) {
+      // Switch to the top level node view
+      if (!this.currentGraph || this.currentGraph.name !== newTopLevelNode) {
+        topLevelNodeChanged = true;
         viewChanged = true;
       }
 
       // Check if node exists
-      const newNode = regionGraph.getNode(newNodeName);
-      newNodeName = newNode ? newNode.name : undefined;
+      const newNode = topLevelNodeGraph.getNode(newSecondLevelNode);
+      newSecondLevelNode = newNode ? newNode.name : undefined;
 
-      if (regionGraph.nodeName !== newNodeName) {
-        regionGraph.setFocusedNode(newNodeName);
+      if (topLevelNodeGraph.nodeName !== newSecondLevelNode) {
+        topLevelNodeGraph.setFocusedNode(newSecondLevelNode);
         viewChanged = true;
       }
 
-      // If switching to the region view from the global view, animate in
-      if (this.currentGraph === this.graphs.global) {
-        this.zoomIntoRegion(newRegion);
+      // If switching to the top level node view from the global view, animate in
+      if (this.currentGraph === this.graphs[this.rootGraphName]) {
+        this.zoomIntoNode(newTopLevelNode);
         viewChanged = true;
-      } else if (regionChanged) {
-        this.selectGraph(regionGraph);
+      } else if (topLevelNodeChanged) {
+        this.selectGraph(topLevelNodeGraph);
       }
-    } else if (this.currentGraph !== this.graphs.global) {
-      // If no region was passed in, switch to the global view
-      newRegion = undefined;
-      newNodeName = undefined;
-      if (this.currentGraph && this.currentGraph !== this.graphs.global) {
-        this.zoomOutOfRegion();
+    } else if (this.currentGraph !== this.graphs[this.rootGraphName]) {
+      // If no top level node was passed in, switch to the global view
+      newTopLevelNode = undefined;
+      newSecondLevelNode = undefined;
+      if (this.currentGraph && this.currentGraph !== this.graphs[this.rootGraphName]) {
+        this.zoomOutOfNode();
       } else {
-        this.selectGraph(this.graphs.global);
+        this.selectGraph(this.graphs[this.rootGraphName]);
       }
       viewChanged = true;
     }
 
     if (viewChanged) {
       const currentView = [];
-      if (newRegion) {
-        currentView.push(newRegion);
-        if (newNodeName) {
-          currentView.push(newNodeName);
+      if (newTopLevelNode) {
+        currentView.push(newTopLevelNode);
+        if (newSecondLevelNode) {
+          currentView.push(newSecondLevelNode);
         }
       }
       this.currentView = currentView;
@@ -375,19 +371,23 @@ class Vizceral extends EventEmitter {
     }
   }
 
+  showLabels (graph) {
+    graph.showLabels(this.options.showLabels);
+    _.each(graph.graphs, subGraph => {
+      this.showLabels(subGraph);
+    });
+  }
+
   setOptions (options) {
     // Show labels
     if (options.showLabels !== this.options.showLabels) {
       this.options.showLabels = options.showLabels;
-      _.each(this.graphs.regions, regionGraph => {
-        regionGraph.showLabels(this.options.showLabels);
-      });
-      this.graphs.global.showLabels(this.options.showLabels);
+      this.showLabels(this.graphs[this.rootGraphName]);
     }
   }
 
   /**
-   * If zoomed into a region or a service, zoom out one level up.
+   * If zoomed into a node or a service, zoom out one level up.
    * If in the global view, this is a noop.
    */
   zoomOutViewLevel () {
@@ -406,11 +406,11 @@ class Vizceral extends EventEmitter {
   /**
    * Get a specific node object
    *
-   * @param {array} nodeArray - e.g. [ region, nodeName ]
+   * @param {array} nodeArray - e.g. [ node1, node2 ]
    */
   getNode (nodeArray) {
-    if (nodeArray && nodeArray.length === 2 && this.graphs.regions[nodeArray[0]]) {
-      return this.graphs.regions[nodeArray[0]].getNode(nodeArray[1]);
+    if (nodeArray && nodeArray.length === 2 && this.graphs[nodeArray[0]]) {
+      return this.graphs[nodeArray[0]].getNode(nodeArray[1]);
     }
     return undefined;
   }
@@ -422,11 +422,16 @@ class Vizceral extends EventEmitter {
    */
   setFilters (filters) {
     this.filters = filters;
-    _.each(this.graphs.regions, regionGraph => {
-      regionGraph.setFilters(filters);
-    });
+    if (this.currentGraph) {
+      this.currentGraph.setFilters(filters);
+    }
   }
 
+  setCurrentGraph (graph) {
+    graph.setFilters(this.filters);
+    this.currentGraph = graph;
+    this.currentGraph.setCurrent(true);
+  }
 
   // Only necessary when global graph is present
   zoomBetweenGraphs (fromGraph, toGraph, parametersFrom, parametersTo) {
@@ -446,22 +451,20 @@ class Vizceral extends EventEmitter {
     const fromViewObject = fromGraph.view.container;
     const toViewObject = toGraph.view.container;
 
-    // Set initial scale of to object before adding it
-    toViewObject.scale.set(parametersFrom.regionScale, parametersFrom.regionScale, 1);
     this.scene.add(toViewObject);
 
-    // Pan over and zoom in to the selected region
+    // Pan over and zoom in to the selected node
     new TWEEN.Tween(_.clone(parametersFrom))
               .to(parametersTo, 1000)
               .easing(TWEEN.Easing.Cubic.Out)
               .onUpdate(function () {
-                // Pan over to the selected region
+                // Pan over to the selected node
                 fromViewObject.position.set(this.exitingX, this.exitingY, 0);
                 toViewObject.position.set(this.enteringX, this.enteringY, 0);
                 // Zoom in to the selected entering
                 fromViewObject.scale.set(this.exitingScale, this.exitingScale, 1);
                 toViewObject.scale.set(this.enteringScale, this.enteringScale, 1);
-                // Fade the region node
+                // Fade the node node
                 fromGraph.view.setOpacity(this.fromGraphOpacity);
                 if (toGraph.loadedOnce) {
                   toGraph.view.setOpacity(this.toGraphOpacity);
@@ -474,18 +477,16 @@ class Vizceral extends EventEmitter {
                 }
 
                 // Set the current graph
-                // this.currentGraph.setCurrent(false);
-                this.currentGraph = toGraph;
-                this.currentGraph.setCurrent(true);
+                this.setCurrentGraph(toGraph);
               })
               .start();
   }
 
-  zoomIntoRegion (region) {
-    const entryPosition = this.graphs.global.nodes[region].position;
-    if (this.currentGraph && this.currentGraph === this.graphs.global) {
-      const fromGraph = this.graphs.global;
-      const toGraph = this.graphs.regions[region];
+  zoomIntoNode (nodeName) {
+    const entryPosition = this.graphs[this.rootGraphName].nodes[nodeName].position;
+    if (this.currentGraph && this.currentGraph === this.graphs[this.rootGraphName]) {
+      const fromGraph = this.graphs[this.rootGraphName];
+      const toGraph = this.graphs[this.rootGraphName].graphs[nodeName];
 
       const parametersFrom = {
         exitingX: fromGraph.view.container.position.x,
@@ -507,13 +508,13 @@ class Vizceral extends EventEmitter {
     }
   }
 
-  zoomOutOfRegion () {
-    if (this.currentGraph && this.currentGraph !== this.graphs.global) {
-      const regionNode = this.graphs.global.getNode(this.currentGraph.name);
-      const entryPosition = this.graphs.global.nodes[this.currentGraph.name].position;
+  zoomOutOfNode () {
+    if (this.currentGraph && this.currentGraph !== this.graphs[this.rootGraphName]) {
+      const currentNode = this.graphs[this.rootGraphName].getNode(this.currentGraph.name);
+      const entryPosition = this.graphs[this.rootGraphName].nodes[this.currentGraph.name].position;
 
-      const toGraph = this.graphs.global;
-      const fromGraph = this.graphs.regions[this.currentGraph.name];
+      const toGraph = this.graphs[this.rootGraphName];
+      const fromGraph = this.graphs[this.rootGraphName].graphs[this.currentGraph.name];
 
       // clear any node that may have been zoomed in
       fromGraph.setFocusedNode(undefined);
@@ -529,8 +530,8 @@ class Vizceral extends EventEmitter {
       const parametersTo = {
         enteringX: 0,
         enteringY: 0,
-        exitingX: regionNode.position.x,
-        exitingY: regionNode.position.y,
+        exitingX: currentNode.position.x,
+        exitingY: currentNode.position.y,
         enteringScale: 1,
         exitingScale: 0
       };
@@ -545,8 +546,7 @@ class Vizceral extends EventEmitter {
       this.currentGraph.setCurrent(false);
     }
     this.scene.add(graph.view.container);
-    this.currentGraph = graph;
-    this.currentGraph.setCurrent(true);
+    this.setCurrentGraph(graph);
   }
 
   calculateMouseOver () {

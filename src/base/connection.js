@@ -53,7 +53,7 @@ class Connection extends GraphObject {
   }
 
   update (data) {
-    this.streaming = !!data.streaming;
+    this.metadata = data.metadata || this.metadata;
     this.score = data.score || 0;
     this.volume = data.metrics ? _.clone(data.metrics) : {};
     this.notices = data.notices || undefined;
