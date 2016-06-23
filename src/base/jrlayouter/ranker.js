@@ -25,16 +25,17 @@ function longestPathRanking (graph) {
 
   function dfs (nodeName) {
     const node = graph.getNode(nodeName);
-    if (_.has(visited, nodeName)) {
-      return node.rank;
-    }
-    visited[nodeName] = true;
+    if (!node) { return; }
+    if (!_.has(visited, nodeName)) {
+      visited[nodeName] = true;
 
-    let rank = _.min(_.map(graph.outgoingEdges(nodeName), edge => dfs(edge.target) - minimumLength));
-    if (rank === undefined) {
-      rank = 0;
+      let rank = _.min(_.map(graph.outgoingEdges(nodeName), edge => dfs(edge.target) - minimumLength));
+      if (rank === undefined) {
+        rank = 0;
+      }
+      node.rank = rank;
     }
-    return (node.rank = rank);
+    return node.rank;
   }
 
   _.each(graph.entryNodes(), dfs);
