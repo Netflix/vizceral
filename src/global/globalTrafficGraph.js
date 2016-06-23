@@ -163,6 +163,9 @@ class GlobalTrafficGraph extends TrafficGraph {
 
   setCurrent (current) {
     super.setCurrent(current);
+    _.each(this.contextDivs, div => {
+      div.style.display = current ? 'block' : 'none';
+    });
     this.updateLabelScreenDimensions(true);
   }
 
