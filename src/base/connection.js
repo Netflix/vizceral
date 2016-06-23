@@ -54,7 +54,7 @@ class Connection extends GraphObject {
 
   update (data) {
     this.metadata = data.metadata || this.metadata;
-    this.score = data.score || 0;
+    this.class = data.class || 'normal';
     this.volume = data.metrics ? _.clone(data.metrics) : {};
     if (_.isEmpty(this.volume)) {
       // Add info notice to the connection with missing metrics

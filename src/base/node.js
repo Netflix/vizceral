@@ -244,7 +244,7 @@ class Node extends GraphObject {
   }
 
   update (stateNode) {
-    const needsRefresh = this.score !== stateNode.score;
+    const needsRefresh = this.class !== stateNode.class;
     _.assign(this, stateNode);
     if (needsRefresh && this.view) { this.view.refresh(); }
   }

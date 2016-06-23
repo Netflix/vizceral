@@ -19,6 +19,8 @@ import _ from 'lodash';
 import THREE from 'three';
 import chroma from 'chroma-js';
 
+const Console = console;
+
 class GlobalStyles {
   constructor () {
     this.styles = {
@@ -43,6 +45,15 @@ class GlobalStyles {
     };
 
     this.updateComputedStyles();
+  }
+
+  getColorTraffic (key) {
+    const color = this.styles.colorTraffic[key];
+    if (!color) {
+      Console.warn(`Attempted to get a color for key '${key}', but does not exist. Returned color for key 'normal' instead`);
+      return this.styles.colorTraffic.normal;
+    }
+    return color;
   }
 
   updateStyles (styles) {

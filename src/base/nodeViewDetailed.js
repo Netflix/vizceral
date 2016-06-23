@@ -191,7 +191,7 @@ class DetailedNodeView extends NodeView {
       top = top + this.headerFontSize / 2;
 
       // Draw the second metric to the canvas
-      textContext.fillStyle = GlobalStyles.styles.colorTraffic[this.object.getClass()];
+      textContext.fillStyle = GlobalStyles.getColorTraffic(this.object.getClass());
       const bottomMetricDisplayValue = generateDisplayValue(_.get(this.object.data, this.bottomMetric.data, this.bottomMetric.default));
       textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
       top = top + this.metricFontSize / 2;
@@ -224,7 +224,7 @@ class DetailedNodeView extends NodeView {
 
       _.each(this.object.data.classPercents, (data, key) => {
         const width = data.value * metric;
-        this.addNewDonutSlice(width, key === 'normal' ? GlobalStyles.styles.colorNormalDonut : GlobalStyles.styles.colorTraffic[key]);
+        this.addNewDonutSlice(width, key === 'normal' ? GlobalStyles.styles.colorNormalDonut : GlobalStyles.getColorTraffic(key));
       });
     }
   }
