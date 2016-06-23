@@ -4,11 +4,11 @@ The traffic data expected to be passed in regularly to `ele.updateData(traffic)`
 
 ```js
 {
-  defaultRenderer: 'global', // Which graph renderer to use for this graph
+  renderer: 'global', // Which graph renderer to use for this graph (currently only 'global' and 'region')
   name: 'edge',
   nodes: [
     {
-      defaultRenderer: 'region',
+      renderer: 'region',
       name: 'us-west-2',
       updated: 1462471847, // Unix timestamp. Only checked on the top-level list of nodes. Last time the data was updated (Needed because the client could be passed stale data when loaded)
       maxVolume: 100000, // The maximum volume seen recently to relatively measure particle density
@@ -25,10 +25,8 @@ The traffic data expected to be passed in regularly to `ele.updateData(traffic)`
               severity: 1 // OPTIONAL 0(default) for info level, 1 for warning level, 2 for error level
             }
           ],
-          class: 'normal', //  The class of the node. 'normal' will be default. Any class you provide will expect to have a style 'colorClass' available.
-          metadata: { // OPTIONAL // TODO: metadata 'plugin' support...
-            streaming: 1 // OPTIONAL 1 if this connection is in the streaming path, 0 if not
-          },
+          class: 'normal', //  The class of the node. will default to 'normal' if not provided. The coloring of the UI is based on 'normal', 'warning', and 'danger', so if you want to match the UI coloring, use those class names. Any class you provide will expect to have a style 'colorClassName' available, e.g. if the class is 'fuzzy', you should also call 'vizceral.updateStyles({ colorFuzzy: '#aaaaaa' })'
+          metadata: {}, // OPTIONAL Any data that may be handled by a plugin or other data that isn't important to vizceral itself (if you want to show stuff on the page that contains vizceral, for example)
           nodes: [],
           connections: []
         }
@@ -50,9 +48,7 @@ The traffic data expected to be passed in regularly to `ele.updateData(traffic)`
               severity: 1 // OPTIONAL 0(default) for info level, 1 for warning level, 2 for error level
             }
           ],
-          metadata: { // OPTIONAL // TODO: metadata 'plugin' support...
-            streaming: 1 // OPTIONAL 1 if this connection is in the streaming path, 0 if not
-          },
+          metadata: {}, // OPTIONAL Any data that may be handled by a plugin or other data that isn't important to vizceral itself (if you want to show stuff on the page that contains vizceral, for example)
           class: 'normal'
         }
       ]
