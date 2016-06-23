@@ -11,7 +11,7 @@ The traffic data expected to be passed in regularly to `ele.updateData(traffic)`
       defaultRenderer: 'region',
       name: 'us-west-2',
       updated: 1462471847, // Unix timestamp. Only checked on the top-level list of nodes. Last time the data was updated (Needed because the client could be passed stale data when loaded)
-      maxRPS: 100000, // The maximum RPS seen recently to relatively measure particle density
+      maxVolume: 100000, // The maximum volume seen recently to relatively measure particle density
       nodes: [
         {
           name: 'INTERNET' // Required... this is the entry node
@@ -25,7 +25,7 @@ The traffic data expected to be passed in regularly to `ele.updateData(traffic)`
               severity: 1 // OPTIONAL 0(default) for info level, 1 for warning level, 2 for error level
             }
           ],
-          score: 0, // OPTIONAL The score of the node. 0(default) for normal, 1 for warning, 2 for error. This is what the node color is based on.
+          class: 'normal', //  The class of the node. 'normal' will be default. Any class you provide will expect to have a style 'colorClass' available.
           metadata: { // OPTIONAL // TODO: metadata 'plugin' support...
             streaming: 1 // OPTIONAL 1 if this connection is in the streaming path, 0 if not
           },
@@ -37,11 +37,10 @@ The traffic data expected to be passed in regularly to `ele.updateData(traffic)`
         {
           source: 'INTERNET', // The source of the connection, will log a warning if the node does not exist.
           target: 'apiproxy-prod', // The target of the connection, will log a warning if the node does not exist.
-          metrics: {
-            total: 5005, // Total number of requests (success + error + degraded)
-            success: 5000, // OPTIONAL Number of successful requests (If not provided, will be calculated using total - (degraded + error))
-            error: 5, // OPTIONAL Number of error requests (If not provided, assumed 0)
-            degraded: 0 // OPTIONAL Number of degraded requests (If not provided, assumed 0)
+          metrics: { // These are the three default types/colors available in the component and the colors that are used for the nodes themselves. You are welcme to add others, or use other names instead knowing tha they may not match the UI coloring appropriately.
+            normal: 5000,
+            danger: 5,
+            warning: 0
           },
           notices: [ // OPTIONAL Any notices that you want to show up in the sidebar
             {
@@ -53,7 +52,8 @@ The traffic data expected to be passed in regularly to `ele.updateData(traffic)`
           ],
           metadata: { // OPTIONAL // TODO: metadata 'plugin' support...
             streaming: 1 // OPTIONAL 1 if this connection is in the streaming path, 0 if not
-          }
+          },
+          class: 'normal'
         }
       ]
     }

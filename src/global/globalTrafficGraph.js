@@ -96,16 +96,16 @@ class GlobalTrafficGraph extends TrafficGraph {
       }
     });
 
-    // update maxRPS
-    // Just for visual sake, we set the max RPS to max out the connection to the
-    // total of all regional RPS divided by (number of regions - 1).  This
+    // update maxVolume
+    // Just for visual sake, we set the max volume to max out the connection to the
+    // total of all regional volume divided by (number of regions - 1).  This
     // allows for buffer room for failover traffic to be more visually dense
     // It is minus 2 because we need to account for the internet node as well.
-    let maxRPS = 0;
+    let maxVolume = 0;
     _.each(this.state.nodes, node => {
-      maxRPS = maxRPS + (node.maxRPS || 0);
+      maxVolume = maxVolume + (node.maxVolume || 0);
     });
-    this.state.maxRPS = maxRPS / (Object.keys(this.state.nodes).length - 2);
+    this.state.maxVolume = maxVolume / (Object.keys(this.state.nodes).length - 2);
 
     positionNodes(this.state.nodes);
     super.setState(this.state);

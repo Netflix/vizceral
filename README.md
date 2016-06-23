@@ -39,7 +39,7 @@ Otherwise, to integrate it from scratch:
       regions: {
         'us-west-2': {
           updated: 1462471847,
-          maxRPS: 200,
+          maxVolume: 200,
           nodes: [
             { name: 'INTERNET' },
             { name: 'service' }

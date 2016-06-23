@@ -121,12 +121,12 @@ class DetailedNodeView extends NodeView {
     }
 
     // Add metrics to the midddle
-    this.topMetric = { header: '% RPS', data: 'rpsPercent' };
-    this.bottomMetric = { header: 'ERROR RATE', data: 'errorPercent' };
+    this.topMetric = { header: '% RPS', data: 'volumePercent' };
+    this.bottomMetric = { header: 'ERROR RATE', data: 'classPercents.danger', default: { type: 'percent', value: 0 } };
     if (this.object.type === 'region' && this.object.isEntryNode()) {
-      this.topMetric = { header: 'TOTAL RPS', data: 'rps' };
+      this.topMetric = { header: 'TOTAL RPS', data: 'volume' };
     } else if (this.object.type === 'service') {
-      this.topMetric = { header: 'SERVICE RPS', data: 'rps' };
+      this.topMetric = { header: 'SERVICE RPS', data: 'volume' };
     }
 
     this.canvasWidth = this.innerRadius * 2;
@@ -176,8 +176,8 @@ class DetailedNodeView extends NodeView {
       top = top + this.headerFontSize / 2;
 
       // Draw the first metric to the canvas
-      textContext.fillStyle = GlobalStyles.styles.colorNormal;
-      const topMetricDisplayValue = generateDisplayValue(this.object.data[this.topMetric.data]);
+      textContext.fillStyle = GlobalStyles.styles.colorTraffic.normal;
+      const topMetricDisplayValue = generateDisplayValue(_.get(this.object.data, this.topMetric.data));
       textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
       top = top + this.metricFontSize / 2;
       textContext.fillText(topMetricDisplayValue, this.textCanvas.width / 2, top);
@@ -191,15 +191,15 @@ class DetailedNodeView extends NodeView {
       top = top + this.headerFontSize / 2;
 
       // Draw the second metric to the canvas
-      textContext.fillStyle = GlobalStyles.styles.colorSeverity[this.object.getSeverity()];
-      const bottomMetricDisplayValue = generateDisplayValue(this.object.data[this.bottomMetric.data]);
+      textContext.fillStyle = GlobalStyles.styles.colorTraffic[this.object.getClass()];
+      const bottomMetricDisplayValue = generateDisplayValue(_.get(this.object.data, this.bottomMetric.data, this.bottomMetric.default));
       textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
       top = top + this.metricFontSize / 2;
       textContext.fillText(bottomMetricDisplayValue, this.textCanvas.width / 2, top);
       top = top + this.metricFontSize / 2;
     } else {
       // The node is still loading so show a loading message
-      textContext.fillStyle = GlobalStyles.styles.colorNormal;
+      textContext.fillStyle = GlobalStyles.styles.colorTraffic.normal;
       textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
       top = (this.canvasHeight / 2) - (((this.metricFontSize * 2)) / 2) + 16;
       textContext.fillText('REGION', this.textCanvas.width / 2, top);
@@ -222,17 +222,10 @@ class DetailedNodeView extends NodeView {
       let metric = this.object.data[this.topMetric.data];
       metric = metric.type === 'number' ? 1 : metric.value;
 
-      // Danger
-      const dangerWidth = this.object.data.errorPercent.value * metric;
-      this.addNewDonutSlice(dangerWidth, GlobalStyles.styles.colorDanger);
-
-      // Warnings
-      const warningWidth = this.object.data.degradedPercent.value * metric;
-      this.addNewDonutSlice(warningWidth, GlobalStyles.styles.colorWarning);
-
-      // Normal
-      const normalWidth = (metric - dangerWidth) - warningWidth;
-      this.addNewDonutSlice(normalWidth, GlobalStyles.styles.colorNormalDonut);
+      _.each(this.object.data.classPercents, (data, key) => {
+        const width = data.value * metric;
+        this.addNewDonutSlice(width, key === 'normal' ? GlobalStyles.styles.colorNormalDonut : GlobalStyles.styles.colorTraffic[key]);
+      });
     }
   }
 
@@ -263,7 +256,7 @@ class DetailedNodeView extends NodeView {
 
   setupLoadingAnimation () {
     const slice = new THREE.RingGeometry(this.innerRadius, this.radius, 30, 8, 0, Math.PI * 2 * 0.2);
-    const mat = new THREE.MeshBasicMaterial({ color: GlobalStyles.styles.colorNormal, side: THREE.DoubleSide });
+    const mat = new THREE.MeshBasicMaterial({ color: GlobalStyles.styles.colorTraffic.normal, side: THREE.DoubleSide });
     this.loadingSpinner = new THREE.Mesh(slice, mat);
     this.loadingSpinner.position.set(0, 0, this.depth + 2);
     this.container.add(this.loadingSpinner);

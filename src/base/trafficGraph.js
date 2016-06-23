@@ -35,7 +35,7 @@ class TrafficGraph extends EventEmitter {
     this.filters = {};
     this.NodeClass = NodeClass;
     this.ConnectionClass = ConnectionClass;
-    this.rps = { max: 0, current: 0 };
+    this.volume = { max: 0, current: 0 };
 
     this.graphs = {};
 
@@ -274,14 +274,14 @@ class TrafficGraph extends EventEmitter {
       });
 
       // Check for updated max incoming rps
-      if (state.maxRPS && this.rps.max !== state.maxRPS) {
-        this.rps.max = state.maxRPS;
+      if (state.maxVolume && this.volume.max !== state.maxVolume) {
+        this.volume.max = state.maxVolume;
       }
 
       // Check for updated current incoming rps
       const currentRPS = this.nodes.INTERNET ? this.nodes.INTERNET.getOutgoingVolume() : 0;
-      if (currentRPS !== undefined && this.rps.current !== currentRPS) {
-        this.rps.current = currentRPS;
+      if (currentRPS !== undefined && this.volume.current !== currentRPS) {
+        this.volume.current = currentRPS;
       }
 
       // Remove all connections that aren't valid anymore and update the
@@ -291,7 +291,7 @@ class TrafficGraph extends EventEmitter {
           this.removeConnection(connection);
           layoutModified = true;
         } else {
-          connection.updateGreatestVolume(this.rps.max);
+          connection.updateGreatestVolume(this.volume.max);
         }
       });
 
@@ -302,7 +302,7 @@ class TrafficGraph extends EventEmitter {
           layoutModified = true;
         } else {
           // Update the data on all the existing nodes
-          node.updateRPS(this.rps.current);
+          node.updateRPS(this.volume.current);
         }
       });
 

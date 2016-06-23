@@ -49,10 +49,9 @@ class Node extends GraphObject {
     };
 
     this.data = {
-      rps: { type: 'number', value: NaN },
-      rpsPercent: { type: 'percent', value: 0 },
-      errorPercent: { type: 'percent', value: 0 },
-      degradedPercent: { type: 'percent', value: 0 }
+      volume: { type: 'number', value: NaN },
+      volumePercent: { type: 'percent', value: 0 },
+      classPercents: {}
     };
   }
 
@@ -84,58 +83,54 @@ class Node extends GraphObject {
 
   invalidateIncomingVolume () {
     this.invalidatedSinceLastViewUpdate = true;
-    this.incomingVolume = undefined;
-    this.incomingDegradedVolume = undefined;
-    this.incomingErrorVolume = undefined;
+    this.incomingVolumeTotal = undefined;
+    this.incomingVolume = {};
   }
 
   validateIncomingVolume () {
-    this.incomingVolume = _.reduce(this.incomingConnections, (total, connection) => total + connection.getTotalVolume(), 0);
-    this.incomingDegradedVolume = _.reduce(this.incomingConnections, (total, connection) => total + connection.getDegradedVolume(), 0);
-    this.incomingErrorVolume = _.reduce(this.incomingConnections, (total, connection) => total + connection.getErrorVolume(), 0);
+    this.incomingVolumeTotal = _.reduce(this.incomingConnections, (total, connection) => total + connection.getVolumeTotal(), 0);
+    _.each(this.incomingConnections, c => {
+      _.each(c.volume, (value, key) => {
+        this.incomingVolume[key] = this.incomingVolume[key] || 0;
+        this.incomingVolume[key] += value;
+      });
+    });
   }
 
-  getIncomingVolume () {
-    if (!this.incomingVolume) { this.validateIncomingVolume(); }
-    return this.incomingVolume;
-  }
+  getIncomingVolume (key) {
+    if (!key) {
+      if (!this.incomingVolumeTotal) { this.validateIncomingVolume(); }
+      return this.incomingVolumeTotal;
+    }
 
-  getIncomingDegradedVolume () {
-    if (!this.incomingDegradedVolume) { this.validateIncomingVolume(); }
-    return this.incomingDegradedVolume;
-  }
-
-  getIncomingErrorVolume () {
-    if (!this.incomingErrorVolume) { this.validateIncomingVolume(); }
-    return this.incomingErrorVolume;
+    if (!this.incomingVolume[key]) { this.validateIncomingVolume(); }
+    return this.incomingVolume[key];
   }
 
   invalidateOutgoingVolume () {
     this.invalidatedSinceLastViewUpdate = true;
-    this.outgoingVolume = undefined;
-    this.outgoingDegradedVolume = undefined;
-    this.outgoingErrorVolume = undefined;
+    this.outgoingVolumeTotal = undefined;
+    this.outgoingVolume = {};
   }
 
   validateOutgoingVolume () {
-    this.outgoingVolume = _.reduce(this.outgoingConnections, (total, connection) => total + connection.getTotalVolume(), 0);
-    this.outgoingDegradedVolume = _.reduce(this.outgoingConnections, (total, connection) => total + connection.getDegradedVolume(), 0);
-    this.outgoingErrorVolume = _.reduce(this.outgoingConnections, (total, connection) => total + connection.getErrorVolume(), 0);
+    this.outgoingVolumeTotal = _.reduce(this.outgoingConnections, (total, connection) => total + connection.getVolumeTotal(), 0);
+    _.each(this.outgoingConnections, c => {
+      _.each(c.volume, (value, key) => {
+        this.outgoingVolume[key] = this.outgoingVolume[key] || 0;
+        this.outgoingVolume[key] += value;
+      });
+    });
   }
 
-  getOutgoingVolume () {
-    if (!this.outgoingVolume) { this.validateOutgoingVolume(); }
-    return this.outgoingVolume;
-  }
+  getOutgoingVolume (key) {
+    if (!key) {
+      if (!this.outgoingVolumeTotal) { this.validateOutgoingVolume(); }
+      return this.outgoingVolumeTotal;
+    }
 
-  getOutgoingDegradedVolume () {
-    if (!this.outgoingDegradedVolume) { this.validateOutgoingVolume(); }
-    return this.outgoingDegradedVolume;
-  }
-
-  getOutgoingErrorVolume () {
-    if (!this.outgoingErrorVolume) { this.validateOutgoingVolume(); }
-    return this.outgoingErrorVolume;
+    if (!this.outgoingVolume[key]) { this.validateOutgoingVolume(); }
+    return this.outgoingVolume[key];
   }
 
   updatePosition (position, depth) {
@@ -170,11 +165,11 @@ class Node extends GraphObject {
     }
   }
 
-  getSeverity () {
-    if (this.score === undefined) {
-      Console.warn(`Node ${this.name} does not have a score, returning 0.`);
+  getClass () {
+    if (this.class === undefined) {
+      Console.warn(`Node ${this.name} does not have a class, returning 'normal'.`);
     }
-    return Math.round(this.score || 0);
+    return this.class || 'normal';
   }
 
   hasVisibleConnections () {
@@ -216,36 +211,33 @@ class Node extends GraphObject {
     }
   }
 
-  updateData (rps) {
+  updateData (totalVolume) {
     let updated = false;
 
     if (this.invalidatedSinceLastViewUpdate) {
       this.invalidatedSinceLastViewUpdate = false;
-      const serviceRPS = this.isEntryNode() ? rps : this.getIncomingVolume();
-      if (this.data.rps.value !== serviceRPS) {
-        this.data.rps.value = serviceRPS;
+      const serviceVolume = this.isEntryNode() ? totalVolume : this.getIncomingVolume();
+      if (this.data.volume.value !== serviceVolume) {
+        this.data.volume.value = serviceVolume;
         updated = true;
       }
-      if (!serviceRPS) {
-        this.data.rpsPercent.value = 0;
-        this.data.errorPercent.value = 0;
-        this.data.degradedPercent.value = 0;
+      if (!serviceVolume) {
+        this.data.volumePercent.value = 0;
+        _.each(this.data.classPercents, (v, k) => { this.data.classPercents[k] = 0; });
       } else {
-        const rpsPercent = serviceRPS / rps;
-        if (this.data.rpsPercent.value !== rpsPercent) {
-          this.data.rpsPercent.value = rpsPercent;
+        const serviceVolumePercent = serviceVolume / totalVolume;
+        if (this.data.volumePercent.value !== serviceVolumePercent) {
+          this.data.volumePercent.value = serviceVolumePercent;
           updated = true;
         }
-        const errorVolume = (this.isEntryNode() ? this.getOutgoingErrorVolume() : this.getIncomingErrorVolume()) / serviceRPS;
-        if (this.data.errorPercent.value !== errorVolume) {
-          this.data.errorPercent.value = errorVolume;
-          updated = true;
-        }
-        const degradedVolume = (this.isEntryNode() ? this.getOutgoingDegradedVolume() : this.getIncomingDegradedVolume()) / serviceRPS;
-        if (this.data.degradedPercent.value !== degradedVolume) {
-          this.data.degradedPercent.value = degradedVolume;
-          updated = true;
-        }
+        _.each(this.isEntryNode() ? this.outgoingVolume : this.incomingVolume, (volume, key) => {
+          const classVolumePercent = volume / serviceVolume;
+          this.data.classPercents[key] = this.data.classPercents[key] || { type: 'percent', value: 0 };
+          if (this.data.classPercents[key].value !== classVolumePercent) {
+            this.data.classPercents[key].value = classVolumePercent;
+            updated = true;
+          }
+        });
       }
     }
     return updated;

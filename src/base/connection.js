@@ -40,35 +40,40 @@ class Connection extends GraphObject {
     return this.name;
   }
 
-  getTotalVolume () {
-    return this.volume.total || 0;
+  getVolume (key) {
+    return this.volume[key];
   }
 
-  getDegradedVolume () {
-    return this.volume.degraded || 0;
+  getVolumePercent (key) {
+    return this.volumePercent[key];
   }
 
-  getErrorVolume () {
-    return this.volume.error || 0;
+  getVolumeTotal () {
+    return this.volumeTotal;
   }
 
   update (data) {
     this.metadata = data.metadata || this.metadata;
     this.score = data.score || 0;
     this.volume = data.metrics ? _.clone(data.metrics) : {};
-    this.notices = data.notices || undefined;
-
-    if (this.volume.total !== undefined) {
-      // Store percentages on the object to not have to calculate it when
-      // launching new particles in the view
-      this.volume.errorPercent = (this.volume.total && this.volume.total > 0) ? (this.getErrorVolume() / this.volume.total) : 0;
-      this.volume.degradedPercent = (this.volume.total && this.volume.total > 0) ? (this.getDegradedVolume() / this.volume.total) : 0;
-    } else {
+    if (_.isEmpty(this.volume)) {
       // Add info notice to the connection with missing metrics
       this.notices = this.notices || [];
-      this.notices.push({ title: 'Connection found, but no metrics found.', severity: 0 });
-      // Console.warn(`Connection ${this.getName()} was updated without any metrics.`);
+      this.notices.push({ title: 'Connection found, but no metrics.', severity: 0 });
     }
+    this.volumeTotal = _.sum(_.values(this.volume));
+    this.notices = data.notices || undefined;
+
+    // Store percentages on the object to not have to calculate it when
+    // launching new particles in the view
+    this.volumePercent = _.reduce(this.volume, (acc, value, key) => {
+      acc[key] = (this.volumeTotal && this.volumeTotal > 0) ? (value / this.volumeTotal) : 0;
+      return acc;
+    }, {});
+
+    this.volumePercentKeysSorted = _.sortBy(Object.keys(this.volumePercent), key => {
+      return this.volumePercent[key];
+    });
 
     // Invalidate the volumes on the nodes themselves
     this.source.invalidateOutgoingVolume();
@@ -80,7 +85,7 @@ class Connection extends GraphObject {
   }
 
   updateGreatestVolume (greatestVolume) {
-    this.volume.greatest = greatestVolume;
+    this.volumeGreatest = greatestVolume;
     if (this.view) {
       this.view.updateVolume();
     }

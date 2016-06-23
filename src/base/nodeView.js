@@ -32,7 +32,7 @@ class NodeView extends BaseView {
 
     this.donutInternalColor = GlobalStyles.threeStyles.colorDonutInternalColor.clone();
 
-    const borderColor = GlobalStyles.threeStyles.colorSeverity[node.getSeverity()];
+    const borderColor = GlobalStyles.threeStyles.colorTraffic[node.getClass()];
     this.borderMaterial = new THREE.MeshBasicMaterial({ color: borderColor, transparent: true });
     this.innerCircleMaterial = new THREE.MeshBasicMaterial({ color: this.donutInternalColor, transparent: true });
   }
@@ -78,12 +78,12 @@ class NodeView extends BaseView {
   }
 
   refresh () {
-    // Refresh severity
-    const severity = this.object.getSeverity();
+    // Refresh class
+    const nodeClass = this.object.getClass();
     if (this.highlight) {
-      this.innerCircleMaterial.color.set(GlobalStyles.threeStyles.colorSeverityHighlighted[severity]);
+      this.innerCircleMaterial.color.set(GlobalStyles.threeStyles.colorTrafficHighlighted[nodeClass]);
       this.meshes.innerCircle.geometry.colorsNeedUpdate = true;
-      this.borderMaterial.color.set(GlobalStyles.threeStyles.colorSeverityHighlighted[severity]);
+      this.borderMaterial.color.set(GlobalStyles.threeStyles.colorTrafficHighlighted[nodeClass]);
       this.meshes.outerBorder.geometry.colorsNeedUpdate = true;
       if (this.meshes.innerBorder) { this.meshes.innerBorder.geometry.colorsNeedUpdate = true; }
     } else {
@@ -91,7 +91,7 @@ class NodeView extends BaseView {
         this.innerCircleMaterial.color.set(this.donutInternalColor);
         this.meshes.innerCircle.geometry.colorsNeedUpdate = true;
       }
-      this.borderMaterial.color.set(GlobalStyles.threeStyles.colorSeverity[severity]);
+      this.borderMaterial.color.set(GlobalStyles.threeStyles.colorTraffic[nodeClass]);
       this.meshes.outerBorder.geometry.colorsNeedUpdate = true;
       if (this.meshes.innerBorder) { this.meshes.innerBorder.geometry.colorsNeedUpdate = true; }
     }
@@ -113,10 +113,10 @@ class NodeView extends BaseView {
 
       if (this.object.depth !== undefined) {
         z = this.dimmed ? Constants.DEPTH.dimmedNode : Constants.DEPTH.normalNode;
-        if (this.object.getSeverity() < 1) {
+        if (this.object.getClass() === 'normal') {
           z -= (this.object.depth * 10);
         } else {
-          z += (this.object.getSeverity() * 10) + this.object.depth;
+          z += (this.object.depth * 20);
         }
       }
 

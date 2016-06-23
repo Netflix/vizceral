@@ -24,9 +24,11 @@ class GlobalStyles {
     this.styles = {
       colorText: 'rgb(214, 214, 214)',
       colorTextDisabled: 'rgb(129, 129, 129)',
-      colorNormal: 'rgb(186, 213, 237)',
-      colorWarning: 'rgb(268, 185, 73)',
-      colorDanger: 'rgb(184, 36, 36)',
+      colorTraffic: {
+        normal: 'rgb(186, 213, 237)',
+        warning: 'rgb(268, 185, 73)',
+        danger: 'rgb(184, 36, 36)'
+      },
       colorNormalDimmed: 'rgb(101, 117, 128)',
       colorBackgroundDark: 'rgb(35, 35, 35)',
       colorNormalDonut: 'rgb(91, 91, 91)',
@@ -49,24 +51,23 @@ class GlobalStyles {
   }
 
   updateComputedStyles () {
-    this.styles.colorSeverity = [
-      this.styles.colorNormal,
-      this.styles.colorWarning,
-      this.styles.colorDanger
-    ];
-
-    this.styles.colorSeverityHighlighted = [
-      chroma(this.styles.colorNormal).brighten(3).css(),
-      chroma(this.styles.colorWarning).brighten(3).css(),
-      chroma(this.styles.colorDanger).brighten(3).css()
-    ];
+    this.styles.colorTrafficHighlighted = _.reduce(this.styles.colorTraffic, (acc, value, key) => {
+      acc[key] = chroma(value).brighten(3).css();
+      return acc;
+    }, {});
 
     this.threeStyles = {
       colorConnectionLine: new THREE.Color(this.styles.colorConnectionLine),
       colorDonutInternalColor: new THREE.Color(this.styles.colorDonutInternalColor),
       colorPageBackground: new THREE.Color(this.styles.colorPageBackground),
-      colorSeverity: this.styles.colorSeverity.map(color => new THREE.Color(color)),
-      colorSeverityHighlighted: this.styles.colorSeverityHighlighted.map(color => new THREE.Color(color))
+      colorTraffic: _.reduce(this.styles.colorTraffic, (acc, value, key) => {
+        acc[key] = new THREE.Color(value);
+        return acc;
+      }, {}),
+      colorTrafficHighlighted: _.reduce(this.styles.colorTrafficHighlighted, (acc, value, key) => {
+        acc[key] = new THREE.Color(value);
+        return acc;
+      }, {}),
     };
   }
 }

@@ -132,9 +132,9 @@ class ConnectionView extends BaseView {
       vertices[i * 3 + 2] = customWidth ? connectionDepth - normalDistribution() * connectionDepth * 2 : -2;
 
       // Custom colors
-      customColors[i] = GlobalStyles.threeStyles.colorSeverity[0].r;
-      customColors[i + 1] = GlobalStyles.threeStyles.colorSeverity[0].g;
-      customColors[i + 2] = GlobalStyles.threeStyles.colorSeverity[0].b;
+      customColors[i] = GlobalStyles.threeStyles.colorTraffic.normal.r;
+      customColors[i + 1] = GlobalStyles.threeStyles.colorTraffic.normal.g;
+      customColors[i + 2] = GlobalStyles.threeStyles.colorTraffic.normal.b;
 
       customOpacities[i] = 0;
       sizes[i] = 6;
@@ -228,17 +228,17 @@ class ConnectionView extends BaseView {
 
   updateVolume () {
     // We need the highest RPS connection to make this volume relative against
-    if (!this.object.volume.greatest) { return; }
+    if (!this.object.volumeGreatest) { return; }
 
     // Set particle launch delay as an inverse proportion of RPS, with 0.1 being the shortest possible delay
-    const percentageOfParticles = Math.min(this.object.volume.total / this.object.volume.greatest, 1);
+    const percentageOfParticles = Math.min(this.object.getVolumeTotal() / this.object.volumeGreatest, 1);
 
     this.particleMultiplier = 1;
     const maxThreshold = 1000 / this.maxParticleDelay;
     if (!percentageOfParticles) {
       this.particleLaunchDelay = Infinity;
-    } else if (this.object.volume.total < maxThreshold) {
-      this.particleLaunchDelay = interpolateValue(this.object.volume.total, 0, maxThreshold, 20000, this.maxParticleDelay);
+    } else if (this.object.getVolumeTotal() < maxThreshold) {
+      this.particleLaunchDelay = interpolateValue(this.object.getVolumeTotal(), 0, maxThreshold, 20000, this.maxParticleDelay);
     } else if (percentageOfParticles < this.particleInflectionPercent) {
       this.particleLaunchDelay = interpolateValue(percentageOfParticles, 0, this.particleInflectionPercent, this.maxParticleDelay, 16);
     } else {
@@ -296,13 +296,15 @@ class ConnectionView extends BaseView {
       this.opacityAttr.array[this.lastParticleIndex] = 1.0;
       this.opacityAttr.needsUpdate = true;
 
-      if (this.object.volume.errorPercent > rand) {
-        this.setParticleColor(this.lastParticleIndex, GlobalStyles.threeStyles.colorSeverity[2]);
-      } else if (this.object.volume.degradedPercent > rand) {
-        this.setParticleColor(this.lastParticleIndex, GlobalStyles.threeStyles.colorSeverity[1]);
-      } else {
-        this.setParticleColor(this.lastParticleIndex, GlobalStyles.threeStyles.colorSeverity[0]);
+      let color = GlobalStyles.threeStyles.colorTraffic.normal;
+      for (const index in this.object.volumePercentKeysSorted) { // eslint-disable-line no-restricted-syntax, guard-for-in
+        const key = this.object.volumePercentKeysSorted[index];
+        if (this.object.volumePercent[key] > rand) {
+          color = GlobalStyles.threeStyles.colorTraffic[key];
+          break;
+        }
       }
+      this.setParticleColor(this.lastParticleIndex, color);
 
       this.lastParticleLaunchTime = currentTime;
       this.lastParticleIndex++;
