@@ -39,7 +39,7 @@ Get a specific node object
 
 **Parameters**
 
--   `nodeArray` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** e.g. [ region, nodeName ]
+-   `nodeArray` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** e.g. [ node1, node2 ]
 
 # getStyles
 
@@ -66,14 +66,14 @@ Sets the highlighted node.  If the node is undefined, clears any highlighting.
 # setView
 
 Set the current view of the component to the passed in array. If the passed
-in array does not match an existing region or node, the component will try
+in array does not match an existing node at the passed in depth, the component will try
 each level up the array until it finds a match, defaulting to the global
 view.
 
 Ex:
 \[] - show the base global view
-['us-east-1'] - show the regional view for 'us-east-1' if it exists
-['us-east-1', 'api'] - show the api node in the us-east-1 region if it exists
+['us-east-1'] - show the graph view for 'us-east-1' if it exists
+['us-east-1', 'api'] - show the view for the api node in the us-east-1 graph if it exists
 
 **Parameters**
 
@@ -88,16 +88,7 @@ with the complete set of traffic data anytime there is an update.
 **Parameters**
 
 -   `data` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The traffic data that matches the format in DATAFORMATS.md
--   `trafficData`
-
-# updateRegions
-
-Update the regions that are known, whether they have data or not
-
-**Parameters**
-
--   `Array` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** of region names that we are expecting data for
--   `regions`
+-   `trafficData`  
 
 # updateStyles
 
@@ -106,11 +97,11 @@ Update the global styles
 **Parameters**
 
 -   `An` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** object map of style names to values
--   `styles`
+-   `styles`  
 
 # zoomOutViewLevel
 
-If zoomed into a region or a service, zoom out one level up.
+If zoomed into a node or a service, zoom out one level up.
 If in the global view, this is a noop.
 
 # matchesFound
@@ -120,6 +111,14 @@ The `matchesFound` event is fired whenever nodes are found via findNodes().
 **Properties**
 
 -   `matches` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The matches object { total, visible }
+
+# nodeContextSizeChanged
+
+The `nodeContextSizeChanged` event is fired whenever the context panel size for node context size changes
+
+**Properties**
+
+-   `dimensions` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The dimensions of the node context panels
 
 # nodeFocused
 
@@ -137,14 +136,6 @@ The `nodeHighlighted` event is fired whenever a node is highlighted.
 
 -   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node object that has been highlighted, or the highlighted node that has been updated.
 
-# nodeContextSizeChanged
-
-The `nodeContextSizeChanged` event is fired whenever the context panel size for regional context changes
-
-**Properties**
-
--   `dimensions` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The dimensions of the region context panels
-
 # rendered
 
 The `rendered` event is fired whenever a graph is rendered.
@@ -155,8 +146,8 @@ The `rendered` event is fired whenever a graph is rendered.
 
 # viewChanged
 
-The `viewChanged` event is fired whenever the view changes between global, regional, and node
+The `viewChanged` event is fired whenever the view changes
 
 **Properties**
 
--   `view` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** The currently selected view (e.g. \[] for global, ['us-east-1'] for regional, ['us-east-1', 'api'] for node level)
+-   `view` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** The currently selected view (e.g. \[] for global, ['us-east-1'] for one node deep, ['us-east-1', 'api'] for two nodes deep)
