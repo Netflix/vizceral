@@ -6,6 +6,7 @@ The traffic data expected to be passed in regularly to `ele.updateData(traffic)`
 {
   renderer: 'global', // Which graph renderer to use for this graph (currently only 'global' and 'region')
   name: 'edge',
+  maxVolume: 100000, // OPTIONAL: The maximum volume seen recently to relatively measure particle density. This 'global' maxVolume is optional because it can be calculated by using all of the required sub-node maxVolumes.
   nodes: [
     {
       renderer: 'region',

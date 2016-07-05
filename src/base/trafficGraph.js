@@ -273,15 +273,17 @@ class TrafficGraph extends EventEmitter {
         }
       });
 
-      // Check for updated max incoming rps
-      if (state.maxVolume && this.volume.max !== state.maxVolume) {
+      // Check for updated max volume
+      if (state.maxVolume) {
         this.volume.max = state.maxVolume;
+      } else {
+        Console.error(`maxVolume required to calculate relative particle density, but no maxVolume provided for ${state.name}. See https://github.com/Netflix/vizceral/blob/master/DATAFORMATS.md`);
       }
 
-      // Check for updated current incoming rps
-      const currentRPS = this.nodes.INTERNET ? this.nodes.INTERNET.getOutgoingVolume() : 0;
-      if (currentRPS !== undefined && this.volume.current !== currentRPS) {
-        this.volume.current = currentRPS;
+      // Check for updated current volume
+      const currentVolume = this.nodes.INTERNET ? this.nodes.INTERNET.getOutgoingVolume() : 0;
+      if (currentVolume !== undefined && this.volume.current !== currentVolume) {
+        this.volume.current = currentVolume;
       }
 
       // Remove all connections that aren't valid anymore and update the
@@ -302,7 +304,7 @@ class TrafficGraph extends EventEmitter {
           layoutModified = true;
         } else {
           // Update the data on all the existing nodes
-          node.updateRPS(this.volume.current);
+          node.updateVolume(this.volume.current);
         }
       });
 

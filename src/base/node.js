@@ -249,8 +249,8 @@ class Node extends GraphObject {
     if (needsRefresh && this.view) { this.view.refresh(); }
   }
 
-  updateRPS (rps) {
-    this.updated = this.updateData(rps);
+  updateVolume (volume) {
+    this.updated = this.updateData(volume);
   }
 
   showLabel (showLabel) {

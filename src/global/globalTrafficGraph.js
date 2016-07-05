@@ -97,15 +97,19 @@ class GlobalTrafficGraph extends TrafficGraph {
     });
 
     // update maxVolume
+    // depending on how the data gets fed, we might not have a global max volume.
+    // If we do not, calculate it based on all the second level nodes max volume.
+    //
     // Just for visual sake, we set the max volume to max out the connection to the
-    // total of all regional volume divided by (number of regions - 1).  This
-    // allows for buffer room for failover traffic to be more visually dense
-    // It is minus 2 because we need to account for the internet node as well.
-    let maxVolume = 0;
-    _.each(this.state.nodes, node => {
-      maxVolume = maxVolume + (node.maxVolume || 0);
-    });
-    this.state.maxVolume = maxVolume / (Object.keys(this.state.nodes).length - 2);
+    // total of all sub node volume divided by number of nodes and 85%.  This
+    // allows for buffer room for failover traffic to be more visually dense.
+    let maxVolume = state.maxVolume || 0;
+    if (!maxVolume) {
+      _.each(this.state.nodes, node => {
+        maxVolume = maxVolume + (node.maxVolume || 0);
+      });
+    }
+    this.state.maxVolume = (maxVolume / ((state.nodes.length - 1) || 1)) * 0.85;
 
     positionNodes(this.state.nodes);
     super.setState(this.state);
