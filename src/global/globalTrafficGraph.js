@@ -109,7 +109,7 @@ class GlobalTrafficGraph extends TrafficGraph {
         maxVolume = maxVolume + (node.maxVolume || 0);
       });
     }
-    this.state.maxVolume = (maxVolume / ((state.nodes.length - 1) || 1)) * 0.85;
+    this.state.maxVolume = (maxVolume / ((state.nodes.length - 1) || 1)) * 1.8;
 
     positionNodes(this.state.nodes);
     super.setState(this.state);
