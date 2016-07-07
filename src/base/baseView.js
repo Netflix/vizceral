@@ -32,12 +32,19 @@ class BaseView {
   }
 
   addInteractiveChild (child) {
-    child.userData.object = this.object;
-    this.interactiveChildren.push(child);
+    if (!_.find(this.interactiveChildren, { id: child.id })) {
+      child.userData.object = this.object;
+      this.interactiveChildren.push(child);
+    }
   }
 
   addInteractiveChildren (children) {
     _.each(children, child => this.addInteractiveChild(child));
+  }
+
+  removeInteractiveChildren (children) {
+    const childrenIds = children.map(c => c.id);
+    _.remove(this.interactiveChildren, c => childrenIds.includes(c.id));
   }
 
   getInteractiveChildren () {

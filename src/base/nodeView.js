@@ -164,10 +164,12 @@ class NodeView extends BaseView {
   _showLabel (show) {
     if (this.nameView) {
       if (show) {
-        this.addInteractiveChild(this.nameView.container);
+        this.labelVisible = true;
+        this.addInteractiveChildren(this.nameView.getInteractiveChildren());
         this.container.add(this.nameView.container);
       } else {
-        _.remove(this.interactiveChildren, child => child === this.nameView.container);
+        this.labelVisible = false;
+        this.removeInteractiveChildren(this.nameView.getInteractiveChildren());
         this.container.remove(this.nameView.container);
       }
     }
@@ -182,14 +184,6 @@ class NodeView extends BaseView {
     if (this.nameView) {
       this.nameView.screenDimensions = dimensions;
     }
-  }
-
-  getInteractiveChildren () {
-    const children = super.getInteractiveChildren();
-    if (this.nameView) {
-      Array.prototype.push.apply(children, this.nameView.getInteractiveChildren());
-    }
-    return children;
   }
 
   cleanup () {
