@@ -510,7 +510,10 @@ class TrafficGraph extends EventEmitter {
     // If we are focused on a node, hide nodes that aren't related and force related nodes TO be shown.
     const defaultHidden = this.nodeName !== undefined;
     _.each(this.connections, connection => { connection.hidden = defaultHidden; });
-    _.each(this.nodes, node => { node.hidden = defaultHidden; });
+    _.each(this.nodes, node => {
+      node.hidden = defaultHidden;
+      delete node.forceLabel;
+    });
     if (defaultHidden) {
       this.nodes[this.nodeName].hidden = false;
 
@@ -518,12 +521,14 @@ class TrafficGraph extends EventEmitter {
       _.each(this.nodes[this.nodeName].incomingConnections, connection => {
         connection.hidden = false;
         connection.source.hidden = false;
+        connection.source.forceLabel = true;
       });
 
       // Show all the outgoing connections and the target nodes
       _.each(this.nodes[this.nodeName].outgoingConnections, connection => {
         connection.hidden = false;
         connection.target.hidden = false;
+        connection.target.forceLabel = true;
       });
     }
 

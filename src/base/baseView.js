@@ -95,18 +95,17 @@ class BaseView {
   }
 
   setDimmed (dimmed, dimmingApplied) {
+    let changed = false;
     const focused = !dimmed && dimmingApplied;
     if (focused !== this.focused) {
       this.focused = focused;
       this.refreshFocused();
     }
 
-    if (dimmed !== this.dimmed) {
-      this.dimmed = dimmed;
-      this.updatePosition(true);
-      return true;
-    }
-    return false;
+    changed = dimmed !== this.dimmed;
+    this.dimmed = dimmed;
+    this.updatePosition(true);
+    return changed;
   }
 
   addChildElement (geometry, material) {

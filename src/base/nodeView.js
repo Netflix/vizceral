@@ -127,6 +127,7 @@ class NodeView extends BaseView {
 
   updateLabelPosition () {
     if (this.nameView) {
+      this._showLabel(this.labelDefaultVisible || this.forceLabel || this.object.forceLabel);
       this.nameView.updatePosition();
     }
   }
@@ -139,6 +140,14 @@ class NodeView extends BaseView {
     }
   }
 
+  setDimmed (dimmed, dimmingApplied) {
+    // Show/hide nodeLabel if necessary
+    if (this.object.isVisible() && !this.labelDefaultVisible) {
+      this.forceLabel = !dimmed && dimmingApplied;
+    }
+    return super.setDimmed(dimmed, dimmingApplied);
+  }
+
   applyLabelPosition () {
     if (this.nameView) {
       this.nameView.applyPosition();
@@ -146,9 +155,15 @@ class NodeView extends BaseView {
   }
 
   showLabel (show) {
-    if (this.nameView && this.labelVisible !== show) {
-      this.labelVisible = show;
-      if (this.labelVisible) {
+    if (this.nameView && this.labelDefaultVisible !== show) {
+      this.labelDefaultVisible = show;
+      this._showLabel(show);
+    }
+  }
+
+  _showLabel (show) {
+    if (this.nameView) {
+      if (show) {
         this.addInteractiveChild(this.nameView.container);
         this.container.add(this.nameView.container);
       } else {
