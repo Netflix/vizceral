@@ -60,7 +60,7 @@ class Node extends GraphObject {
     this.detailed = {
       volume: {
         top: { header: '% RPS', data: 'data.volumePercent' },
-        bottom: { header: 'ERROR RATE', data: 'data.classPercents.danger', default: { type: 'percent', value: 0 } },
+        bottom: { header: 'ERROR RATE', data: 'data.classPercents.danger' },
         donut: {
           data: 'data.classPercents',
           classes: {

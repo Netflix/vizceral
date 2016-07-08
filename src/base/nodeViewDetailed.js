@@ -27,12 +27,16 @@ import NodeNameView from './nodeNameView';
 const Console = console;
 
 function generateDisplayValue (data) {
+  if (data === undefined) {
+    return '0';
+  }
+
   if (data.type === 'number') {
     let num = numeral(data.value).format('0,0');
     if (__HIDE_DATA__) { num = num.replace(/[0-9]/g, '#'); }
     return num;
   }
-  if (data.type === 'percent') { return numeral(data.value).format('0.00%'); }
+  if (data.type === 'percent') { return data.value ? numeral(data.value).format('0.00%') : '0.00%'; }
   return data.value;
 }
 
@@ -185,7 +189,7 @@ class DetailedNodeView extends NodeView {
 
       // Draw the second metric to the canvas
       textContext.fillStyle = GlobalStyles.getColorTraffic(this.object.getClass());
-      const bottomMetricDisplayValue = generateDisplayValue(_.get(this.object, this.detailed.bottom.data, this.detailed.bottom.default));
+      const bottomMetricDisplayValue = generateDisplayValue(_.get(this.object, this.detailed.bottom.data));
       textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
       top = top + this.metricFontSize / 2;
       textContext.fillText(bottomMetricDisplayValue, this.textCanvas.width / 2, top);
