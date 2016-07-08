@@ -53,6 +53,22 @@ class Node extends GraphObject {
       volumePercent: { type: 'percent', value: 0 },
       classPercents: {}
     };
+
+    this.detailedMode = 'volume'; // 'volume' is default, can be a string that matches a data set in metadata: { details: {} }
+
+    // Add metrics to the midddle
+    this.detailed = {
+      volume: {
+        top: { header: '% RPS', data: 'data.volumePercent' },
+        bottom: { header: 'ERROR RATE', data: 'data.classPercents.danger', default: { type: 'percent', value: 0 } },
+        donut: {
+          data: 'data.classPercents',
+          classes: {
+            normal: 'normalDonut'
+          }
+        }
+      }
+    };
   }
 
   addIncomingConnection (connection) {
@@ -217,6 +233,7 @@ class Node extends GraphObject {
     if (this.invalidatedSinceLastViewUpdate) {
       this.invalidatedSinceLastViewUpdate = false;
       const serviceVolume = this.isEntryNode() ? totalVolume : this.getIncomingVolume();
+      const serviceVolumePercent = serviceVolume / totalVolume;
       if (this.data.volume.value !== serviceVolume) {
         this.data.volume.value = serviceVolume;
         updated = true;
@@ -225,7 +242,6 @@ class Node extends GraphObject {
         this.data.volumePercent.value = 0;
         _.each(this.data.classPercents, (v, k) => { this.data.classPercents[k] = 0; });
       } else {
-        const serviceVolumePercent = serviceVolume / totalVolume;
         if (this.data.volumePercent.value !== serviceVolumePercent) {
           this.data.volumePercent.value = serviceVolumePercent;
           updated = true;

@@ -235,7 +235,7 @@ class TrafficGraph extends EventEmitter {
         stateNodeMap[stateNode.name] = true;
         let node = this.nodes[stateNode.name];
         if (!node) {
-          node = new this.NodeClass(stateNode, { showLabel: this.displayOptions.showLabels });
+          node = new this.NodeClass(stateNode);
           node.hidden = this.node && !this.nodes[this.node].connectedTo(node.getName());
           node.updatePosition(stateNode.position, index);
           this.nodes[stateNode.name] = node;

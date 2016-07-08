@@ -120,15 +120,6 @@ class DetailedNodeView extends NodeView {
       this.showLabel(this.object.options.showLabel);
     }
 
-    // Add metrics to the midddle
-    this.topMetric = { header: '% RPS', data: 'volumePercent' };
-    this.bottomMetric = { header: 'ERROR RATE', data: 'classPercents.danger', default: { type: 'percent', value: 0 } };
-    if (this.object.type === 'region' && this.object.isEntryNode()) {
-      this.topMetric = { header: 'TOTAL RPS', data: 'volume' };
-    } else if (this.object.type === 'service') {
-      this.topMetric = { header: 'SERVICE RPS', data: 'volume' };
-    }
-
     this.canvasWidth = this.innerRadius * 2;
     this.canvasHeight = this.canvasWidth * 0.53;
     this.metricSpacing = this.canvasHeight * 0.1;
@@ -139,6 +130,8 @@ class DetailedNodeView extends NodeView {
     if (!this.object.loaded) {
       this.setupLoadingAnimation();
     }
+
+    this.detailed = this.object.detailed[this.object.detailedMode];
   }
 
   addText () {
@@ -172,12 +165,12 @@ class DetailedNodeView extends NodeView {
       textContext.fillStyle = GlobalStyles.styles.colorNormalDimmed;
       textContext.font = `${headerWeight} ${this.headerFontSize}px 'Source Sans Pro', sans-serif`;
       top = top + this.headerFontSize / 2;
-      textContext.fillText(this.topMetric.header, this.textCanvas.width / 2, top);
+      textContext.fillText(this.detailed.top.header, this.textCanvas.width / 2, top);
       top = top + this.headerFontSize / 2;
 
       // Draw the first metric to the canvas
       textContext.fillStyle = GlobalStyles.styles.colorTraffic.normal;
-      const topMetricDisplayValue = generateDisplayValue(_.get(this.object.data, this.topMetric.data));
+      const topMetricDisplayValue = generateDisplayValue(_.get(this.object, this.detailed.top.data));
       textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
       top = top + this.metricFontSize / 2;
       textContext.fillText(topMetricDisplayValue, this.textCanvas.width / 2, top);
@@ -187,12 +180,12 @@ class DetailedNodeView extends NodeView {
       textContext.fillStyle = GlobalStyles.styles.colorNormalDimmed;
       textContext.font = `${headerWeight} ${this.headerFontSize}px 'Source Sans Pro', sans-serif`;
       top = top + this.metricSpacing + this.headerFontSize / 2;
-      textContext.fillText(this.bottomMetric.header, this.textCanvas.width / 2, top);
+      textContext.fillText(this.detailed.bottom.header, this.textCanvas.width / 2, top);
       top = top + this.headerFontSize / 2;
 
       // Draw the second metric to the canvas
       textContext.fillStyle = GlobalStyles.getColorTraffic(this.object.getClass());
-      const bottomMetricDisplayValue = generateDisplayValue(_.get(this.object.data, this.bottomMetric.data, this.bottomMetric.default));
+      const bottomMetricDisplayValue = generateDisplayValue(_.get(this.object, this.detailed.bottom.data, this.detailed.bottom.default));
       textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
       top = top + this.metricFontSize / 2;
       textContext.fillText(bottomMetricDisplayValue, this.textCanvas.width / 2, top);
@@ -219,12 +212,10 @@ class DetailedNodeView extends NodeView {
 
       this.startAngle = Math.PI * 0.5;
 
-      let metric = this.object.data[this.topMetric.data];
-      metric = metric.type === 'number' ? 1 : metric.value;
-
-      _.each(this.object.data.classPercents, (data, key) => {
-        const width = data.value * metric;
-        this.addNewDonutSlice(width, key === 'normal' ? GlobalStyles.styles.colorNormalDonut : GlobalStyles.getColorTraffic(key));
+      const donutData = _.get(this.object, this.detailed.donut.data, undefined);
+      _.each(donutData, (classPercent, key) => {
+        const colorKey = _.get(this.detailed, ['donut', 'classes', key], key);
+        this.addNewDonutSlice(classPercent.value, GlobalStyles.getColorTraffic(colorKey));
       });
     }
   }

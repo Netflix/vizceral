@@ -28,12 +28,12 @@ class GlobalStyles {
       colorTextDisabled: 'rgb(129, 129, 129)',
       colorTraffic: {
         normal: 'rgb(186, 213, 237)',
+        normalDonut: 'rgb(91, 91, 91)',
         warning: 'rgb(268, 185, 73)',
         danger: 'rgb(184, 36, 36)'
       },
       colorNormalDimmed: 'rgb(101, 117, 128)',
       colorBackgroundDark: 'rgb(35, 35, 35)',
-      colorNormalDonut: 'rgb(91, 91, 91)',
       colorLabelBorder: 'rgb(16, 17, 18)',
       colorLabelText: 'rgb(0, 0, 0)',
       colorDonutInternalColor: 'rgb(35, 35, 35)',

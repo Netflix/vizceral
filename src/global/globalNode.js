@@ -15,14 +15,29 @@
  *     limitations under the License.
  *
  */
+import _ from 'lodash';
 import Node from '../base/node';
 
 class GlobalNode extends Node {
   constructor (node) {
     super(node, 'region');
     this.loaded = this.isEntryNode();
+    if (this.isEntryNode()) {
+      this.detailed.volume.top = { header: 'TOTAL RPS', data: 'data.volume' };
+    }
   }
 
+  updateData (totalVolume) {
+    const updated = super.updateData(totalVolume);
+    if (updated) {
+      const percentGlobal = this.data.volume.value / totalVolume;
+      // regenerate global class percents
+      _.each(this.data.classPercents, classPercent => {
+        classPercent.value = classPercent.value * percentGlobal;
+      });
+    }
+    return updated;
+  }
 }
 
 export default GlobalNode;
