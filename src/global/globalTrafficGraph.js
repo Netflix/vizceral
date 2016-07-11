@@ -106,10 +106,10 @@ class GlobalTrafficGraph extends TrafficGraph {
     let maxVolume = state.maxVolume || 0;
     if (!maxVolume) {
       _.each(this.state.nodes, node => {
-        maxVolume = maxVolume + (node.maxVolume || 0);
+        maxVolume = Math.max(maxVolume, node.maxVolume || 0);
       });
     }
-    this.state.maxVolume = (maxVolume / ((state.nodes.length - 1) || 1)) * 1.8;
+    this.state.maxVolume = maxVolume * 1.5;
 
     positionNodes(this.state.nodes);
     super.setState(this.state);
