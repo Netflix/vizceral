@@ -26,9 +26,11 @@ class GlobalDefinitions {
             bottom: { header: 'ERROR RATE', data: 'data.classPercents.danger', format: '0.00%' },
             donut: {
               data: 'data.classPercents',
-              classes: {
-                normal: 'normalDonut'
-              }
+              indices: [
+                { key: 'danger' },
+                { key: 'warning' },
+                { key: 'normal', class: 'normalDonut' }
+              ]
             }
           },
           region: {

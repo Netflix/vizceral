@@ -94,9 +94,11 @@ Definitions are optional.  Passing a structure similar to `ele.setDefinitions(de
         bottom: { header: 'ERROR RATE', data: 'data.classPercents.danger', format: '0.00%' }, // bottom metric in the detailed node
         donut: { // description of what fills the donut graph around the detailed node
           data: 'data.classPercents',
-          classes: { // by default, the coloring for the donut slices will map from key in data, but if you want to map it to a different class, override it here.
-            normal: 'normalDonut'
-          }
+          indices: [ // by default, the coloring for the donut slices will map by key in data, and in an indeterminant order, but if you want to map them to different classes or force a render order, override it here.
+            { key: 'danger' },
+            { key: 'warning' },
+            { key: 'normal', class: 'normalDonut' }
+          ]
         }
       },
       region: { // override for the region renderer
