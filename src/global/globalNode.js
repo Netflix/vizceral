@@ -29,8 +29,8 @@ class GlobalNode extends Node {
     if (updated) {
       const percentGlobal = this.data.volume / totalVolume;
       // regenerate global class percents
-      _.each(this.data.classPercents, classPercent => {
-        classPercent = classPercent * percentGlobal;
+      _.each(this.data.classPercents, (classPercent, key) => {
+        this.data.classPercents[key] = classPercent * percentGlobal;
       });
     }
     return updated;
