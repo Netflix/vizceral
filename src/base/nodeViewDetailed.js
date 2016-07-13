@@ -119,7 +119,7 @@ class DetailedNodeView extends NodeView {
     this.meshes.innerBorder.position.setZ(100);
 
     // Add the service name
-    if (this.object.type === 'region' && !this.object.isEntryNode()) {
+    if (this.object.renderer === 'global' && !this.object.isEntryNode()) {
       this.nameView = new NodeNameView(this, true);
       this.showLabel(this.object.options.showLabel);
     }

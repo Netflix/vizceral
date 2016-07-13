@@ -21,7 +21,7 @@ import GlobalConnectionView from './globalConnectionView';
 class GlobalConnection extends Connection {
   constructor (options) {
     super(options);
-    this.type = 'global';
+    this.renderer = 'global';
   }
 
   update (data) {

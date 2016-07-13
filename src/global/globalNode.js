@@ -20,7 +20,7 @@ import Node from '../base/node';
 
 class GlobalNode extends Node {
   constructor (node) {
-    super(node, 'region');
+    super(node, 'global');
     this.loaded = this.isEntryNode();
     if (this.isEntryNode()) {
       this.detailed.volume.top = { header: 'TOTAL RPS', data: 'data.volume' };

@@ -19,7 +19,7 @@ import Node from '../base/node';
 
 class RegionNode extends Node {
   constructor (node) {
-    super(node, 'service');
+    super(node, 'region');
     this.loaded = true;
     this.detailed.volume.top = { header: 'SERVICE RPS', data: 'data.volume' };
   }

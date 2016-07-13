@@ -25,12 +25,12 @@ import Notices from '../notices';
 const Console = console;
 
 class Node extends GraphObject {
-  constructor (node, type) {
+  constructor (node, renderer) {
     super();
     this.update(node);
     this.minimumNoticeLevel = 0;
 
-    this.type = type;
+    this.renderer = renderer;
     this.position = this.position || {};
     this.position.x = this.position.x || 0;
     this.position.y = this.position.y || 0;
@@ -203,8 +203,8 @@ class Node extends GraphObject {
       standard: new NodeViewStandard(this),
       detailed: new NodeViewDetailed(this)
     };
-    // Set the default view type
-    this.view = this.type === 'region' ? this.views.detailed : this.views.standard;
+    // Set the default view renderer
+    this.view = this.renderer === 'global' ? this.views.detailed : this.views.standard;
   }
 
   showNotices () {
@@ -296,8 +296,8 @@ class Node extends GraphObject {
   }
 
   isInteractive () {
-    return (this.type === 'region' && !this.isEntryNode())
-      || (this.type === 'service' && this.view !== this.views.detailed);
+    return (this.renderer === 'global' && !this.isEntryNode())
+      || (this.renderer === 'region' && this.view !== this.views.detailed);
   }
 
   cleanup () {

@@ -21,7 +21,7 @@ import RegionConnectionView from './regionConnectionView';
 class RegionConnection extends Connection {
   constructor (options) {
     super(options);
-    this.type = 'region';
+    this.renderer = 'region';
   }
 
   render () {

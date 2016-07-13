@@ -52,7 +52,7 @@ class NodeNameView extends BaseView {
   constructor (nodeView, fixedWidth) {
     super(nodeView.object);
     this.fixedWidth = fixedWidth;
-    this.nodeName = nodeView.object.type === 'region' ? nodeView.object.getName().toUpperCase() : nodeView.object.getName().toLowerCase();
+    this.nodeName = nodeView.object.renderer === 'global' ? nodeView.object.getName().toUpperCase() : nodeView.object.getName().toLowerCase();
     this.nodeView = nodeView;
 
     // How far away from the node we want the label to begin
@@ -128,7 +128,7 @@ class NodeNameView extends BaseView {
 
   applyPosition () {
     let x;
-    const y = this.nodeView.object.type === 'region' ? 80 : 0;
+    const y = this.nodeView.object.renderer === 'global' ? 80 : 0;
 
     // Prioritize left side if node is left of center, right side if node is right of center
     if (this.nodeView.labelPositionLeft) {
