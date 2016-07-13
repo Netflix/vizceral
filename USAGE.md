@@ -14,13 +14,103 @@ Copyright 2016 Netflix, Inc.
     See the License for the specific language governing permissions and
     limitations under the License.
 
+# rendered
+
+The `rendered` event is fired whenever a graph is rendered.
+
+**Properties**
+
+-   `name` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** the name of the graph that was rendered
+
+# viewChanged
+
+The `viewChanged` event is fired whenever the view changes
+
+**Properties**
+
+-   `view` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** The currently selected view (e.g. \[] for global, ['us-east-1'] for one node deep, ['us-east-1', 'api'] for two nodes deep)
+
+# nodeFocused
+
+The `nodeFocused` event is fired whenever a node gains focus or the currently focused node is updated
+
+**Properties**
+
+-   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node object that has been focused, or the focused node that has been updated.
+
+# nodeContextSizeChanged
+
+The `nodeContextSizeChanged` event is fired whenever the context panel size for node context size changes
+
+**Properties**
+
+-   `dimensions` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The dimensions of the node context panels
+
+# matchesFound
+
+The `matchesFound` event is fired whenever nodes are found via findNodes().
+
+**Properties**
+
+-   `matches` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The matches object { total, visible }
+
+# nodeHighlighted
+
+The `nodeHighlighted` event is fired whenever a node is highlighted.
+
+**Properties**
+
+-   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node object that has been highlighted, or the highlighted node that has been updated.
+
 # constructor
 
 Represents a Vizceral component.
 
 **Parameters**
 
--   `canvas` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)=** The canvas to render the graph onto; if not provided, will create a canvas accessible by this.renderer.domElement
+-   `canvas` **\[[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)]** The canvas to render the graph onto; if not provided, will create a canvas accessible by this.renderer.domElement
+
+# getStyles
+
+Get an array of all possible defined styles
+
+Returns **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** Array of all possible styles
+
+# updateStyles
+
+Update the global styles
+
+**Parameters**
+
+-   `An` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** object map of style names to values
+-   `styles`  
+
+# updateDefinitions
+
+Update the global definitions
+
+**Parameters**
+
+-   `An` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** object map of definitions. See the format and defaults in (DATAFORMATS.md)
+-   `definitions`  
+
+# updateData
+
+Set the new set of traffic data to render. This is expected to be called
+with the complete set of traffic data anytime there is an update.
+
+**Parameters**
+
+-   `data` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The traffic data that matches the format in DATAFORMATS.md
+-   `trafficData`  
+
+# setHighlightedNode
+
+Sets the highlighted node.  If the node is undefined, clears any highlighting.
+
+**Parameters**
+
+-   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node to highlight
 
 # findNodes
 
@@ -32,36 +122,6 @@ of clusters, if nodes have one.
 -   `searchString` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** The string to match against the nodes.
 
 Returns **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** { total, totalMatches, visible, visibleMatches }
-
-# getNode
-
-Get a specific node object
-
-**Parameters**
-
--   `nodeArray` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** e.g. [ node1, node2 ]
-
-# getStyles
-
-Get an array of all possible defined styles
-
-Returns **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** Array of all possible styles
-
-# setFilters
-
-Set the set of filters to apply along with their current values.
-
-**Parameters**
-
--   `filters` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The filters that match the format in DATAFORMATS.md
-
-# setHighlightedNode
-
-Sets the highlighted node.  If the node is undefined, clears any highlighting.
-
-**Parameters**
-
--   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node to highlight
 
 # setView
 
@@ -80,74 +140,31 @@ Ex:
 -   `viewArray` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** the array containing the view to set.
 -   `nodeArray`   (optional, default `[]`)
 
-# updateData
+# setModes
 
-Set the new set of traffic data to render. This is expected to be called
-with the complete set of traffic data anytime there is an update.
-
-**Parameters**
-
--   `data` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The traffic data that matches the format in DATAFORMATS.md
--   `trafficData`  
-
-# updateStyles
-
-Update the global styles
+Set the current modes of vizceral
 
 **Parameters**
 
--   `An` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** object map of style names to values
--   `styles`  
+-   `modes`  
 
 # zoomOutViewLevel
 
 If zoomed into a node or a service, zoom out one level up.
 If in the global view, this is a noop.
 
-# matchesFound
+# getNode
 
-The `matchesFound` event is fired whenever nodes are found via findNodes().
+Get a specific node object
 
-**Properties**
+**Parameters**
 
--   `matches` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The matches object { total, visible }
+-   `nodeArray` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** e.g. [ node1, node2 ]
 
-# nodeContextSizeChanged
+# setFilters
 
-The `nodeContextSizeChanged` event is fired whenever the context panel size for node context size changes
+Set the set of filters to apply along with their current values.
 
-**Properties**
+**Parameters**
 
--   `dimensions` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The dimensions of the node context panels
-
-# nodeFocused
-
-The `nodeFocused` event is fired whenever a node gains focus or the currently focused node is updated
-
-**Properties**
-
--   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node object that has been focused, or the focused node that has been updated.
-
-# nodeHighlighted
-
-The `nodeHighlighted` event is fired whenever a node is highlighted.
-
-**Properties**
-
--   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node object that has been highlighted, or the highlighted node that has been updated.
-
-# rendered
-
-The `rendered` event is fired whenever a graph is rendered.
-
-**Properties**
-
--   `name` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** the name of the graph that was rendered
-
-# viewChanged
-
-The `viewChanged` event is fired whenever the view changes
-
-**Properties**
-
--   `view` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** The currently selected view (e.g. \[] for global, ['us-east-1'] for one node deep, ['us-east-1', 'api'] for two nodes deep)
+-   `filters` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The filters that match the format in DATAFORMATS.md
