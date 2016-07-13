@@ -65,7 +65,7 @@ class ConnectionNoticeView extends BaseView {
     this.connectionView = connectionView;
 
     this.severity = 1;
-    const noticeSize = this.connectionView.object.renderer === 'global' ? 105 : 48;
+    const noticeSize = this.connectionView.object.graphRenderer === 'global' ? 105 : 48;
 
     // Create the canvas to build a sprite
     this.noticeCanvas = this.createCanvas(256, 256);

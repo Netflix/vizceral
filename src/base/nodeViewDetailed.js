@@ -119,7 +119,7 @@ class DetailedNodeView extends NodeView {
     this.meshes.innerBorder.position.setZ(100);
 
     // Add the service name
-    if (this.object.renderer === 'global' && !this.object.isEntryNode()) {
+    if (this.object.graphRenderer === 'global' && !this.object.isEntryNode()) {
       this.nameView = new NodeNameView(this, true);
       this.showLabel(this.object.options.showLabel);
     }
@@ -210,7 +210,7 @@ class DetailedNodeView extends NodeView {
 
   updateDetailedMode () {
     const override = this.object.isEntryNode() ? 'entry' : undefined;
-    const definition = GlobalDefinitions.getDefinition('detailedNode', this.object.detailedMode, this.object.renderer, override);
+    const definition = GlobalDefinitions.getDefinition('detailedNode', this.object.detailedMode, this.object.graphRenderer, override);
     this.detailed = definition;
   }
 

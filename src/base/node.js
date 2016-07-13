@@ -30,7 +30,7 @@ class Node extends GraphObject {
     this.update(node);
     this.minimumNoticeLevel = 0;
 
-    this.renderer = renderer;
+    this.graphRenderer = renderer;
     this.position = this.position || {};
     this.position.x = this.position.x || 0;
     this.position.y = this.position.y || 0;
@@ -190,7 +190,7 @@ class Node extends GraphObject {
       detailed: new NodeViewDetailed(this)
     };
     // Set the default view renderer
-    this.view = this.renderer === 'global' ? this.views.detailed : this.views.standard;
+    this.view = this.graphRenderer === 'global' ? this.views.detailed : this.views.standard;
   }
 
   showNotices () {
@@ -287,8 +287,8 @@ class Node extends GraphObject {
   }
 
   isInteractive () {
-    return (this.renderer === 'global' && !this.isEntryNode())
-      || (this.renderer === 'region' && this.view !== this.views.detailed);
+    return (this.graphRenderer === 'global' && !this.isEntryNode())
+      || (this.graphRenderer === 'region' && this.view !== this.views.detailed);
   }
 
   cleanup () {
