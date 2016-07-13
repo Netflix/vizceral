@@ -21,6 +21,7 @@ import THREE from 'three';
 import TWEEN from 'tween.js';
 import Hammer from 'hammerjs';
 
+import GlobalDefinitions from './globalDefinitions';
 import GlobalStyles from './globalStyles';
 import { NewTrafficGraph } from './trafficGraphFactory';
 import RendererUtils from './rendererUtils';
@@ -144,6 +145,15 @@ class Vizceral extends EventEmitter {
    */
   updateStyles (styles) {
     GlobalStyles.updateStyles(styles);
+  }
+
+  /**
+   * Update the global definitions
+   *
+   * @param {Object} An object map of definitions. See the format and defaults in (DATAFORMATS.md)
+   */
+  updateDefinitions (definitions) {
+    GlobalDefinitions.updateDefinitions(definitions);
   }
 
   _attachGraphHandlers (graph) {
@@ -376,6 +386,23 @@ class Vizceral extends EventEmitter {
     _.each(graph.graphs, subGraph => {
       this.showLabels(subGraph);
     });
+  }
+
+  updateModes (graph) {
+    graph.setModes(this.modes);
+    _.each(graph.graphs, subGraph => {
+      this.updateModes(subGraph);
+    });
+  }
+
+  /**
+   * Set the current modes of vizceral
+   */
+  setModes (modes) {
+    if (!_.isEqual(modes, this.modes)) {
+      this.modes = modes;
+      this.updateModes(this.graphs[this.rootGraphName]);
+    }
   }
 
   setOptions (options) {

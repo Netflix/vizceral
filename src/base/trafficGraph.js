@@ -164,6 +164,11 @@ class TrafficGraph extends EventEmitter {
     if (this.view) { this.view.invalidateInteractiveChildren(); }
   }
 
+  setModes (modes) {
+    _.each(this.nodes, node => node.setModes(modes));
+    if (this.view) { this.view.invalidateInteractiveChildren(); }
+  }
+
   getConnection (sourceName, targetName) {
     return this.connections[`${sourceName}--${targetName}`];
   }

@@ -21,7 +21,6 @@ class RegionNode extends Node {
   constructor (node) {
     super(node, 'region');
     this.loaded = true;
-    this.detailed.volume.top = { header: 'SERVICE RPS', data: 'data.volume' };
   }
 }
 

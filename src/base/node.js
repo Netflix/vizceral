@@ -49,26 +49,12 @@ class Node extends GraphObject {
     };
 
     this.data = {
-      volume: { type: 'number', value: NaN },
-      volumePercent: { type: 'percent', value: 0 },
+      volume: NaN,
+      volumePercent: 0,
       classPercents: {}
     };
 
     this.detailedMode = 'volume'; // 'volume' is default, can be a string that matches a data set in metadata: { details: {} }
-
-    // Add metrics to the midddle
-    this.detailed = {
-      volume: {
-        top: { header: '% RPS', data: 'data.volumePercent' },
-        bottom: { header: 'ERROR RATE', data: 'data.classPercents.danger' },
-        donut: {
-          data: 'data.classPercents',
-          classes: {
-            normal: 'normalDonut'
-          }
-        }
-      }
-    };
   }
 
   addIncomingConnection (connection) {
@@ -234,23 +220,23 @@ class Node extends GraphObject {
       this.invalidatedSinceLastViewUpdate = false;
       const serviceVolume = this.isEntryNode() ? totalVolume : this.getIncomingVolume();
       const serviceVolumePercent = serviceVolume / totalVolume;
-      if (this.data.volume.value !== serviceVolume) {
-        this.data.volume.value = serviceVolume;
+      if (this.data.volume !== serviceVolume) {
+        this.data.volume = serviceVolume;
         updated = true;
       }
       if (!serviceVolume) {
-        this.data.volumePercent.value = 0;
+        this.data.volumePercent = 0;
         _.each(this.data.classPercents, (v, k) => { this.data.classPercents[k] = 0; });
       } else {
-        if (this.data.volumePercent.value !== serviceVolumePercent) {
-          this.data.volumePercent.value = serviceVolumePercent;
+        if (this.data.volumePercent !== serviceVolumePercent) {
+          this.data.volumePercent = serviceVolumePercent;
           updated = true;
         }
         _.each(this.isEntryNode() ? this.outgoingVolume : this.incomingVolume, (volume, key) => {
           const classVolumePercent = volume / serviceVolume;
-          this.data.classPercents[key] = this.data.classPercents[key] || { type: 'percent', value: 0 };
-          if (this.data.classPercents[key].value !== classVolumePercent) {
-            this.data.classPercents[key].value = classVolumePercent;
+          this.data.classPercents[key] = this.data.classPercents[key] || 0;
+          if (this.data.classPercents[key] !== classVolumePercent) {
+            this.data.classPercents[key] = classVolumePercent;
             updated = true;
           }
         });
@@ -278,6 +264,11 @@ class Node extends GraphObject {
         });
       }
     }
+  }
+
+  setModes (modes) {
+    this.detailedMode = modes.detailedNode;
+    if (this.view) { this.view.refresh(); }
   }
 
   connectedTo (nodeName) {

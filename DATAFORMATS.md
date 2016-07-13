@@ -81,3 +81,31 @@ Filters are optional.  Passing this structure to `ele.setFilters(filters)` will 
   }
 ]
 ```
+
+### definitions
+Definitions are optional.  Passing a structure similar to `ele.setDefinitions(definitions)` will add definitions to the component.  Supported defintions are in the example.
+
+```js
+{
+  detailedNode: { // These definitions are for switching what the detailed node shows.
+    volume: { // `volume` is already defined this way internally, but can be updated by passing it in again
+      default: { // default is required
+        top: { header: '% RPS', data: 'data.volumePercent', format: '0.00%' }, // top metric in the detailed node. `header` is the header, `data` is the path to the data to display, `format` is how to format the data using numeral.js.
+        bottom: { header: 'ERROR RATE', data: 'data.classPercents.danger', format: '0.00%' }, // bottom metric in the detailed node
+        donut: { // description of what fills the donut graph around the detailed node
+          data: 'data.classPercents',
+          classes: { // by default, the coloring for the donut slices will map from key in data, but if you want to map it to a different class, override it here.
+            normal: 'normalDonut'
+          }
+        }
+      },
+      region: { // override for the region renderer
+        top: { header: 'SERVICE RPS', data: 'data.volume', format: '0.0' }
+      },
+      entry: { // override for entry nodes
+        top: { header: 'TOTAL RPS', data: 'data.volume', format: '0.0' }
+      }
+    }
+  }
+}
+```

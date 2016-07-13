@@ -22,18 +22,15 @@ class GlobalNode extends Node {
   constructor (node) {
     super(node, 'global');
     this.loaded = this.isEntryNode();
-    if (this.isEntryNode()) {
-      this.detailed.volume.top = { header: 'TOTAL RPS', data: 'data.volume' };
-    }
   }
 
   updateData (totalVolume) {
     const updated = super.updateData(totalVolume);
     if (updated) {
-      const percentGlobal = this.data.volume.value / totalVolume;
+      const percentGlobal = this.data.volume / totalVolume;
       // regenerate global class percents
       _.each(this.data.classPercents, classPercent => {
-        classPercent.value = classPercent.value * percentGlobal;
+        classPercent = classPercent * percentGlobal;
       });
     }
     return updated;

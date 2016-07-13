@@ -20,24 +20,24 @@ import _ from 'lodash';
 import THREE from 'three';
 import numeral from 'numeral';
 
+import GlobalDefinitions from '../globalDefinitions';
 import GlobalStyles from '../globalStyles';
 import NodeView from './nodeView';
 import NodeNameView from './nodeNameView';
 
 const Console = console;
 
-function generateDisplayValue (data) {
-  if (data === undefined) {
-    return '0';
-  }
+function generateDisplayValue (value, format) {
+  value = value || 0;
 
-  if (data.type === 'number') {
-    let num = numeral(data.value).format('0,0');
-    if (__HIDE_DATA__) { num = num.replace(/[0-9]/g, '#'); }
-    return num;
+  let displayValue = value;
+  if (format) { displayValue = numeral(value).format(format); }
+
+  // If we're hiding data, don't need to hide percentages
+  if (__HIDE_DATA__ && displayValue.indexOf('%') === -1) {
+    displayValue = displayValue.replace(/[0-9]/g, '#');
   }
-  if (data.type === 'percent') { return data.value ? numeral(data.value).format('0.00%') : '0.00%'; }
-  return data.value;
+  return displayValue;
 }
 
 const zAxis = new THREE.Vector3(0, 0, 1);
@@ -135,7 +135,7 @@ class DetailedNodeView extends NodeView {
       this.setupLoadingAnimation();
     }
 
-    this.detailed = this.object.detailed[this.object.detailedMode];
+    this.updateDetailedMode();
   }
 
   addText () {
@@ -174,7 +174,7 @@ class DetailedNodeView extends NodeView {
 
       // Draw the first metric to the canvas
       textContext.fillStyle = GlobalStyles.styles.colorTraffic.normal;
-      const topMetricDisplayValue = generateDisplayValue(_.get(this.object, this.detailed.top.data));
+      const topMetricDisplayValue = generateDisplayValue(_.get(this.object, this.detailed.top.data), this.detailed.top.format);
       textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
       top = top + this.metricFontSize / 2;
       textContext.fillText(topMetricDisplayValue, this.textCanvas.width / 2, top);
@@ -189,7 +189,7 @@ class DetailedNodeView extends NodeView {
 
       // Draw the second metric to the canvas
       textContext.fillStyle = GlobalStyles.getColorTraffic(this.object.getClass());
-      const bottomMetricDisplayValue = generateDisplayValue(_.get(this.object, this.detailed.bottom.data));
+      const bottomMetricDisplayValue = generateDisplayValue(_.get(this.object, this.detailed.bottom.data), this.detailed.bottom.format);
       textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
       top = top + this.metricFontSize / 2;
       textContext.fillText(bottomMetricDisplayValue, this.textCanvas.width / 2, top);
@@ -208,6 +208,12 @@ class DetailedNodeView extends NodeView {
     this.textTexture.needsUpdate = true;
   }
 
+  updateDetailedMode () {
+    const override = this.object.isEntryNode() ? 'entry' : undefined;
+    const definition = GlobalDefinitions.getDefinition('detailedNode', this.object.detailedMode, this.object.renderer, override);
+    this.detailed = definition;
+  }
+
   updateDonutGraph () {
     if (this.loaded) {
       // Remove the old donut segments
@@ -219,7 +225,7 @@ class DetailedNodeView extends NodeView {
       const donutData = _.get(this.object, this.detailed.donut.data, undefined);
       _.each(donutData, (classPercent, key) => {
         const colorKey = _.get(this.detailed, ['donut', 'classes', key], key);
-        this.addNewDonutSlice(classPercent.value, GlobalStyles.getColorTraffic(colorKey));
+        this.addNewDonutSlice(classPercent, GlobalStyles.getColorTraffic(colorKey));
       });
     }
   }
@@ -268,6 +274,7 @@ class DetailedNodeView extends NodeView {
   }
 
   refresh () {
+    this.updateDetailedMode();
     super.refresh();
     this.updateText();
     this.updateDonutGraph();
