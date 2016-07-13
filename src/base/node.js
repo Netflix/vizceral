@@ -168,9 +168,6 @@ class Node extends GraphObject {
   }
 
   getClass () {
-    if (this.class === undefined) {
-      Console.warn(`Node ${this.name} does not have a class, returning 'normal'.`);
-    }
     return this.class || 'normal';
   }
 
