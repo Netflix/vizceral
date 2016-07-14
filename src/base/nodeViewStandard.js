@@ -50,7 +50,7 @@ class NodeViewStandard extends NodeView {
     super(service);
     this.radius = radius;
 
-    const dotColor = GlobalStyles.threeStyles.colorTraffic[this.object.getClass()];
+    const dotColor = GlobalStyles.getColorTrafficThree(this.object.getClass());
     this.dotMaterial = new THREE.MeshBasicMaterial({ color: dotColor, transparent: true });
 
     this.meshes.outerBorder = this.addChildElement(outerBorderGeometry, this.borderMaterial);
@@ -86,7 +86,7 @@ class NodeViewStandard extends NodeView {
     if (this.highlight) {
       this.dotMaterial.color.set(this.donutInternalColor);
     } else {
-      this.dotMaterial.color.set(GlobalStyles.threeStyles.colorTraffic[nodeClass]);
+      this.dotMaterial.color.set(GlobalStyles.getColorTrafficThree(nodeClass));
     }
     this.meshes.noticeDot.geometry.colorsNeedUpdate = true;
 

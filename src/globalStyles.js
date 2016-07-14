@@ -56,6 +56,15 @@ class GlobalStyles {
     return color;
   }
 
+  getColorTrafficThree (key, highlighted) {
+    const color = highlighted ? this.threeStyles.colorTrafficHighlighted[key] : this.threeStyles.colorTraffic[key];
+    if (!color) {
+      Console.warn(`Attempted to get a computed three.js color for key '${key}', but does not exist. Returned three.js color for key 'normal' instead`);
+      return highlighted ? this.threeStyles.colorTrafficHighlighted.normal : this.threeStyles.colorTraffic.normal;
+    }
+    return color;
+  }
+
   updateStyles (styles) {
     _.merge(this.styles, styles);
     this.updateComputedStyles();

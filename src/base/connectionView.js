@@ -300,7 +300,7 @@ class ConnectionView extends BaseView {
       for (const index in this.object.volumePercentKeysSorted) { // eslint-disable-line no-restricted-syntax, guard-for-in
         const key = this.object.volumePercentKeysSorted[index];
         if (this.object.volumePercent[key] > rand) {
-          color = GlobalStyles.threeStyles.colorTraffic[key];
+          color = GlobalStyles.getColorTrafficThree(key);
           break;
         }
       }

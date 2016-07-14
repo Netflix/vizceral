@@ -32,7 +32,7 @@ class NodeView extends BaseView {
 
     this.donutInternalColor = GlobalStyles.threeStyles.colorDonutInternalColor.clone();
 
-    const borderColor = GlobalStyles.threeStyles.colorTraffic[node.getClass()];
+    const borderColor = GlobalStyles.getColorTrafficThree(node.getClass());
     this.borderMaterial = new THREE.MeshBasicMaterial({ color: borderColor, transparent: true });
     this.innerCircleMaterial = new THREE.MeshBasicMaterial({ color: this.donutInternalColor, transparent: true });
   }
@@ -81,9 +81,9 @@ class NodeView extends BaseView {
     // Refresh class
     const nodeClass = this.object.getClass();
     if (this.highlight) {
-      this.innerCircleMaterial.color.set(GlobalStyles.threeStyles.colorTrafficHighlighted[nodeClass]);
+      this.innerCircleMaterial.color.set(GlobalStyles.getColorTrafficThree(nodeClass, true));
       this.meshes.innerCircle.geometry.colorsNeedUpdate = true;
-      this.borderMaterial.color.set(GlobalStyles.threeStyles.colorTrafficHighlighted[nodeClass]);
+      this.borderMaterial.color.set(GlobalStyles.getColorTrafficThree(nodeClass, true));
       this.meshes.outerBorder.geometry.colorsNeedUpdate = true;
       if (this.meshes.innerBorder) { this.meshes.innerBorder.geometry.colorsNeedUpdate = true; }
     } else {
@@ -91,7 +91,7 @@ class NodeView extends BaseView {
         this.innerCircleMaterial.color.set(this.donutInternalColor);
         this.meshes.innerCircle.geometry.colorsNeedUpdate = true;
       }
-      this.borderMaterial.color.set(GlobalStyles.threeStyles.colorTraffic[nodeClass]);
+      this.borderMaterial.color.set(GlobalStyles.getColorTrafficThree(nodeClass));
       this.meshes.outerBorder.geometry.colorsNeedUpdate = true;
       if (this.meshes.innerBorder) { this.meshes.innerBorder.geometry.colorsNeedUpdate = true; }
     }
