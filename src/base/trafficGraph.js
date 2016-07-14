@@ -19,7 +19,7 @@ import _ from 'lodash';
 import EventEmitter from 'events';
 import TWEEN from 'tween.js';
 
-import LayoutWorker from 'worker?inline!./layoutWorker';
+import LayoutWorker from 'worker?inline!./layoutWorker'; // eslint-disable-line import/no-extraneous-dependencies
 import Notices from '../notices';
 import TrafficGraphView from './trafficGraphView';
 
@@ -256,9 +256,7 @@ class TrafficGraph extends EventEmitter {
         connection.valid = false;
       });
 
-      let receivedConnections = 0;
       _.each(state.connections, stateConnection => {
-        receivedConnections++;
         let connection = this.getConnection(stateConnection.source, stateConnection.target);
         if (connection) {
           connection.update(stateConnection);

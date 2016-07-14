@@ -22,8 +22,6 @@ import NodeViewStandard from './nodeViewStandard';
 import NodeViewDetailed from './nodeViewDetailed';
 import Notices from '../notices';
 
-const Console = console;
-
 class Node extends GraphObject {
   constructor (node, renderer) {
     super();

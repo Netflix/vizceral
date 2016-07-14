@@ -85,11 +85,11 @@ class RendererUtils {
       x = vector.x;
       y = vector.y;
     } else if (anchorPoint === 'TL') {
-      x = vector.x - objectWidth / 2;
-      y = vector.y - objectHeight / 2;
+      x = vector.x - (objectWidth / 2);
+      y = vector.y - (objectHeight / 2);
     } else if (anchorPoint === 'BL') {
-      x = vector.x - objectWidth / 2;
-      y = vector.y + objectHeight / 2;
+      x = vector.x - (objectWidth / 2);
+      y = vector.y + (objectHeight / 2);
     }
 
     return {

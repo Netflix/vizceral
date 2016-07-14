@@ -71,9 +71,7 @@ class Connection extends GraphObject {
       return acc;
     }, {});
 
-    this.volumePercentKeysSorted = _.sortBy(Object.keys(this.volumePercent), key => {
-      return this.volumePercent[key];
-    });
+    this.volumePercentKeysSorted = _.sortBy(Object.keys(this.volumePercent), key => this.volumePercent[key]);
 
     // Invalidate the volumes on the nodes themselves
     this.source.invalidateOutgoingVolume();

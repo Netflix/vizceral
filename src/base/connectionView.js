@@ -29,7 +29,7 @@ import * as Constants from './constants';
 // Preload textures
 const loader = new THREE.TextureLoader();
 // Preload the particle texture
-const particle = require('url!./particleD.png');
+const particle = require('url!./particleD.png'); // eslint-disable-line import/no-extraneous-dependencies
 let particleTexture;
 loader.load(particle, texture => { particleTexture = texture; });
 
@@ -111,7 +111,7 @@ class ConnectionView extends BaseView {
     this.shaderMaterial.uniforms = this.uniforms;
 
     const connectionWidth = Math.min(this.object.source.getView().radius, this.object.target.getView().radius) * 0.45;
-    const connectionDepth = Math.min(connection.source.getView().getDepth(), connection.target.getView().getDepth()) / 2 - 2;
+    const connectionDepth = Math.min(connection.source.getView().getDepth(), (connection.target.getView().getDepth()) / 2) - 2;
 
     this.geometry = new THREE.BufferGeometry();
 
@@ -128,8 +128,8 @@ class ConnectionView extends BaseView {
     for (let i = 0; i < this.maxParticles; i++) {
       // Position
       vertices[i * 3] = 0;
-      vertices[i * 3 + 1] = customWidth ? connectionWidth - normalDistribution() * connectionWidth * 2 : 1;
-      vertices[i * 3 + 2] = customWidth ? connectionDepth - normalDistribution() * connectionDepth * 2 : -2;
+      vertices[(i * 3) + 1] = customWidth ? connectionWidth - (normalDistribution() * connectionWidth * 2) : 1;
+      vertices[(i * 3) + 2] = customWidth ? connectionDepth - (normalDistribution() * connectionDepth * 2) : -2;
 
       // Custom colors
       customColors[i] = GlobalStyles.threeStyles.colorTraffic.normal.r;
@@ -138,7 +138,7 @@ class ConnectionView extends BaseView {
 
       customOpacities[i] = 0;
       sizes[i] = 6;
-      this.velocity[i * 3] = 3 + Math.random() * 2;
+      this.velocity[i * 3] = 3 + (Math.random() * 2);
     }
 
     this.geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
@@ -251,7 +251,7 @@ class ConnectionView extends BaseView {
     // required.  Fractional multipliers have to use a randomized array of 0/1
     // that iterates each update loop to launch the particles.
     this.particleMultiplierArray = Array(100).fill(0);
-    const particleMultiplierFraction = Math.floor(this.particleMultiplier % 1 * 100);
+    const particleMultiplierFraction = Math.floor((this.particleMultiplier % 1) * 100);
     if (particleMultiplierFraction !== 0) {
       this.particleMultiplierArray = shuffle(this.particleMultiplierArray.fill(1, 0, particleMultiplierFraction));
       this.particleMultiplier = Math.floor(this.particleMultiplier);

@@ -27,9 +27,10 @@ const orbitSize = 1100;
 function updatePosition (node, regionCount, regionIndex) {
   node.size = 120;
   const adjust = 2.618;
+  const adjustment = (((2 * Math.PI) * regionIndex) / regionCount) + adjust;
   node.position = {
-    x: orbitSize / 2 * Math.cos(2 * Math.PI * regionIndex / regionCount + adjust),
-    y: orbitSize / 2 * Math.sin(2 * Math.PI * regionIndex / regionCount + adjust) + yOffset
+    x: ((orbitSize / 2) * Math.cos(adjustment)),
+    y: ((orbitSize / 2) * Math.sin(adjustment)) + yOffset
   };
 }
 

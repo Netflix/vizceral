@@ -524,8 +524,8 @@ class Vizceral extends EventEmitter {
         enteringScale: 0
       };
       const parametersTo = {
-        exitingX: 0 - entryPosition.x * 10,
-        exitingY: 0 - entryPosition.y * 10,
+        exitingX: 0 - (entryPosition.x * 10),
+        exitingY: 0 - (entryPosition.y * 10),
         enteringX: 0,
         enteringY: 0,
         exitingScale: 10,
@@ -547,8 +547,8 @@ class Vizceral extends EventEmitter {
       fromGraph.setFocusedNode(undefined);
 
       const parametersFrom = {
-        enteringX: 0 - entryPosition.x * 10,
-        enteringY: 0 - entryPosition.y * 10,
+        enteringX: 0 - (entryPosition.x * 10),
+        enteringY: 0 - (entryPosition.y * 10),
         enteringScale: 10,
         exitingX: fromGraph.view.container.position.x,
         exitingY: fromGraph.view.container.position.y,
@@ -602,8 +602,8 @@ class Vizceral extends EventEmitter {
   }
 
   updateMousePosition (x, y) {
-    this.mouse.x = ((x - this.boundingRect.left) / this.renderer.domElement.width) * 2 - 1;
-    this.mouse.y = -((y - this.boundingRect.top) / this.renderer.domElement.height) * 2 + 1;
+    this.mouse.x = (((x - this.boundingRect.left) / this.renderer.domElement.width) * 2) - 1;
+    this.mouse.y = -(((y - this.boundingRect.top) / this.renderer.domElement.height) * 2) + 1;
   }
 
   onDocumentMouseMove (event) {

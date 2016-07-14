@@ -15,10 +15,10 @@
  *     limitations under the License.
  *
  */
-import GlobalStyles from '../globalStyles';
 import THREE from 'three';
 
 import BaseView from './baseView';
+import GlobalStyles from '../globalStyles';
 
 function roundRect (context, x, y, w, h, radius, strokeColor, fillColor) {
   const r = x + w;
@@ -29,7 +29,7 @@ function roundRect (context, x, y, w, h, radius, strokeColor, fillColor) {
   context.moveTo(x + radius, y);
   context.lineTo(r - radius, y);
   context.quadraticCurveTo(r, y, r, y + radius);
-  context.lineTo(r, y + h - radius);
+  context.lineTo(r, (y + h) - radius);
   context.quadraticCurveTo(r, b, r - radius, b);
   context.lineTo(x + radius, b);
   context.quadraticCurveTo(x, b, x, b - radius);
@@ -133,10 +133,10 @@ class NodeNameView extends BaseView {
     // Prioritize left side if node is left of center, right side if node is right of center
     if (this.nodeView.labelPositionLeft) {
       // Put the label to the left of the node
-      x = 0 - this.nodeView.radius - this.labelWidth / 2 - this.buffer;
+      x = 0 - this.nodeView.radius - (this.labelWidth / 2) - this.buffer;
     } else {
       // Put the label to the right of the node
-      x = this.nodeView.radius + this.labelWidth / 2 + this.buffer;
+      x = this.nodeView.radius + (this.labelWidth / 2) + this.buffer;
     }
 
     this.container.position.set(x, y, 1);

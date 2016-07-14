@@ -15,7 +15,6 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
 import chroma from 'chroma-js';
 
 import THREE from 'three';

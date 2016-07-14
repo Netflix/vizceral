@@ -168,37 +168,37 @@ class DetailedNodeView extends NodeView {
       // Draw the first header to the canvas
       textContext.fillStyle = GlobalStyles.styles.colorNormalDimmed;
       textContext.font = `${headerWeight} ${this.headerFontSize}px 'Source Sans Pro', sans-serif`;
-      top = top + this.headerFontSize / 2;
+      top = top + (this.headerFontSize / 2);
       textContext.fillText(this.detailed.top.header, this.textCanvas.width / 2, top);
-      top = top + this.headerFontSize / 2;
+      top = top + (this.headerFontSize / 2);
 
       // Draw the first metric to the canvas
       textContext.fillStyle = GlobalStyles.styles.colorTraffic.normal;
       const topMetricDisplayValue = generateDisplayValue(_.get(this.object, this.detailed.top.data), this.detailed.top.format);
       textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
-      top = top + this.metricFontSize / 2;
+      top = top + (this.metricFontSize / 2);
       textContext.fillText(topMetricDisplayValue, this.textCanvas.width / 2, top);
-      top = top + this.metricFontSize / 2;
+      top = top + (this.metricFontSize / 2);
 
       // Draw the second header to the canvas
       textContext.fillStyle = GlobalStyles.styles.colorNormalDimmed;
       textContext.font = `${headerWeight} ${this.headerFontSize}px 'Source Sans Pro', sans-serif`;
-      top = top + this.metricSpacing + this.headerFontSize / 2;
+      top = top + this.metricSpacing + (this.headerFontSize / 2);
       textContext.fillText(this.detailed.bottom.header, this.textCanvas.width / 2, top);
-      top = top + this.headerFontSize / 2;
+      top = top + (this.headerFontSize / 2);
 
       // Draw the second metric to the canvas
       textContext.fillStyle = GlobalStyles.getColorTraffic(this.object.getClass());
       const bottomMetricDisplayValue = generateDisplayValue(_.get(this.object, this.detailed.bottom.data), this.detailed.bottom.format);
       textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
-      top = top + this.metricFontSize / 2;
+      top = top + (this.metricFontSize / 2);
       textContext.fillText(bottomMetricDisplayValue, this.textCanvas.width / 2, top);
-      top = top + this.metricFontSize / 2;
+      top = top + (this.metricFontSize / 2);
     } else {
       // The node is still loading so show a loading message
       textContext.fillStyle = GlobalStyles.styles.colorTraffic.normal;
       textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
-      top = (this.canvasHeight / 2) - (((this.metricFontSize * 2)) / 2) + 16;
+      top = ((this.canvasHeight / 2) - (((this.metricFontSize * 2)) / 2)) + 16;
       textContext.fillText('REGION', this.textCanvas.width / 2, top);
       top = top + this.metricSpacing + this.headerFontSize;
       textContext.fillText('LOADING', this.textCanvas.width / 2, top);
