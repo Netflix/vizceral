@@ -27,8 +27,8 @@ Otherwise, to integrate it from scratch:
 2.  Start using the component
 
     ```js
-    import vizceral from 'vizceral';
-    const viz = new Vizceral(1024, 768);
+    import Vizceral from 'vizceral';
+    const viz = new Vizceral();
 
     // Add event handlers for the vizceral events
     viz.on('viewChanged', view => {});
@@ -38,25 +38,22 @@ Otherwise, to integrate it from scratch:
 
     // Sample data
     viz.updateData({
-      regions: {
-        'us-west-2': {
-          updated: 1462471847,
-          maxVolume: 200,
-          nodes: [
-            { name: 'INTERNET' },
-            { name: 'service' }
-          ],
-          connections: [
-            {
-              source: 'INTERNET',
-              target: 'service',
-              metrics: { total: 100, success: 95, error: 5 },
-              streaming: 1
-            }
-          ]
+      name: 'us-west-2',
+      renderer: 'global',
+      nodes: [
+        {name: 'INTERNET'},
+        {name: 'service'}
+      ],
+      connections: [
+        {
+          source: 'INTERNET',
+          target: 'service',
+          metrics: { normal: 100, warning: 95, danger: 5 },
+          metadata: { streaming: true }
         }
-      }
+      ]
     });
+    viz.setView();
     viz.animate();
 
     ```
@@ -73,7 +70,7 @@ The component uses a map of variables to set all the styles. You may override an
 
 ```js
 import Vizceral from 'vizceral';
-const vizceral = new Vizceral(1024, 768);
+const vizceral = new Vizceral();
 vizceral.updateStyles({
   colorText: 'rgb(214, 214, 214)',
   colorTextDisabled: 'rgb(129, 129, 129)',
