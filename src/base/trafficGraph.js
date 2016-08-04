@@ -226,12 +226,14 @@ class TrafficGraph extends EventEmitter {
         result[node.name] = true;
         return result;
       }, {});
+      const nodesToRemove = [];
       _.each(this.nodes, (node, nodeName) => {
-        if (!newStateNodes[nodeName]) {
-          this.removeNode(node);
-          layoutModified = true;
-        }
+        if (!newStateNodes[nodeName]) { nodesToRemove.push(node); }
       });
+      if (nodesToRemove.length > 0) {
+        nodesToRemove.forEach(node => this.removeNode(node));
+        layoutModified = true;
+      }
 
       const stateNodeMap = {};
       // Then create new nodes and update existing nodes. New nodes need to be
@@ -291,26 +293,36 @@ class TrafficGraph extends EventEmitter {
 
       // Remove all connections that aren't valid anymore and update the
       // greatest volume of the existing connections
+      const connectionsToRemove = [];
       _.each(this.connections, connection => {
         if (!connection.valid) {
-          this.removeConnection(connection);
-          layoutModified = true;
+          connectionsToRemove.push(connection);
         } else {
           connection.updateGreatestVolume(this.volume.max);
         }
       });
+      if (connectionsToRemove.length > 0) {
+        connectionsToRemove.forEach(connection => this.removeConnection(connection));
+        layoutModified = true;
+      }
 
+      const nodesToRemoveSecondPass = [];
       _.each(this.nodes, node => {
         if (!stateNodeMap[node.name] && !node.hold) {
           // Remove all the nodes that are not in new state
-          this.removeNode(node);
-          layoutModified = true;
+          nodesToRemoveSecondPass.push(node);
         } else {
           // Update the data on all the existing nodes
           node.updateVolume(this.volume.current);
         }
       });
+      if (nodesToRemoveSecondPass.length > 0) {
+        nodesToRemoveSecondPass.forEach(node => this.removeNode(node));
+        layoutModified = true;
+      }
 
+
+      // Invalidate all the interactive children so we do not interact with objects that no longer exist
       if (this.view) {
         this.view.invalidateInteractiveChildren();
       }
