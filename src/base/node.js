@@ -68,14 +68,14 @@ class Node extends GraphObject {
   }
 
   removeIncomingConnection (connection) {
-    this.incomingConnections = _.remove(this.incomingConnections, incomingConnection => incomingConnection.name === connection.name);
+    _.remove(this.incomingConnections, incomingConnection => incomingConnection.name === connection.name);
     if (this.incomingConnections.length === 0 && this.outgoingConnections.length === 0) {
       this.connected = false;
     }
   }
 
   removeOutgoingConnection (connection) {
-    this.outgoingConnections = _.remove(this.outgoingConnections, outgoingConnection => outgoingConnection.name === connection.name);
+    _.remove(this.outgoingConnections, outgoingConnection => outgoingConnection.name === connection.name);
     if (this.incomingConnections.length === 0 && this.outgoingConnections.length === 0) {
       this.connected = false;
     }
