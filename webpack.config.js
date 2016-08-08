@@ -1,11 +1,17 @@
 /* eslint no-var:0 */
 var webpack = require('webpack');
+var yargs = require('yargs');
 
-module.exports = {
+var options = yargs
+  .alias('p', 'optimize-minimize')
+  .alias('d', 'debug')
+  .argv;
+
+var config = {
   entry: './src/vizceral.js',
   output: {
     path: './dist',
-    filename: 'vizceral.js',
+    filename: options.optimizeMinimize ? 'vizceral.min.js' : 'vizceral.js',
     library: 'Vizceral',
     libraryTarget: 'umd'
   },
@@ -13,8 +19,8 @@ module.exports = {
     loaders: [
       {
         test: /\.js$/,
+        loader: 'babel',
         exclude: /node_modules/,
-        loader: 'babel'
       },
       { test: /\.woff2?$/, loader: 'url?limit=10000&mimetype=application/font-woff' },
       { test: /\.otf$/, loader: 'file' },
@@ -32,3 +38,9 @@ module.exports = {
     }),
   ]
 };
+
+if (!options.optimizeMinimize) {
+  config.devtool = 'source-map';
+}
+
+module.exports = config;
