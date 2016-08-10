@@ -93,8 +93,8 @@ class TrafficGraph extends EventEmitter {
     // Check if the node exists by direct name first
     if (this.nodes[nodeName]) { return this.nodes[nodeName]; }
 
-    // Then check by exact matching cluster name
-    const nodes = _.filter(this.nodes, node => _.includes(node.clusters, nodeName));
+    // Then check by exact matching sub node name
+    const nodes = _.filter(this.nodes, node => _.includes(node.nodes.map(n => n.name), nodeName));
     return nodes[0] || this.nodes[nodeName];
   }
 
@@ -124,8 +124,8 @@ class TrafficGraph extends EventEmitter {
       let targetString;
       const nodes = _.filter(this.nodes, node => {
         targetString = node.getName();
-        if (node.clusters) {
-          targetString += `::${node.clusters.join('::')}`;
+        if (node.nodes) {
+          targetString += `::${node.nodes.map(n => n.name).join('::')}`;
         }
         const match = (node === this.highlightedNode || targetString.indexOf(searchString) !== -1);
         if (match && !node.hidden) {

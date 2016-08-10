@@ -115,7 +115,7 @@ Sets the highlighted node.  If the node is undefined, clears any highlighting.
 # findNodes
 
 Highlight nodes that match searchString.  Searches the node name and the list
-of clusters, if nodes have one.
+of sub nodes, if nodes have one.
 
 **Parameters**
 

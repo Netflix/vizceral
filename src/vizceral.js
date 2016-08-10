@@ -166,7 +166,7 @@ class Vizceral extends EventEmitter {
 
   createAndUpdateGraphs (graphData, baseGraphObject) {
     let graphCreated = false;
-    if (graphData && graphData.nodes && graphData.nodes.length > 0) {
+    if (graphData && graphData.renderer && graphData.nodes && graphData.nodes.length > 0) {
       if (!graphData.name) {
         Console.log('Attempted to create a new graph that does not have a name');
         return graphCreated;
@@ -226,7 +226,7 @@ class Vizceral extends EventEmitter {
 
   /**
    * Highlight nodes that match searchString.  Searches the node name and the list
-   * of clusters, if nodes have one.
+   * of sub nodes, if nodes have one.
    *
    * @param {string} searchString - The string to match against the nodes.
    *
