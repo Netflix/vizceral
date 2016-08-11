@@ -319,6 +319,7 @@ class Vizceral extends EventEmitter {
    * ['us-east-1', 'api'] - show the view for the api node in the us-east-1 graph if it exists
    *
    * @param {array} viewArray - the array containing the view to set.
+   * @param {string} nodeToHighlight - a node to set as highlighted in the current viewArray
    */
   setView (nodeArray = [], nodeToHighlight) {
     // If nothing has been selected yet, it's the initial node

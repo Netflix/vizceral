@@ -139,6 +139,7 @@ Ex:
 
 -   `viewArray` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** the array containing the view to set.
 -   `nodeArray`   (optional, default `[]`)
+-   `nodeToHighlight` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** a node to set as highlighted in the current viewArray
 
 # setModes
 
