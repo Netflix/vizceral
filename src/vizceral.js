@@ -204,9 +204,9 @@ class Vizceral extends EventEmitter {
       const newGraphs = this.createAndUpdateGraphs(trafficData, this.graphs);
 
       // Now that the initial data is loaded, check if we can set the initial node
-      const nodeArray = this.checkInitialNode();
-      if (nodeArray) {
-        this.setView(nodeArray);
+      const initialView = this.checkInitialView();
+      if (initialView.view) {
+        this.setView(initialView.view, initialView.highlighted);
       }
 
       if (newGraphs) {
@@ -261,8 +261,12 @@ class Vizceral extends EventEmitter {
     this.currentGraph.handleIntersectedObjectDoubleClick();
   }
 
-  checkInitialNode () {
-    let initialNodeArray;
+  checkInitialView () {
+    const initialView = {
+      view: undefined,
+      highlighted: this.initialNodeToHighlight
+    };
+
     // If there is an initial node to set and there is not a current selected node
     if (this.initialNode && !this.currentView) {
       const topLevelNode = this.initialNode && this.initialNode[0];
@@ -276,30 +280,30 @@ class Vizceral extends EventEmitter {
           if (topLevelNode && this.graphs[this.rootGraphName].graphs[topLevelNode]) {
             // If a node name was not passed in...
             if (!nodeName) {
-              initialNodeArray = [topLevelNode];
+              initialView.view = [topLevelNode];
             } else if (this.graphs[this.rootGraphName].graphs[topLevelNode].isPopulated()) {
               // Is there data loaded for the specified topLevelNode?
               // TODO: Get multiple matches and set filters if there are multiple?
               const node = this.graphs[this.rootGraphName].graphs[topLevelNode].getNode(nodeName);
               // if a node was matched, navigate to the node
               if (node) {
-                initialNodeArray = [topLevelNode, node.name];
+                initialView.view = [topLevelNode, node.name];
               } else {
                 // Navigate to the topLevelNode since the node was not found.
-                initialNodeArray = [topLevelNode];
+                initialView.view = [topLevelNode];
               }
             }
           } else {
-            initialNodeArray = [];
+            initialView.view = [];
           }
         } else {
           // Load the global view
-          initialNodeArray = [];
+          initialView.view = [];
         }
       }
     }
 
-    return initialNodeArray;
+    return initialView;
     // TODO: else, set a timeout for waiting...?
   }
 
@@ -316,12 +320,15 @@ class Vizceral extends EventEmitter {
    *
    * @param {array} viewArray - the array containing the view to set.
    */
-  setView (nodeArray = []) {
+  setView (nodeArray = [], nodeToHighlight) {
     // If nothing has been selected yet, it's the initial node
     if (!this.currentView) {
       this.initialNode = nodeArray;
-      nodeArray = this.checkInitialNode();
-      if (!nodeArray) { return; }
+      this.initialNodeToHighlight = nodeToHighlight;
+      const initialView = this.checkInitialView();
+      if (!initialView.view) { return; }
+      nodeArray = initialView.view;
+      nodeToHighlight = initialView.highlighted;
     }
 
     let newTopLevelNode = nodeArray[0];
@@ -339,13 +346,25 @@ class Vizceral extends EventEmitter {
         viewChanged = true;
       }
 
-      // Check if node exists
+      // Check if second node exists (or sub-node name matches)
       const newNode = topLevelNodeGraph.getNode(newSecondLevelNode);
       newSecondLevelNode = newNode ? newNode.name : undefined;
 
       if (topLevelNodeGraph.nodeName !== newSecondLevelNode) {
         topLevelNodeGraph.setFocusedNode(newSecondLevelNode);
         viewChanged = true;
+      }
+
+      // If passed in a node to highlight, try to highlight.
+      if (!newSecondLevelNode) {
+        if (nodeToHighlight) {
+          const node = topLevelNodeGraph.getNode(nodeToHighlight);
+          if (node) {
+            topLevelNodeGraph.highlightNode(node);
+          }
+        } else if (topLevelNodeGraph.highlightedNode) {
+          topLevelNodeGraph.highlightNode();
+        }
       }
 
       // If switching to the top level node view from the global view, animate in
