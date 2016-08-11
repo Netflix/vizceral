@@ -29,13 +29,15 @@ class Notices {
       return;
     }
 
-    const noticeListElement = noticeElement.firstChild;
     const screenPosition = RendererUtils.toScreenPosition(container, 'TL');
 
     // Clear any old notices
-    while (noticeListElement.hasChildNodes()) {
-      noticeListElement.removeChild(noticeListElement.lastChild);
+    while (noticeElement.hasChildNodes()) {
+      noticeElement.removeChild(noticeElement.lastChild);
     }
+
+    // Create the notices list
+    const noticeListElement = document.createElement('ul');
 
     // Add new notices to the notice box
     _.each(notices, notice => {
@@ -55,6 +57,7 @@ class Notices {
     });
 
     // Size and position the notices
+    noticeElement.appendChild(noticeListElement);
     noticeElement.style.display = 'block';
     noticeElement.style.top = `${screenPosition.y - (noticeElement.offsetHeight || 0)}px`;
     noticeElement.style.left = `${screenPosition.x}px`;
