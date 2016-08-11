@@ -579,22 +579,18 @@ class TrafficGraph extends EventEmitter {
     let view;
     const dimChanged = [];
     _.each(dimNodes, (dimmed, nodeName) => {
-      if (this.nodes.hasOwnProperty(nodeName)) {
-        if (this.nodes[nodeName].view) {
-          view = this.nodes[nodeName].getView();
-          changed = view.setDimmed(dimmed, dimmingApplied);
-          if (changed) { dimChanged.push(view); }
-        }
+      if (this.nodes[nodeName] && this.nodes[nodeName].isVisible()) {
+        view = this.nodes[nodeName].getView();
+        changed = view.setDimmed(dimmed, dimmingApplied);
+        if (changed) { dimChanged.push(view); }
       }
     });
 
     _.each(dimConnections, (dimmed, connectionName) => {
-      if (this.connections.hasOwnProperty(connectionName)) {
-        if (this.connections[connectionName].view) {
-          view = this.connections[connectionName].getView();
-          changed = view.setDimmed(dimmed, dimmingApplied);
-          if (changed) { dimChanged.push(view); }
-        }
+      if (this.connections[connectionName] && this.connections[connectionName].isVisible()) {
+        view = this.connections[connectionName].getView();
+        changed = view.setDimmed(dimmed, dimmingApplied);
+        if (changed) { dimChanged.push(view); }
       }
     });
 
