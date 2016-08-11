@@ -19,12 +19,18 @@ import _ from 'lodash';
 
 import RendererUtils from './rendererUtils';
 
+const Console = console;
+
 class Notices {
   showNotices (container, notices) {
-    const noticeElement = RendererUtils.getParent().querySelector('.connection-notice');
+    const noticeElement = RendererUtils.getParent().querySelector('.vizceral-notice');
+    if (!noticeElement) {
+      Console.warn('Notices are present on a connection, but there is no sibling element with a class of .vizceral-notice.');
+      return;
+    }
+
     const noticeListElement = noticeElement.firstChild;
     const screenPosition = RendererUtils.toScreenPosition(container, 'TL');
-    // TODO: If top middle doesn't provide enough room, get the bottom middle of this object...
 
     // Clear any old notices
     while (noticeListElement.hasChildNodes()) {
@@ -55,8 +61,10 @@ class Notices {
   }
 
   hideNotices () {
-    const noticeElement = RendererUtils.getParent().querySelector('.connection-notice');
-    noticeElement.style.display = 'none';
+    const noticeElement = RendererUtils.getParent().querySelector('.vizceral-notice');
+    if (noticeElement) {
+      noticeElement.style.display = 'none';
+    }
   }
 }
 

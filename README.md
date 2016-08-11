@@ -95,7 +95,12 @@ vizceral.updateStyles({
 
 Since the main underlying rendering is done via three.js, the component needed an easy way to use the same values for CSS and JS variables.
 
+## Notices
+
+Vizceral supports showing notices on connections and nodes.  If you want to use this feature, a DOM element with a class of `vizceral-notice` will have to be provided as a sibling to the vizceral canvas.
+
 ## API
+
 View [USAGE.md](./USAGE.md)
 
 ## Developing Locally
