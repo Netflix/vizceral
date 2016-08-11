@@ -96,8 +96,9 @@ class TrafficGraph extends EventEmitter {
     // Then check by exact matching sub node name
     const nodes = _.filter(this.nodes, node => {
       if (node.nodes) {
-        _.includes(node.nodes.map(n => n.name), nodeName);
+        return _.includes(node.nodes.map(n => n.name), nodeName);
       }
+      return false;
     });
     return nodes[0];
   }
