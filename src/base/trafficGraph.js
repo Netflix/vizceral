@@ -99,7 +99,7 @@ class TrafficGraph extends EventEmitter {
         _.includes(node.nodes.map(n => n.name), nodeName);
       }
     });
-    return nodes[0] || this.nodes[nodeName];
+    return nodes[0];
   }
 
   highlightMatchedNodes (searchString) {
