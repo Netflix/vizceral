@@ -72,7 +72,11 @@ class NodeViewStandard extends NodeView {
 
   refreshNotices () {
     if (this.object.hasNotices()) {
+      const noticeSeverity = this.object.highestNoticeLevel();
+      this.dotColor = GlobalStyles.getColorSeverityThree(noticeSeverity);
+      this.dotMaterial.color.set(this.dotColor);
       this.dotMaterial.opacity = this.opacity;
+      this.meshes.noticeDot.geometry.colorsNeedUpdate = true;
     } else {
       this.dotMaterial.opacity = 0;
     }
@@ -82,11 +86,10 @@ class NodeViewStandard extends NodeView {
     super.refresh();
 
     // Refresh severity
-    const nodeClass = this.object.getClass();
     if (this.highlight) {
       this.dotMaterial.color.set(this.donutInternalColor);
     } else {
-      this.dotMaterial.color.set(GlobalStyles.getColorTrafficThree(nodeClass));
+      this.dotMaterial.color.set(this.dotColor);
     }
     this.meshes.noticeDot.geometry.colorsNeedUpdate = true;
 

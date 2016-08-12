@@ -65,6 +65,14 @@ class GlobalStyles {
     return color;
   }
 
+  getColorSeverityThree (key) {
+    return [
+      this.threeStyles.colorTraffic.normal,
+      this.threeStyles.colorTraffic.warning,
+      this.threeStyles.colorTraffic.danger
+    ][key];
+  }
+
   updateStyles (styles) {
     _.merge(this.styles, styles);
     this.updateComputedStyles();

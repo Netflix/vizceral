@@ -41,6 +41,13 @@ class GraphObject extends EventEmitter {
     return false;
   }
 
+  highestNoticeLevel () {
+    if (this.hasNotices()) {
+      return _.max(_.map(this.notices, n => n.severity || 0));
+    }
+    return undefined;
+  }
+
   setMinimumNoticeLevel (minimumNoticeLevel = 0) {
     this.minimumNoticeLevel = minimumNoticeLevel;
     if (this.view) {
