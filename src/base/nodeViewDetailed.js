@@ -226,8 +226,10 @@ class DetailedNodeView extends NodeView {
       const donutIndices = _.get(this.detailed, ['donut', 'indices'], undefined);
       if (donutIndices) {
         _.each(donutIndices, (index) => {
-          const colorKey = index.class || index.key;
-          this.addNewDonutSlice(donutData[index.key], GlobalStyles.getColorTraffic(colorKey));
+          if (donutData[index.key] !== undefined) {
+            const colorKey = index.class || index.key;
+            this.addNewDonutSlice(donutData[index.key], GlobalStyles.getColorTraffic(colorKey));
+          }
         });
       } else {
         _.each(donutData, (classPercent, key) => {
