@@ -204,10 +204,7 @@ class Vizceral extends EventEmitter {
       const newGraphs = this.createAndUpdateGraphs(trafficData, this.graphs);
 
       // Now that the initial data is loaded, check if we can set the initial node
-      const initialView = this.checkInitialView();
-      if (initialView.view) {
-        this.setView(initialView.view, initialView.highlighted);
-      }
+      this.setView(this.initialView, this.initialNodeToHighlight);
 
       if (newGraphs) {
         this.emit('graphsUpdated', this.graphs);
@@ -264,13 +261,14 @@ class Vizceral extends EventEmitter {
   checkInitialView () {
     const initialView = {
       view: undefined,
-      highlighted: this.initialNodeToHighlight
+      highlighted: this.initialNodeToHighlight,
+      redirectedFrom: undefined
     };
 
     // If there is an initial node to set and there is not a current selected node
-    if (this.initialNode && !this.currentView) {
-      const topLevelNode = this.initialNode && this.initialNode[0];
-      const nodeName = this.initialNode && this.initialNode[1];
+    if (this.initialView && !this.currentView) {
+      const topLevelNode = this.initialView && this.initialView[0];
+      const nodeName = this.initialView && this.initialView[1];
 
       // Is the root graph loaded yet?
       if (Object.keys(this.graphs).length > 0) {
@@ -303,6 +301,11 @@ class Vizceral extends EventEmitter {
       }
     }
 
+    if (initialView.view && this.initialView && !_.isEqual(initialView.view, this.initialView)) {
+      initialView.redirectedFrom = this.initialView;
+      this.initialView = undefined;
+    }
+
     return initialView;
     // TODO: else, set a timeout for waiting...?
   }
@@ -322,14 +325,16 @@ class Vizceral extends EventEmitter {
    * @param {string} nodeToHighlight - a node to set as highlighted in the current viewArray
    */
   setView (nodeArray = [], nodeToHighlight) {
+    let redirectedFrom = undefined;
     // If nothing has been selected yet, it's the initial node
     if (!this.currentView) {
-      this.initialNode = nodeArray;
+      this.initialView = nodeArray;
       this.initialNodeToHighlight = nodeToHighlight;
       const initialView = this.checkInitialView();
       if (!initialView.view) { return; }
       nodeArray = initialView.view;
       nodeToHighlight = initialView.highlighted;
+      redirectedFrom = initialView.redirectedFrom;
     }
 
     let newTopLevelNode = nodeArray[0];
@@ -397,7 +402,7 @@ class Vizceral extends EventEmitter {
       }
       this.currentView = currentView;
       this.calculateMouseOver();
-      this.emit('viewChanged', { view: this.currentView, graph: this.currentGraph });
+      this.emit('viewChanged', { view: this.currentView, graph: this.currentGraph, redirectedFrom: redirectedFrom });
     }
   }
 
