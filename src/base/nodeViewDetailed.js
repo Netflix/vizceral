@@ -108,6 +108,7 @@ class DetailedNodeView extends NodeView {
     this.donutMaterial = new THREE.MeshBasicMaterial({ color: GlobalStyles.styles.colorPageBackground, transparent: true });
     this.innerBorderMaterial = new THREE.MeshBasicMaterial({ color: GlobalStyles.styles.colorPageBackground, transparent: true });
     this.donutGraphSegments = [];
+    this.arcMeterSegments = [];
 
     this.radius = this.object.size || 120;
     this.innerRadius = this.radius * 0.8;
@@ -168,39 +169,39 @@ class DetailedNodeView extends NodeView {
       // Draw the first header to the canvas
       textContext.fillStyle = GlobalStyles.styles.colorNormalDimmed;
       textContext.font = `${headerWeight} ${this.headerFontSize}px 'Source Sans Pro', sans-serif`;
-      top = top + (this.headerFontSize / 2);
+      top += (this.headerFontSize / 2);
       textContext.fillText(this.detailed.top.header, this.textCanvas.width / 2, top);
-      top = top + (this.headerFontSize / 2);
+      top += (this.headerFontSize / 2);
 
       // Draw the first metric to the canvas
       textContext.fillStyle = GlobalStyles.styles.colorTraffic.normal;
       const topMetricDisplayValue = generateDisplayValue(_.get(this.object, this.detailed.top.data), this.detailed.top.format);
       textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
-      top = top + (this.metricFontSize / 2);
+      top += (this.metricFontSize / 2);
       textContext.fillText(topMetricDisplayValue, this.textCanvas.width / 2, top);
-      top = top + (this.metricFontSize / 2);
+      top += (this.metricFontSize / 2);
 
       // Draw the second header to the canvas
       textContext.fillStyle = GlobalStyles.styles.colorNormalDimmed;
       textContext.font = `${headerWeight} ${this.headerFontSize}px 'Source Sans Pro', sans-serif`;
-      top = top + this.metricSpacing + (this.headerFontSize / 2);
+      top += this.metricSpacing + (this.headerFontSize / 2);
       textContext.fillText(this.detailed.bottom.header, this.textCanvas.width / 2, top);
-      top = top + (this.headerFontSize / 2);
+      top += (this.headerFontSize / 2);
 
       // Draw the second metric to the canvas
       textContext.fillStyle = GlobalStyles.getColorTraffic(this.object.getClass());
       const bottomMetricDisplayValue = generateDisplayValue(_.get(this.object, this.detailed.bottom.data), this.detailed.bottom.format);
       textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
-      top = top + (this.metricFontSize / 2);
+      top += (this.metricFontSize / 2);
       textContext.fillText(bottomMetricDisplayValue, this.textCanvas.width / 2, top);
-      top = top + (this.metricFontSize / 2);
+      top += (this.metricFontSize / 2);
     } else {
       // The node is still loading so show a loading message
       textContext.fillStyle = GlobalStyles.styles.colorTraffic.normal;
       textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
       top = ((this.canvasHeight / 2) - (((this.metricFontSize * 2)) / 2)) + 16;
       textContext.fillText('REGION', this.textCanvas.width / 2, top);
-      top = top + this.metricSpacing + this.headerFontSize;
+      top += this.metricSpacing + this.headerFontSize;
       textContext.fillText('LOADING', this.textCanvas.width / 2, top);
     }
 
@@ -215,12 +216,26 @@ class DetailedNodeView extends NodeView {
   }
 
   updateDonutGraph () {
+    let donutGraphStartAngle = Math.PI * 0.5;
+
+    const addNewDonutSlice = (percent, color) => {
+      const size = Math.PI * 2 * percent;
+      const slice = new THREE.RingGeometry(this.innerRadius, this.radius, 30, 8, donutGraphStartAngle, size);
+      const mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true });
+      const mesh = new THREE.Mesh(slice, mat);
+      mesh.position.set(0, 0, this.depth + 2);
+      mesh.rotation.y = Math.PI;
+
+      this.donutGraphSegments.push(mesh);
+      this.container.add(mesh);
+
+      donutGraphStartAngle += size;
+    };
+
     if (this.loaded) {
       // Remove the old donut segments
       _.each(this.donutGraphSegments, segment => this.container.remove(segment));
       this.donutGraphSegments.length = 0;
-
-      this.startAngle = Math.PI * 0.5;
 
       const donutData = _.get(this.object, this.detailed.donut.data, undefined);
       const donutIndices = _.get(this.detailed, ['donut', 'indices'], undefined);
@@ -228,30 +243,53 @@ class DetailedNodeView extends NodeView {
         _.each(donutIndices, (index) => {
           if (donutData[index.key] !== undefined) {
             const colorKey = index.class || index.key;
-            this.addNewDonutSlice(donutData[index.key], GlobalStyles.getColorTraffic(colorKey));
+            addNewDonutSlice(donutData[index.key], GlobalStyles.getColorTraffic(colorKey));
           }
         });
       } else {
         _.each(donutData, (classPercent, key) => {
           const colorKey = _.get(this.detailed, ['donut', 'classes', key], key);
-          this.addNewDonutSlice(classPercent, GlobalStyles.getColorTraffic(colorKey));
+          addNewDonutSlice(classPercent, GlobalStyles.getColorTraffic(colorKey));
         });
       }
     }
   }
 
-  addNewDonutSlice (percent, color) {
-    const size = Math.PI * 2 * percent;
-    const slice = new THREE.RingGeometry(this.innerRadius, this.radius, 30, 8, this.startAngle, size);
-    const mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true });
-    const mesh = new THREE.Mesh(slice, mat);
-    mesh.position.set(0, 0, this.depth + 2);
-    mesh.rotation.y = Math.PI;
+  updateArcMeter () {
+    let arcMeterStartAngle = 0;
+    const addNewArcSlice = (percent, color) => {
+      const size = Math.PI * percent;
+      const slice = new THREE.RingGeometry(this.innerRadius - 11, this.innerRadius - 1, 30, 8, arcMeterStartAngle, size);
+      const mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true });
+      const mesh = new THREE.Mesh(slice, mat);
+      mesh.position.set(0, 0, this.depth + 2);
+      mesh.rotation.y = Math.PI;
 
-    this.donutGraphSegments.push(mesh);
-    this.container.add(mesh);
+      this.arcMeterSegments.push(mesh);
+      this.container.add(mesh);
 
-    this.startAngle += size;
+      arcMeterStartAngle += size;
+    };
+
+    if (this.loaded) {
+      // remove the old arc segments
+      _.each(this.arcMeterSegments, segment => this.container.remove(segment));
+      this.arcMeterSegments.length = 0;
+
+      const arcData = _.get(this.object, this.detailed.arc.data, undefined);
+      if (arcData) {
+        // arc background
+        addNewArcSlice(1, GlobalStyles.styles.colorArcBackground);
+        arcMeterStartAngle = 0;
+
+        // arc slices
+        _.each(arcData.values, value => {
+          const percent = value.value / arcData.total;
+          const colorKey = value.class || value.name;
+          addNewArcSlice(percent, GlobalStyles.getColorTraffic(colorKey));
+        });
+      }
+    }
   }
 
   setOpacity (opacity) {
@@ -288,6 +326,7 @@ class DetailedNodeView extends NodeView {
     super.refresh();
     this.updateText();
     this.updateDonutGraph();
+    this.updateArcMeter();
   }
 
   update () {

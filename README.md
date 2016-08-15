@@ -89,7 +89,8 @@ vizceral.updateStyles({
   colorConnectionLine: 'rgb(91, 91, 91)',
   colorPageBackground: 'rgb(45, 45, 45)',
   colorPageBackgroundTransparent: 'rgba(45, 45, 45, 0)',
-  colorBorderLines: 'rgb(137, 137, 137)'
+  colorBorderLines: 'rgb(137, 137, 137)',
+  colorArcBackground: 'rgb(60, 60, 60)'
 });
 ```
 

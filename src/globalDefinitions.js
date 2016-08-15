@@ -16,6 +16,7 @@
  *
  */
 import _ from 'lodash';
+
 class GlobalDefinitions {
   constructor () {
     this.definitions = {
@@ -31,7 +32,8 @@ class GlobalDefinitions {
                 { key: 'warning' },
                 { key: 'normal', class: 'normalDonut' }
               ]
-            }
+            },
+            arc: {}
           },
           region: {
             top: { header: 'SERVICE RPS', data: 'data.volume', format: '0,0' }
