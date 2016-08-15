@@ -204,7 +204,9 @@ class Vizceral extends EventEmitter {
       const newGraphs = this.createAndUpdateGraphs(trafficData, this.graphs);
 
       // Now that the initial data is loaded, check if we can set the initial node
-      this.setView(this.initialView, this.initialNodeToHighlight);
+      if (this.initialView) {
+        this.setView(this.initialView, this.initialNodeToHighlight);
+      }
 
       if (newGraphs) {
         this.emit('graphsUpdated', this.graphs);
@@ -298,12 +300,11 @@ class Vizceral extends EventEmitter {
           // Load the global view
           initialView.view = [];
         }
+        if (initialView.view && this.initialView && !_.isEqual(initialView.view, this.initialView)) {
+          initialView.redirectedFrom = this.initialView;
+        }
+        this.initialView = undefined;
       }
-    }
-
-    if (initialView.view && this.initialView && !_.isEqual(initialView.view, this.initialView)) {
-      initialView.redirectedFrom = this.initialView;
-      this.initialView = undefined;
     }
 
     return initialView;
