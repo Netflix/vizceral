@@ -70,6 +70,8 @@ class TrafficGraph extends EventEmitter {
 
   updateView () {
     if (this.current && this.hasPositionData) {
+      if (this.searchString) { this.highlightMatchedNodes(this.searchString); }
+      if (this.highlightedNode) { this.highlightNode(this.highlightedNode); }
       this.view.updateState();
       this.emitRendered();
     }
@@ -104,6 +106,7 @@ class TrafficGraph extends EventEmitter {
   }
 
   highlightMatchedNodes (searchString) {
+    this.searchString = searchString;
     const dimDefault = !!searchString;
     const dimNodes = _.transform(this.nodes, (result, node) => {
       if (node.isVisible()) {
@@ -364,6 +367,7 @@ class TrafficGraph extends EventEmitter {
         Console.warn(`Got a position for a node that does not exist: ${nodeName}`);
       }
     });
+
     this.hasPositionData = true;
   }
 
