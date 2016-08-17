@@ -82,8 +82,7 @@ class TrafficGraph extends EventEmitter {
       this.current = current;
       if (current) {
         this.loadedOnce = true;
-        this.updateView();
-        this.emitNodeUpdated();
+        this.validateState();
       } else {
         _.each(this.connections, connection => connection.cleanup());
         _.each(this.nodes, node => node.cleanup());
@@ -225,125 +224,141 @@ class TrafficGraph extends EventEmitter {
     return this.nodeCounts.total > 0;
   }
 
+  validateState () {
+    if (this.cachedState) {
+      this.setState(this.cachedState);
+      this.cachedState = undefined;
+    } else {
+      this.updateView();
+      this.emitNodeUpdated();
+    }
+  }
+
   setState (state) {
     if (state && Object.keys(state).length > 0) {
-      let layoutModified = false;
+      // If this is the first update, run it, otherwise, only update if it's the current graph
+      if (!this.isPopulated() || this.current) {
+        let layoutModified = false;
 
-      // first, remove nodes that aren't in the new state
-      const newStateNodes = _.reduce(state.nodes, (result, node) => {
-        result[node.name] = true;
-        return result;
-      }, {});
-      const nodesToRemove = [];
-      _.each(this.nodes, (node, nodeName) => {
-        if (!newStateNodes[nodeName]) { nodesToRemove.push(node); }
-      });
-      if (nodesToRemove.length > 0) {
-        nodesToRemove.forEach(node => this.removeNode(node));
-        layoutModified = true;
-      }
-
-      const stateNodeMap = {};
-      // Then create new nodes and update existing nodes. New nodes need to be
-      // created before connections are attempted to be created between nodes.
-      _.each(state.nodes, (stateNode, index) => {
-        stateNodeMap[stateNode.name] = true;
-        let node = this.nodes[stateNode.name];
-        if (!node) {
-          node = new this.NodeClass(stateNode);
-          node.hidden = this.node && !this.nodes[this.node].connectedTo(node.getName());
-          node.updatePosition(stateNode.position, index);
-          this.nodes[stateNode.name] = node;
+        // first, remove nodes that aren't in the new state
+        const newStateNodes = _.reduce(state.nodes, (result, node) => {
+          result[node.name] = true;
+          return result;
+        }, {});
+        const nodesToRemove = [];
+        _.each(this.nodes, (node, nodeName) => {
+          if (!newStateNodes[nodeName]) { nodesToRemove.push(node); }
+        });
+        if (nodesToRemove.length > 0) {
+          nodesToRemove.forEach(node => this.removeNode(node));
           layoutModified = true;
-        } else {
-          node.updatePosition(stateNode.position, index);
-          node.update(stateNode);
         }
-      });
 
-      // Then, update all the connections.
-      _.each(this.connections, connection => {
-        connection.valid = false;
-      });
-
-      _.each(state.connections, stateConnection => {
-        let connection = this.getConnection(stateConnection.source, stateConnection.target);
-        if (connection) {
-          connection.update(stateConnection);
-          connection.valid = true;
-        } else {
-          connection = this._buildConnection(stateConnection);
-          if (connection) {
-            connection.valid = true;
-            connection.hidden = this.node && !connection.connectedTo(this.node);
-            if (!connection.hidden) {
-              connection.source.hidden = false;
-              connection.target.hidden = false;
-            }
-            this.connections[connection.getName()] = connection;
+        const stateNodeMap = {};
+        // Then create new nodes and update existing nodes. New nodes need to be
+        // created before connections are attempted to be created between nodes.
+        _.each(state.nodes, (stateNode, index) => {
+          stateNodeMap[stateNode.name] = true;
+          let node = this.nodes[stateNode.name];
+          if (!node) {
+            node = new this.NodeClass(stateNode);
+            node.hidden = this.node && !this.nodes[this.node].connectedTo(node.getName());
+            node.updatePosition(stateNode.position, index);
+            this.nodes[stateNode.name] = node;
             layoutModified = true;
+          } else {
+            node.updatePosition(stateNode.position, index);
+            node.update(stateNode);
           }
-        }
-      });
+        });
 
-      // Check for updated max volume
-      if (state.maxVolume) {
-        this.volume.max = state.maxVolume;
-      } else {
-        Console.error(`maxVolume required to calculate relative particle density, but no maxVolume provided for ${state.name}. See https://github.com/Netflix/vizceral/blob/master/DATAFORMATS.md`);
-      }
+        // Set all conenctions as false until the connection is found or created
+        _.each(this.connections, connection => {
+          connection.valid = false;
+        });
 
-      // Check for updated current volume
-      const currentVolume = this.nodes.INTERNET ? this.nodes.INTERNET.getOutgoingVolume() : 0;
-      if (currentVolume !== undefined && this.volume.current !== currentVolume) {
-        this.volume.current = currentVolume;
-      }
+        // Update all the existing connections and create new ones
+        _.each(state.connections, stateConnection => {
+          let connection = this.getConnection(stateConnection.source, stateConnection.target);
+          if (connection) {
+            connection.update(stateConnection);
+            connection.valid = true;
+          } else {
+            connection = this._buildConnection(stateConnection);
+            if (connection) {
+              connection.valid = true;
+              connection.hidden = this.node && !connection.connectedTo(this.node);
+              if (!connection.hidden) {
+                connection.source.hidden = false;
+                connection.target.hidden = false;
+              }
+              this.connections[connection.getName()] = connection;
+              layoutModified = true;
+            }
+          }
+        });
 
-      // Remove all connections that aren't valid anymore and update the
-      // greatest volume of the existing connections
-      const connectionsToRemove = [];
-      _.each(this.connections, connection => {
-        if (!connection.valid) {
-          connectionsToRemove.push(connection);
+        // Check for updated max volume
+        if (state.maxVolume) {
+          this.volume.max = state.maxVolume;
         } else {
-          connection.updateGreatestVolume(this.volume.max);
+          Console.error(`maxVolume required to calculate relative particle density, but no maxVolume provided for ${state.name}. See https://github.com/Netflix/vizceral/blob/master/DATAFORMATS.md`);
         }
-      });
-      if (connectionsToRemove.length > 0) {
-        connectionsToRemove.forEach(connection => this.removeConnection(connection));
-        layoutModified = true;
-      }
 
-      const nodesToRemoveSecondPass = [];
-      _.each(this.nodes, node => {
-        if (!stateNodeMap[node.name] && !node.hold) {
-          // Remove all the nodes that are not in new state
-          nodesToRemoveSecondPass.push(node);
+        // Check for updated current volume
+        const currentVolume = this.nodes.INTERNET ? this.nodes.INTERNET.getOutgoingVolume() : 0;
+        if (currentVolume !== undefined && this.volume.current !== currentVolume) {
+          this.volume.current = currentVolume;
+        }
+
+        // Remove all connections that aren't valid anymore and update the
+        // greatest volume of the existing connections
+        const connectionsToRemove = [];
+        _.each(this.connections, connection => {
+          if (!connection.valid) {
+            connectionsToRemove.push(connection);
+          } else {
+            connection.updateGreatestVolume(this.volume.max);
+          }
+        });
+        if (connectionsToRemove.length > 0) {
+          connectionsToRemove.forEach(connection => this.removeConnection(connection));
+          layoutModified = true;
+        }
+
+        const nodesToRemoveSecondPass = [];
+        _.each(this.nodes, node => {
+          if (!stateNodeMap[node.name] && !node.hold) {
+            // Remove all the nodes that are not in new state
+            nodesToRemoveSecondPass.push(node);
+          } else {
+            // Update the data on all the existing nodes
+            node.updateVolume(this.volume.current);
+          }
+        });
+        if (nodesToRemoveSecondPass.length > 0) {
+          nodesToRemoveSecondPass.forEach(node => this.removeNode(node));
+          layoutModified = true;
+        }
+
+
+        // Invalidate all the interactive children so we do not interact with objects that no longer exist
+        if (this.view) {
+          this.view.invalidateInteractiveChildren();
+        }
+
+        // If new elements (nodes or connections) were created or elements were
+        // removed, the graph needs to be laid out again
+        if (layoutModified) {
+          this._updateFilteredElements();
         } else {
-          // Update the data on all the existing nodes
-          node.updateVolume(this.volume.current);
+          this.updateView();
         }
-      });
-      if (nodesToRemoveSecondPass.length > 0) {
-        nodesToRemoveSecondPass.forEach(node => this.removeNode(node));
-        layoutModified = true;
-      }
-
-
-      // Invalidate all the interactive children so we do not interact with objects that no longer exist
-      if (this.view) {
-        this.view.invalidateInteractiveChildren();
-      }
-
-      // If new elements (nodes or connections) were created or elements were
-      // removed, the graph needs to be laid out again
-      if (layoutModified) {
-        this._updateFilteredElements();
+        this.emitNodeUpdated();
       } else {
-        this.updateView();
+        this.cachedState = state;
       }
     }
-    this.emitNodeUpdated();
   }
 
   emitNodeUpdated () {
