@@ -54,7 +54,7 @@ class TrafficGraph extends EventEmitter {
     this.layoutWorker = LayoutWorker();
     this.layoutWorker.onmessage = event => {
       Console.info(`Layout: Received updated layout for ${this.name} from the worker.`);
-      this._updatePositions(event.data);
+      this._updateNodePositions(event.data);
       this.updateView();
     };
 
@@ -339,6 +339,8 @@ class TrafficGraph extends EventEmitter {
       // removed, the graph needs to be laid out again
       if (layoutModified) {
         this._updateFilteredElements();
+      } else {
+        this.updateView();
       }
     }
     this.emitNodeUpdated();
@@ -358,7 +360,7 @@ class TrafficGraph extends EventEmitter {
 
   /* ***** LOCAL FUNCTIONS *****/
 
-  _updatePositions (nodePositions) {
+  _updateNodePositions (nodePositions) {
     // loop through all the position maps to set position on the nodes
     _.each(nodePositions, (nodePosition, nodeName) => {
       if (this.nodes[nodeName]) {
