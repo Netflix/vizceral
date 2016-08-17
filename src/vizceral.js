@@ -23,7 +23,7 @@ import Hammer from 'hammerjs';
 
 import GlobalDefinitions from './globalDefinitions';
 import GlobalStyles from './globalStyles';
-import { NewTrafficGraph } from './trafficGraphFactory';
+import TrafficGraphFactory from './trafficGraphFactory';
 import RendererUtils from './rendererUtils';
 
 /**
@@ -174,7 +174,7 @@ class Vizceral extends EventEmitter {
       // Create a graph
       if (!baseGraphObject[graphData.name]) {
         graphCreated = true;
-        baseGraphObject[graphData.name] = NewTrafficGraph(graphData, this, graphWidth, graphHeight);
+        baseGraphObject[graphData.name] = TrafficGraphFactory.NewTrafficGraph(graphData, this, graphWidth, graphHeight);
         this._attachGraphHandlers(baseGraphObject[graphData.name]);
         baseGraphObject[graphData.name].setFilters(this.filters);
         baseGraphObject[graphData.name].showLabels(this.options.showLabels);
@@ -326,7 +326,7 @@ class Vizceral extends EventEmitter {
    * @param {string} nodeToHighlight - a node to set as highlighted in the current viewArray
    */
   setView (nodeArray = [], nodeToHighlight) {
-    let redirectedFrom = undefined;
+    let redirectedFrom;
     // If nothing has been selected yet, it's the initial node
     if (!this.currentView) {
       this.initialView = nodeArray;

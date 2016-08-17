@@ -22,14 +22,16 @@ import THREE from 'three';
 import BaseView from './baseView';
 import ConnectionNoticeView from './connectionNoticeView';
 import GlobalStyles from '../globalStyles';
-import * as Constants from './constants';
+import Constants from './constants';
 
 
 
 // Preload textures
 const loader = new THREE.TextureLoader();
+
 // Preload the particle texture
 const particle = require('url!./particleD.png'); // eslint-disable-line import/no-extraneous-dependencies
+
 let particleTexture;
 loader.load(particle, texture => { particleTexture = texture; });
 
@@ -340,7 +342,7 @@ class ConnectionView extends BaseView {
       vx = this.positionAttr.array[i];
 
       if (vx !== 0) {
-        vx = vx + this.velocity[i];
+        vx += this.velocity[i];
         if (vx >= this.length) {
           vx = 0;
         }

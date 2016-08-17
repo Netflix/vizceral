@@ -376,14 +376,14 @@ class TrafficGraph extends EventEmitter {
     let target;
     // Check the source node exists and replace the string index with the instance reference
     if (connectionData.source && connectionData.target) {
-      if (this.nodes.hasOwnProperty(connectionData.source)) {
+      if (this.nodes[connectionData.source]) {
         source = this.nodes[connectionData.source];
       } else {
         Console.warn(`Attempted to create a connection to target node '${connectionData.target}' with a source node that does not yet exist: '${connectionData.source}'`);
       }
 
       // Check the target node exists and replace the string index with the instance reference
-      if (this.nodes.hasOwnProperty(connectionData.target)) {
+      if (this.nodes[connectionData.target]) {
         target = this.nodes[connectionData.target];
       } else {
         Console.warn(`Attempted to create a connection from source node '${connectionData.source}' with a target node that does not yet exist: '${connectionData.target}'`);

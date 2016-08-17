@@ -79,7 +79,7 @@ class ConnectionNoticeView extends BaseView {
 
   updateNoticeIcon () {
     if (this.object.hasNotices()) {
-      let severity = undefined;
+      let severity;
       const maxNotice = _.maxBy(this.object.notices, notice => notice.severity);
       if (maxNotice) {
         severity = maxNotice.severity;

@@ -18,6 +18,7 @@
 /* eslint-env worker */
 /* eslint no-restricted-syntax: 0 */
 const JRLayouter = require('./jrlayouter/jrlayouter.js');
+
 self.jrlayouter = new JRLayouter();
 
 self.layoutCache = {};
@@ -51,9 +52,9 @@ self.layout = function (options) {
     const halfHeight = dimensions.height / 2;
     let nodeName;
     for (nodeName in nodePositions) {
-      if (nodePositions.hasOwnProperty(nodeName)) {
-        nodePositions[nodeName].x = nodePositions[nodeName].x - halfWidth;
-        nodePositions[nodeName].y = nodePositions[nodeName].y - halfHeight;
+      if ({}.hasOwnProperty.call(nodePositions, nodeName)) {
+        nodePositions[nodeName].x -= halfWidth;
+        nodePositions[nodeName].y -= halfHeight;
       }
     }
 

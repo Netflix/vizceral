@@ -15,9 +15,13 @@
  *     limitations under the License.
  *
  */
-export const DEPTH = {
+const DEPTH = {
   normalNode: -5000, // Moves more negative
   normalConnection: -9999, // Stays static
   dimmedNode: -10000, // Moves more negative
   dimmedConnection: -14999, // Stays static
+};
+
+export default {
+  DEPTH: DEPTH
 };
