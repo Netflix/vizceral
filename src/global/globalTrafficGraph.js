@@ -22,38 +22,45 @@ import GlobalNode from './globalNode';
 import RendererUtils from '../rendererUtils';
 import TrafficGraph from '../base/trafficGraph';
 
-const yOffset = 140;
 const orbitSize = 1100;
-function updatePosition (node, regionCount, regionIndex) {
+function updatePosition (node, nodeCount, nodeIndex) {
+  const rotationAdjustment = nodeCount % 2 === 0 ? Math.PI / 4 : (5 / 6) * Math.PI;
   node.size = 120;
-  const adjust = 2.618;
-  const adjustment = (((2 * Math.PI) * regionIndex) / regionCount) + adjust;
+  const adjustment = (((2 * Math.PI) * nodeIndex) / nodeCount) + rotationAdjustment;
   node.position = {
     x: ((orbitSize / 2) * Math.cos(adjustment)),
-    y: ((orbitSize / 2) * Math.sin(adjustment)) + yOffset
+    y: ((orbitSize / 2) * Math.sin(adjustment))
   };
 }
 
 function positionNodes (nodes) {
-  let regionIndex = 0;
-  const regionCount = nodes.length - 1;
+  let nodeIndex = 0;
+  const nodeCount = nodes.length - 1;
 
   const sortedNodeNames = _.map(nodes, 'name');
   sortedNodeNames.sort();
 
+  // Layout the nodes with the entry node in the middle
   const nodeMap = _.keyBy(nodes, 'name');
   _.each(sortedNodeNames, nodeName => {
     const node = nodeMap[nodeName];
     if (nodeName !== 'INTERNET') {
-      regionIndex++;
-      updatePosition(node, regionCount, regionIndex);
+      nodeIndex++;
+      updatePosition(node, nodeCount, nodeIndex);
     } else {
       node.size = 150;
       node.position = {
         x: 0,
-        y: yOffset
+        y: 0
       };
     }
+  });
+
+  // Center the nodes vertically on the canvas
+  const yPositions = _.map(nodes, n => n.position.y);
+  const yOffset = Math.abs(Math.abs(_.max(yPositions)) - Math.abs(_.min(yPositions))) / 2;
+  _.each(nodes, n => {
+    n.position.y += yOffset;
   });
 }
 
