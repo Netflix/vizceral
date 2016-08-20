@@ -85,6 +85,7 @@ class Vizceral extends EventEmitter {
     // Initial three.js setup
     this.scene = new THREE.Scene();
     this.renderer = new THREE.WebGLRenderer(parameters);
+    this.renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
     this.renderer.autoClear = false;
     this.renderer.setClearColor(0x2d2d2d, 1);
     this.renderer.domElement.style.width = '100%';
