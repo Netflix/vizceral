@@ -26,7 +26,7 @@ class GlobalDefinitions {
             top: { header: '% RPS', data: 'data.volumePercent', format: '0.00%' },
             bottom: { header: 'ERROR RATE', data: 'data.classPercents.danger', format: '0.00%' },
             donut: {
-              data: 'data.classPercents',
+              data: 'data.globalClassPercents',
               indices: [
                 { key: 'danger' },
                 { key: 'warning' },
@@ -36,7 +36,10 @@ class GlobalDefinitions {
             arc: {}
           },
           region: {
-            top: { header: 'SERVICE RPS', data: 'data.volume', format: '0,0' }
+            top: { header: 'SERVICE RPS', data: 'data.volume', format: '0,0' },
+            donut: {
+              data: 'data.classPercents'
+            }
           },
           entry: {
             top: { header: 'TOTAL RPS', data: 'data.volume', format: '0,0' }

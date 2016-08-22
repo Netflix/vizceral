@@ -3,7 +3,7 @@ import RegionTrafficGraph from './region/regionTrafficGraph';
 
 const Console = console;
 
-export function NewTrafficGraph (graphData, mainView, graphWidth, graphHeight) {
+function NewTrafficGraph (graphData, mainView, graphWidth, graphHeight) {
   let graph;
   switch (graphData.renderer) {
   case 'global':
@@ -17,3 +17,7 @@ export function NewTrafficGraph (graphData, mainView, graphWidth, graphHeight) {
   }
   return graph;
 }
+
+export default {
+  NewTrafficGraph: NewTrafficGraph
+};

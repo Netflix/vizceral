@@ -36,7 +36,7 @@ const weightSort = function (a, b) {
       let nodesSortedByDepth = [];
       let index;
       for (index in graph.nodes) {
-        if (graph.nodes.hasOwnProperty(index)) {
+        if ({}.hasOwnProperty.call(graph.nodes, index)) {
           const node = graph.nodes[index];
           nodesSortedByDepth[node.rank] = nodesSortedByDepth[node.rank] || [];
           nodesSortedByDepth[node.rank].push(node);
@@ -50,7 +50,7 @@ const weightSort = function (a, b) {
       for (let i = 0; i < nodesSortedByDepth.length; i++) {
         const nodesInDepth = nodesSortedByDepth[i];
         if (nodesInDepth.length > maxNodesPerDepth) {
-          const nodesToKeep = Math.min(nodesInDepth.length / 2 - 1, maxNodesPerDepth);
+          const nodesToKeep = Math.min((nodesInDepth.length / 2) - 1, maxNodesPerDepth);
           const newNodeDepth = nodesInDepth.splice(nodesToKeep);
           nodesSortedByDepth.splice(i + 1, 0, newNodeDepth);
         }
@@ -89,7 +89,7 @@ const weightSort = function (a, b) {
         if (needsYOffset) { yOffset = -yOffset; }
 
         for (let j = 0; j < nodesAtDepth.length; j++) {
-          const curYDelta = yDelta * (j + 1) + (needsYOffset ? yOffset : 0);
+          const curYDelta = (yDelta * (j + 1)) + (needsYOffset ? yOffset : 0);
           nodePositions[nodesAtDepth[j].name] = { x: curXDelta, y: curYDelta };
         }
 

@@ -20,7 +20,7 @@ import chroma from 'chroma-js';
 import THREE from 'three';
 import BaseView from './baseView';
 import GlobalStyles from '../globalStyles';
-import * as Constants from './constants';
+import Constants from './constants';
 
 class NodeView extends BaseView {
   constructor (node) {

@@ -93,7 +93,7 @@ Definitions are optional.  Passing a structure similar to `ele.setDefinitions(de
         top: { header: '% RPS', data: 'data.volumePercent', format: '0.00%' }, // top metric in the detailed node. `header` is the header, `data` is the path to the data to display, `format` is how to format the data using numeral.js.
         bottom: { header: 'ERROR RATE', data: 'data.classPercents.danger', format: '0.00%' }, // bottom metric in the detailed node
         donut: { // description of what fills the donut graph around the detailed node
-          data: 'data.classPercents',
+          data: 'data.globalClassPercents',
           indices: [ // by default, the coloring for the donut slices will map by key in data, and in an indeterminant order, but if you want to map them to different classes or force a render order, override it here.
             { key: 'danger' },
             { key: 'warning' },
@@ -102,7 +102,10 @@ Definitions are optional.  Passing a structure similar to `ele.setDefinitions(de
         }
       },
       region: { // override for the region renderer
-        top: { header: 'SERVICE RPS', data: 'data.volume', format: '0.0' }
+        top: { header: 'SERVICE RPS', data: 'data.volume', format: '0.0' },
+        donut: {
+          data: 'data.globalClassPercents'
+        }
       },
       entry: { // override for entry nodes
         top: { header: 'TOTAL RPS', data: 'data.volume', format: '0.0' }

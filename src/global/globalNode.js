@@ -16,6 +16,7 @@
  *
  */
 import _ from 'lodash';
+
 import Node from '../base/node';
 
 class GlobalNode extends Node {
@@ -27,10 +28,11 @@ class GlobalNode extends Node {
   updateData (totalVolume) {
     const updated = super.updateData(totalVolume);
     if (updated) {
+      this.data.globalClassPercents = this.data.globalClassPercents || {};
       const percentGlobal = this.data.volume / totalVolume;
-      // regenerate global class percents
+      // generate global class percents
       _.each(this.data.classPercents, (classPercent, key) => {
-        this.data.classPercents[key] = classPercent * percentGlobal;
+        this.data.globalClassPercents[key] = classPercent * percentGlobal;
       });
     }
     return updated;

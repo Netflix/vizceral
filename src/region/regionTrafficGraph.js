@@ -101,19 +101,23 @@ class RegionTrafficGraph extends TrafficGraph {
   }
 
   setFilters (filters) {
+    let filtersChanged = false;
     _.each(filters, filter => {
       if (!this.filters[filter.name]) {
         this.filters[filter.name] = filter;
+        filtersChanged = true;
       }
       if (filter.value !== this.filters[filter.name].value) {
         this.filters[filter.name].value = filter.value;
+        filtersChanged = true;
       }
       if (this.filters[filter.name].defaultValue === undefined) {
         this.filters[filter.name].defaultValue = this.filters[filter.name].value;
+        filtersChanged = true;
       }
     });
 
-    if (this.isPopulated()) {
+    if (this.isPopulated() && filtersChanged) {
       this._updateFilteredElements();
     }
   }

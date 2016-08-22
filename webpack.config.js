@@ -13,7 +13,8 @@ var config = {
     path: './dist',
     filename: options.optimizeMinimize ? 'vizceral.min.js' : 'vizceral.js',
     library: 'Vizceral',
-    libraryTarget: 'umd'
+    libraryTarget: 'umd',
+    umdNamedDefine: true
   },
   module: {
     loaders: [

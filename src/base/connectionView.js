@@ -22,14 +22,16 @@ import THREE from 'three';
 import BaseView from './baseView';
 import ConnectionNoticeView from './connectionNoticeView';
 import GlobalStyles from '../globalStyles';
-import * as Constants from './constants';
+import Constants from './constants';
 
 
 
 // Preload textures
 const loader = new THREE.TextureLoader();
+
 // Preload the particle texture
 const particle = require('url!./particleD.png'); // eslint-disable-line import/no-extraneous-dependencies
+
 let particleTexture;
 loader.load(particle, texture => { particleTexture = texture; });
 
@@ -171,13 +173,18 @@ class ConnectionView extends BaseView {
     this.maxParticleDelay = 1500;
 
     // After some testing, anything much higher makes particles not reach their
-    // destination.  We could try increasing the max dots too, if we feel this
+    // destination. We could try increasing the max dots too, if we feel this
     // isn't dense enough
     this.maxParticleMultiplier = 4;
 
     // The percent of total traffic at which a multiplier needs to start being used
     // because just launching one particle every cycle isn't dense enough
     this.particleInflectionPercent = 0.05;
+
+
+    // A property defining the number of elements for this.particleMultiplierArray array.
+    // Is used for array creation and index calculation
+    this.numParticleMultiplier = 100;
   }
 
   setOpacity (opacity) {
@@ -250,8 +257,8 @@ class ConnectionView extends BaseView {
     // Set the appropriate multiplier values for the percentage of particles
     // required.  Fractional multipliers have to use a randomized array of 0/1
     // that iterates each update loop to launch the particles.
-    this.particleMultiplierArray = Array(100).fill(0);
-    const particleMultiplierFraction = Math.floor((this.particleMultiplier % 1) * 100);
+    this.particleMultiplierArray = Array(this.numParticleMultiplier).fill(0);
+    const particleMultiplierFraction = Math.floor((this.particleMultiplier % 1) * this.numParticleMultiplier);
     if (particleMultiplierFraction !== 0) {
       this.particleMultiplierArray = shuffle(this.particleMultiplierArray.fill(1, 0, particleMultiplierFraction));
       this.particleMultiplier = Math.floor(this.particleMultiplier);
@@ -313,7 +320,8 @@ class ConnectionView extends BaseView {
       }
     }
 
-    this.particleMultiplierArrayCounter = (this.particleMultiplierArrayCounter === 99) ? 0 : this.particleMultiplierArrayCounter + 1;
+    // start at 0 if the max value is reached
+    this.particleMultiplierArrayCounter = (this.particleMultiplierArrayCounter + 1) % this.numParticleMultiplier;
   }
 
   update (currentTime) {
@@ -334,7 +342,7 @@ class ConnectionView extends BaseView {
       vx = this.positionAttr.array[i];
 
       if (vx !== 0) {
-        vx = vx + this.velocity[i];
+        vx += this.velocity[i];
         if (vx >= this.length) {
           vx = 0;
         }

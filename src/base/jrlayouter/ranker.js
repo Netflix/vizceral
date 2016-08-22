@@ -25,7 +25,7 @@ function longestPathRanking (graph) {
 
   function dfs (nodeName) {
     const node = graph.getNode(nodeName);
-    if (!node) { return; }
+    if (!node) { return undefined; }
     if (!_.has(visited, nodeName)) {
       visited[nodeName] = true;
 
@@ -51,7 +51,7 @@ function normalizeRanks (graph) {
     }
   }
   for (i = 0; i < graph.nodes.length; i++) {
-    graph.nodes[i].rank = graph.nodes[i].rank - lowestRank;
+    graph.nodes[i].rank -= lowestRank;
   }
 }
 
