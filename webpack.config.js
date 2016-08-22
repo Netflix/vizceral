@@ -23,6 +23,7 @@ var config = {
         loader: 'babel',
         exclude: /node_modules/,
       },
+      { test: /\.glsl$/, loader: 'raw-loader' },
       { test: /\.woff2?$/, loader: 'url?limit=10000&mimetype=application/font-woff' },
       { test: /\.otf$/, loader: 'file' },
       { test: /\.ttf$/, loader: 'file' },
