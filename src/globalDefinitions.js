@@ -23,7 +23,7 @@ class GlobalDefinitions {
       detailedNode: {
         volume: {
           default: {
-            top: { header: '% RPS', data: 'data.volumePercent', format: '0.00%' },
+            top: { header: 'RPS', data: 'data.volumePercent', format: '0.0%' },
             bottom: { header: 'ERROR RATE', data: 'data.classPercents.danger', format: '0.00%' },
             donut: {
               data: 'data.globalClassPercents',
@@ -36,7 +36,7 @@ class GlobalDefinitions {
             arc: {}
           },
           region: {
-            top: { header: 'SERVICE RPS', data: 'data.volume', format: '0,0' },
+            top: { header: 'RPS', data: 'data.volume', format: '0,0' },
             donut: {
               data: 'data.classPercents'
             }
