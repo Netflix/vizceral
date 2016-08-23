@@ -256,10 +256,11 @@ class DetailedNodeView extends NodeView {
   }
 
   updateArcMeter () {
+    const arcMeterWidth = 15;
     let arcMeterStartAngle = 0;
     const addNewArcSlice = (percent, color) => {
       const size = Math.PI * percent;
-      const slice = new THREE.RingGeometry(this.innerRadius - 11, this.innerRadius - 1, 30, 8, arcMeterStartAngle, size);
+      const slice = new THREE.RingGeometry(this.innerRadius - arcMeterWidth, this.innerRadius - 1, 30, 8, arcMeterStartAngle, size);
       const mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true });
       const mesh = new THREE.Mesh(slice, mat);
       mesh.position.set(0, 0, this.depth + 2);
@@ -288,6 +289,39 @@ class DetailedNodeView extends NodeView {
           const colorKey = value.class || value.name;
           addNewArcSlice(percent, GlobalStyles.getColorTraffic(colorKey));
         });
+
+        // mark
+        let line = _.get(arcData, this.detailed.arc.lineIndex, undefined);
+        if (line) {
+          let lineColor = GlobalStyles.styles.colorDonutInternalColor;
+          // figure out color of line
+          if (line >= 1) {
+            line = 1;
+            lineColor = GlobalStyles.styles.colorTraffic.normal;
+          }
+          // line
+          const linePosition = (Math.PI * line) - 0.01;
+          arcMeterStartAngle = linePosition;
+          addNewArcSlice(0.0075, lineColor);
+          const startingX = 1;
+          // arrow
+          const triangleShape = new THREE.Shape();
+          const trianglePointRadius = this.innerRadius - arcMeterWidth - 1;
+          const triangleSize = arcMeterWidth * 0.75;
+          const triangleWidth = triangleSize * 0.5;
+          triangleShape.moveTo(startingX, trianglePointRadius);
+          triangleShape.lineTo(startingX - triangleWidth, trianglePointRadius - triangleSize);
+          triangleShape.lineTo(startingX + triangleWidth, trianglePointRadius - triangleSize);
+          triangleShape.lineTo(startingX, trianglePointRadius);
+          const triangleGeometry = new THREE.ShapeGeometry(triangleShape);
+          const triangleMaterial = new THREE.MeshBasicMaterial({ color: GlobalStyles.styles.colorTraffic.normal, side: THREE.DoubleSide });
+
+          const triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial);
+          triangleMesh.position.set(0, 0, this.depth + 3);
+          triangleMesh.rotateZ((Math.PI * 2) - (linePosition - (Math.PI / 2)));
+          this.arcMeterSegments.push(triangleMesh);
+          this.container.add(triangleMesh);
+        }
       }
     }
   }
