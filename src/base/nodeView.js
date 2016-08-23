@@ -64,7 +64,7 @@ class NodeView extends BaseView {
       if (this.nameView) {
         this.nameView.setHighlight(highlight);
       }
-      this.refresh();
+      this.refresh(true);
       this.updatePosition();
     }
   }
@@ -76,27 +76,30 @@ class NodeView extends BaseView {
     }
   }
 
-  refresh () {
+  refresh (force) {
     // Refresh class
-    const nodeClass = this.object.getClass();
-    if (this.highlight) {
-      this.innerCircleMaterial.color.set(GlobalStyles.getColorTrafficThree(nodeClass, true));
-      this.meshes.innerCircle.geometry.colorsNeedUpdate = true;
-      this.borderMaterial.color.set(GlobalStyles.getColorTrafficThree(nodeClass, true));
-      this.meshes.outerBorder.geometry.colorsNeedUpdate = true;
-      if (this.meshes.innerBorder) { this.meshes.innerBorder.geometry.colorsNeedUpdate = true; }
-    } else {
-      if (this.getOpacity() === 1) {
-        this.innerCircleMaterial.color.set(this.donutInternalColor);
+    if (this.object.classInvalidated || force) {
+      this.object.classInvalidated = false;
+      const nodeClass = this.object.getClass();
+      if (this.highlight) {
+        this.innerCircleMaterial.color.set(GlobalStyles.getColorTrafficThree(nodeClass, true));
         this.meshes.innerCircle.geometry.colorsNeedUpdate = true;
+        this.borderMaterial.color.set(GlobalStyles.getColorTrafficThree(nodeClass, true));
+        this.meshes.outerBorder.geometry.colorsNeedUpdate = true;
+        if (this.meshes.innerBorder) { this.meshes.innerBorder.geometry.colorsNeedUpdate = true; }
+      } else {
+        if (this.getOpacity() === 1) {
+          this.innerCircleMaterial.color.set(this.donutInternalColor);
+          this.meshes.innerCircle.geometry.colorsNeedUpdate = true;
+        }
+        this.borderMaterial.color.set(GlobalStyles.getColorTrafficThree(nodeClass));
+        this.meshes.outerBorder.geometry.colorsNeedUpdate = true;
+        if (this.meshes.innerBorder) { this.meshes.innerBorder.geometry.colorsNeedUpdate = true; }
       }
-      this.borderMaterial.color.set(GlobalStyles.getColorTrafficThree(nodeClass));
-      this.meshes.outerBorder.geometry.colorsNeedUpdate = true;
-      if (this.meshes.innerBorder) { this.meshes.innerBorder.geometry.colorsNeedUpdate = true; }
-    }
 
-    if (this.nameView) {
-      this.nameView.refresh();
+      if (this.nameView) {
+        this.nameView.refresh();
+      }
     }
   }
 

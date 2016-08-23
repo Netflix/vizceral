@@ -23,7 +23,7 @@ const Console = console;
 class GraphObject extends EventEmitter {
   constructor () {
     super();
-    this.minimumNoticeLevel = 1;
+    this.minimumNoticeLevel = 0;
     this.metadata = {};
   }
 
@@ -51,7 +51,7 @@ class GraphObject extends EventEmitter {
   setMinimumNoticeLevel (minimumNoticeLevel = 0) {
     this.minimumNoticeLevel = minimumNoticeLevel;
     if (this.view) {
-      this.view.refresh();
+      this.view.refresh(true);
     }
   }
 

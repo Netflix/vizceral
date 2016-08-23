@@ -200,7 +200,7 @@ class Node extends GraphObject {
       if (showDetailed) {
         this.view = this.views.detailed;
         this.focused = true;
-        this.view.refresh();
+        this.view.refresh(true);
       } else {
         this.view = this.views.standard;
         this.focused = false;
@@ -241,9 +241,10 @@ class Node extends GraphObject {
   }
 
   update (stateNode) {
-    const needsRefresh = this.class !== stateNode.class;
+    this.classInvalidated = this.class !== stateNode.class;
     _.assign(this, stateNode);
-    if (needsRefresh && this.view) { this.view.refresh(); }
+    this.notices = stateNode.notices;
+    if (this.view) { this.view.refresh(false); }
   }
 
   updateVolume (volume) {
@@ -263,7 +264,7 @@ class Node extends GraphObject {
 
   setModes (modes) {
     this.detailedMode = modes.detailedNode;
-    if (this.view) { this.view.refresh(); }
+    if (this.view) { this.view.refresh(true); }
   }
 
   connectedTo (nodeName) {

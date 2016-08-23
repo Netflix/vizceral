@@ -82,8 +82,8 @@ class NodeViewStandard extends NodeView {
     }
   }
 
-  refresh () {
-    super.refresh();
+  refresh (force) {
+    super.refresh(force);
 
     // Refresh severity
     if (this.highlight) {

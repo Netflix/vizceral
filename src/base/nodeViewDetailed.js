@@ -343,7 +343,7 @@ class DetailedNodeView extends NodeView {
     this.loadingSpinner = new THREE.Mesh(slice, mat);
     this.loadingSpinner.position.set(0, 0, this.depth + 2);
     this.container.add(this.loadingSpinner);
-    this.refresh();
+    this.refresh(true);
   }
 
   clearLoadingAnimation () {
@@ -352,12 +352,12 @@ class DetailedNodeView extends NodeView {
     // Switch off the loading spinner
     this.container.remove(this.loadingSpinner);
 
-    this.refresh();
+    this.refresh(true);
   }
 
-  refresh () {
+  refresh (force) {
     this.updateDetailedMode();
-    super.refresh();
+    super.refresh(force);
     this.updateText();
     this.updateDonutGraph();
     this.updateArcMeter();
@@ -379,7 +379,7 @@ class DetailedNodeView extends NodeView {
 
     if (this.object.updated) {
       this.object.updated = false;
-      this.refresh();
+      this.refresh(true);
     }
   }
 
