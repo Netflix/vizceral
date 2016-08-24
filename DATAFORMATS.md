@@ -281,6 +281,11 @@ To apply simply create an index.html and do the following after running  ***npm 
 ```html
 <html>
   <head>
+    <style>
+      body {
+        background-color: #222222;
+      }
+    </style>
     <script src="./dist/vizceral.js"></script>
     <script>
       function run() {
