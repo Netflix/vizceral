@@ -105,6 +105,10 @@ Definitions are optional.  Passing a structure similar to `ele.setDefinitions(de
         top: { header: 'SERVICE RPS', data: 'data.volume', format: '0.0' },
         donut: {
           data: 'data.globalClassPercents'
+        },
+        arc: { // description of what fills the arc meter inside the detailed node. If absent, no arc meter will be drawn
+          data: 'metadata.something', // the index on the node where to get the data (should have an index 'values' that has an array of values)
+          lineIndex: 'line' // the index on the above data object that gives the line position in 0 through 1 (percent decimal). If absent, no line will be drawn
         }
       },
       entry: { // override for entry nodes
