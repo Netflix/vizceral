@@ -58,6 +58,260 @@ The traffic data expected to be passed in regularly to `ele.updateData(traffic)`
 }
 ```
 
+The following is sample JSON for rending a basic one-to-many graph representation:
+
+```js
+{
+  "renderer": "global",
+  "name": "edge",
+  "nodes": [
+    {
+      "renderer": "region",
+      "name": "INTERNET",
+      "updated": 1466838417510,
+      "nodes": [
+      ],
+      "class": "normal"
+    },
+    {
+      "renderer": "region",
+      "name": "us-east-1",
+      "maxVolume": 50000,
+      "class": "normal",
+      "updated": 1466838546805,
+      "nodes": [
+        {
+          "name": "INTERNET",
+          "class": "normal"
+        },
+        {
+          "name": "alpha",
+          "metadata": {
+            "streaming": true
+          },
+          "class": "normal"
+        },
+        {
+          "name": "bravo",
+          "metadata": {
+            "streaming": true
+          },
+          "class": "normal"
+        },
+        {
+          "name": "charlie",
+          "metadata": {
+            "streaming": true
+          },
+          "class": "normal"
+        },
+        {
+          "name": "delta",
+          "metadata": {
+            "streaming": true
+          },
+          "class": "normal"
+        },
+        {
+          "name": "echo",
+          "metadata": {
+            "streaming": true
+          },
+          "class": "normal"
+        },
+        {
+          "name": "foxtrot",
+          "metadata": {
+            "streaming": true
+          },
+          "class": "normal"
+        }
+      ],
+      "connections": [
+        {
+          "source": "INTERNET",
+          "metadata": {
+            "streaming": true
+          },
+          "metrics": {
+            "danger": 0.646,
+            "normal": 31.12
+          },
+          "class": "normal"
+        },
+        {
+          "source": "INTERNET",
+          "metadata": {
+            "streaming": true
+          },
+          "metrics": {
+            "danger": 0.582,
+            "normal": 218.972
+          },
+          "class": "normal"
+        },
+        {
+          "source": "INTERNET",
+          "metadata": {
+            "streaming": true
+          },
+          "metrics": {
+            "normal": 11.072
+          },
+          "class": "normal"
+        },
+        {
+          "source": "INTERNET",
+          "target": "alpha",
+          "metadata": {
+            "streaming": true
+          },
+          "metrics": {
+            "danger": 116.524,
+            "normal": 15598.906
+          },
+          "status": {
+            "danger": 281.33,
+            "normal": 65364.56
+          },
+          "class": "normal"
+        },
+        {
+          "source": "INTERNET",
+          "target": "bravo",
+          "metadata": {
+            "streaming": true
+          },
+          "metrics": {
+            "danger": 116.524,
+            "normal": 15598.906
+          },
+          "status": {
+            "danger": 281.33,
+            "normal": 65364.56
+          },
+          "class": "normal"
+        },
+        {
+          "source": "INTERNET",
+          "target": "charlie",
+          "metadata": {
+            "streaming": true
+          },
+          "metrics": {
+            "danger": 116.524,
+            "normal": 15598.906
+          },
+          "status": {
+            "danger": 281.33,
+            "normal": 65364.56
+          },
+          "class": "normal"
+        },
+        {
+          "source": "INTERNET",
+          "target": "delta",
+          "metadata": {
+            "streaming": true
+          },
+          "metrics": {
+            "danger": 116.524,
+            "normal": 15598.906
+          },
+          "status": {
+            "danger": 281.33,
+            "normal": 65364.56
+          },
+          "class": "normal"
+        },
+        {
+          "source": "INTERNET",
+          "target": "echo",
+          "metadata": {
+            "streaming": true
+          },
+          "metrics": {
+            "danger": 116.524,
+            "normal": 15598.906
+          },
+          "status": {
+            "danger": 281.33,
+            "normal": 65364.56
+          },
+          "class": "normal"
+        },
+        {
+          "source": "INTERNET",
+          "target": "foxtrot",
+          "metadata": {
+            "streaming": true
+          },
+          "metrics": {
+            "danger": 116.524,
+            "normal": 15598.906
+          },
+          "status": {
+            "danger": 281.33,
+            "normal": 65364.56
+          },
+          "class": "normal"
+        }        
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "source": "INTERNET",
+      "target": "us-east-1",
+      "metrics": {
+        "normal": 26037.626,
+        "danger": 92.37
+      },
+      "notices": [
+
+      ],
+      "class": "normal"
+    }
+  ]
+}
+```
+
+To apply simply create an index.html and do the following after running  ***npm install && npm run build***:
+
+```html
+<html>
+  <head>
+    <script src="./dist/vizceral.js"></script>
+    <script>
+      function run() {
+        var xmlhttp = new XMLHttpRequest();
+        // update url depending on where you put the JSON data found above
+        var url = "data.json";
+        xmlhttp.onreadystatechange = function () {
+          if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+            var traffic = JSON.parse(xmlhttp.responseText);
+            loadVizceral(traffic);
+          }
+        };
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send();
+      }
+
+      function loadVizceral(traffic) {
+        var viz = new Vizceral.default(document.getElementById('test'));
+        viz.updateData(traffic);
+        viz.setView();
+        viz.animate();
+      }
+    </script>
+    <title>Vanilla Vizceral Example with Sample Data</title>
+  </head>
+  <body onload='javascript:run( )'>
+    <canvas id='test'></canvas>
+  </body>
+</html>
+```
+
 ### filters
 Filters are optional.  Passing this structure to `ele.setFilters(filters)` will filter out all elements (nodes and connections) that don't pass the filters.
 
