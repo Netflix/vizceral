@@ -21,13 +21,23 @@ import RendererUtils from './rendererUtils';
 
 const Console = console;
 
-class Notices {
-  showNotices (container, notices) {
-    const noticeElement = RendererUtils.getParent().querySelector('.vizceral-notice');
+function getNoticeElement () {
+  const noticeParentElement = RendererUtils.getParent();
+  if (noticeParentElement) {
+    const noticeElement = noticeParentElement.querySelector('.vizceral-notice');
     if (!noticeElement) {
       Console.warn('Notices are present on a connection, but there is no sibling element with a class of .vizceral-notice.');
-      return;
+      return undefined;
     }
+    return noticeElement;
+  }
+  return undefined;
+}
+
+class Notices {
+  showNotices (container, notices) {
+    const noticeElement = getNoticeElement();
+    if (!noticeElement) { return; }
 
     const screenPosition = RendererUtils.toScreenPosition(container, 'TL');
 
@@ -64,10 +74,11 @@ class Notices {
   }
 
   hideNotices () {
-    const noticeElement = RendererUtils.getParent().querySelector('.vizceral-notice');
-    if (noticeElement) {
-      noticeElement.style.display = 'none';
-    }
+    // When using vizceral in a web component, there are cases when the vizceral component does not
+    // have a parent yet. Make sure we have a parent before continuing.
+    const noticeElement = getNoticeElement();
+    if (!noticeElement) { return; }
+    noticeElement.style.display = 'none';
   }
 }
 
