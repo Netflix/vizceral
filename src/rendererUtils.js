@@ -15,7 +15,7 @@
  *     limitations under the License.
  *
  */
-import THREE from 'three';
+import * as THREE from 'three';
 
 const Console = console;
 

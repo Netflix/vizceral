@@ -17,7 +17,7 @@
  */
 import _ from 'lodash';
 import { knuthShuffle as shuffle } from 'knuth-shuffle';
-import THREE from 'three';
+import * as THREE from 'three';
 
 import BaseView from './baseView';
 import ConnectionNoticeView from './connectionNoticeView';

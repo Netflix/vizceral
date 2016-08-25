@@ -17,7 +17,7 @@
  */
 /* global __HIDE_DATA__ */
 import _ from 'lodash';
-import THREE from 'three';
+import * as THREE from 'three';
 import numeral from 'numeral';
 
 import GlobalDefinitions from '../globalDefinitions';

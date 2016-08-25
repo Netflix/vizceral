@@ -16,7 +16,7 @@
  *
  */
 import _ from 'lodash';
-import THREE from 'three';
+import * as THREE from 'three';
 
 import BaseView from './baseView';
 import GlobalStyles from '../globalStyles';

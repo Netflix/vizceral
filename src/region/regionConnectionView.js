@@ -15,7 +15,7 @@
  *     limitations under the License.
  *
  */
-import THREE from 'three';
+import * as THREE from 'three';
 
 import ConnectionView from '../base/connectionView';
 import GlobalStyles from '../globalStyles';

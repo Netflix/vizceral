@@ -17,7 +17,7 @@
  */
 import _ from 'lodash';
 import EventEmitter from 'events';
-import THREE from 'three';
+import * as THREE from 'three';
 import TWEEN from 'tween.js';
 import Hammer from 'hammerjs';
 
