@@ -278,10 +278,6 @@ class Node extends GraphObject {
     return this.getName() === 'INTERNET';
   }
 
-  isClickable () {
-    return this.isInteractive();
-  }
-
   isInteractive () {
     return (this.graphRenderer === 'global' && !this.isEntryNode())
       || (this.graphRenderer === 'region' && this.view !== this.views.detailed);

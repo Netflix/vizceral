@@ -154,6 +154,8 @@ class ConnectionView extends BaseView {
 
     this.container.add(this.particles);
 
+    // TODO: Use a THREE.Line and THREE.LineBasicMaterial with linewidth for the interactive object...
+
     this.updatePosition();
 
     // Add the connection notice

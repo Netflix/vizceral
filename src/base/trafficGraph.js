@@ -192,7 +192,7 @@ class TrafficGraph extends EventEmitter {
       this.intersectedObject = object;
       changed = true;
     }
-    // Check if we intersected with a Connection that has a notice
+    // Check if we intersected with a Connection
     if (object instanceof this.ConnectionClass) {
       this.intersectedObject = object;
       changed = true;

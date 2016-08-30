@@ -74,7 +74,7 @@ class GraphObject extends EventEmitter {
   }
 
   isClickable () {
-    return false;
+    return this.isInteractive();
   }
 
   isInteractive () {

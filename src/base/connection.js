@@ -102,7 +102,7 @@ class Connection extends GraphObject {
   }
 
   isInteractive () {
-    return !!(this.view && this.view.noticeView);
+    return this.view !== undefined;
   }
 }
 
