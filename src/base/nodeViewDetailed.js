@@ -274,7 +274,26 @@ class DetailedNodeView extends NodeView {
    * represents a new set of data
    */
   updateDonutGraph () {
-    let startAngle = Math.PI * 0.5;
+    const entryConnections = _.filter(this.object.incomingConnections, c => c.source.isEntryNode());
+    /**
+     * Get the start angle of the donut graph based on the totalPercent of the donut to be filled
+     *
+     * @param {number} totalPercent - A percent in decimal form between 0 and 1
+     */
+    const getStartAngle = (totalPercent) => {
+      let startAngle = Math.PI * 0.5;
+      if (totalPercent < 1 && entryConnections && entryConnections.length === 1) {
+        const incomingNodePosition = entryConnections[0].source.position;
+        // start angle is a function of percent and angle of incoming connection
+        const x = incomingNodePosition.x - this.object.position.x;
+        const y = incomingNodePosition.y - this.object.position.y;
+        startAngle = Math.atan2(y, x);
+        startAngle += (totalPercent * 2 * Math.PI) / 2;
+        startAngle = Math.PI - startAngle;
+      }
+
+      return startAngle;
+    };
 
     if (this.loaded) {
       // Remove the old donut segments
@@ -284,6 +303,8 @@ class DetailedNodeView extends NodeView {
       const donutData = _.get(this.object, this.detailed.donut.data, undefined);
       const donutIndices = _.get(this.detailed, ['donut', 'indices'], undefined);
       if (donutIndices) {
+        const totalPercent = _.sum(_.map(donutIndices, i => donutData[i.key] || 0));
+        let startAngle = getStartAngle(totalPercent);
         // add donut slices
         _.each(donutIndices, (index) => {
           if (donutData[index.key] !== undefined) {
@@ -292,6 +313,8 @@ class DetailedNodeView extends NodeView {
           }
         });
       } else {
+        const totalPercent = _.sum(_.map(donutData));
+        let startAngle = getStartAngle(totalPercent);
         // add donut slices
         _.each(donutData, (classPercent, key) => {
           const colorKey = _.get(this.detailed, ['donut', 'classes', key], key);
@@ -300,7 +323,6 @@ class DetailedNodeView extends NodeView {
       }
     }
   }
-
 
   /**
    * Add a new slice to the arc meter
