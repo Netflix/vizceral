@@ -27,6 +27,8 @@ import NodeNameView from './nodeNameView';
 
 const Console = console;
 
+const arcMeterWidth = 15;
+
 function generateDisplayValue (value, format) {
   value = value || 0;
 
@@ -115,7 +117,8 @@ class DetailedNodeView extends NodeView {
 
     this.meshes.outerBorder = this.addChildElement(getOuterBorderGeometry(this.radius), this.borderMaterial);
     this.meshes.innerCircle = this.addChildElement(getInnerCircleGeometry(this.radius), this.innerCircleMaterial);
-    this.meshes.donut = this.addChildElement(getDonutGeometry(this.radius, this.innerRadius), this.donutMaterial);
+    this.meshes.innerCircle.position.setZ(-10);
+    this.meshes.donut = this.addChildElement(getDonutGeometry(this.radius, this.innerRadius), this.donutMaterial, 'donut');
     this.meshes.innerBorder = this.addChildElement(getInnerBorderGeometry(this.innerRadius), this.borderMaterial);
     this.meshes.innerBorder.position.setZ(100);
 
@@ -137,6 +140,15 @@ class DetailedNodeView extends NodeView {
     }
 
     this.updateDetailedMode();
+
+    // check if we have arc meters...
+    const hasArcMeter = this.detailed.arc && this.detailed.arc.data;
+    if (hasArcMeter) {
+      // arc background
+      const { mesh } = this.addArcSlice(0, 1, GlobalStyles.styles.colorArcBackground, false);
+      this.meshes.arcBackground = mesh;
+      this.addInteractiveChild(mesh, 'arc');
+    }
   }
 
   addText () {
@@ -166,34 +178,55 @@ class DetailedNodeView extends NodeView {
     textContext.clearRect(0, 0, this.textCanvas.width, this.textCanvas.height);
 
     if (this.loaded) {
-      // Draw the first header to the canvas
-      textContext.fillStyle = GlobalStyles.styles.colorNormalDimmed;
-      textContext.font = `${headerWeight} ${this.headerFontSize}px 'Source Sans Pro', sans-serif`;
+      let topData;
+      let bottomData;
+      // Get which text to draw
+      if (!this.object.type) {
+        // get the default top/bottom
+        topData = this.detailed.top;
+        bottomData = this.detailed.bottom;
+      } else {
+        // get the named top/bottom
+        topData = this.detailed[this.object.type].top;
+        bottomData = this.detailed[this.object.type].bottom;
+      }
+
+      // Draw the top header to the canvas
       top += (this.headerFontSize / 2);
-      textContext.fillText(this.detailed.top.header, this.textCanvas.width / 2, top);
+      if (topData) {
+        textContext.fillStyle = GlobalStyles.styles.colorNormalDimmed;
+        textContext.font = `${headerWeight} ${this.headerFontSize}px 'Source Sans Pro', sans-serif`;
+        textContext.fillText(topData.header, this.textCanvas.width / 2, top);
+      }
       top += (this.headerFontSize / 2);
 
-      // Draw the first metric to the canvas
-      textContext.fillStyle = GlobalStyles.styles.colorTraffic.normal;
-      const topMetricDisplayValue = generateDisplayValue(_.get(this.object, this.detailed.top.data), this.detailed.top.format);
-      textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
+      // Draw the top metric to the canvas
       top += (this.metricFontSize / 2);
-      textContext.fillText(topMetricDisplayValue, this.textCanvas.width / 2, top);
+      if (topData) {
+        textContext.fillStyle = GlobalStyles.styles.colorTraffic.normal;
+        textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
+        const topMetricDisplayValue = generateDisplayValue(_.get(this.object, topData.data), topData.format);
+        textContext.fillText(topMetricDisplayValue, this.textCanvas.width / 2, top);
+      }
       top += (this.metricFontSize / 2);
 
       // Draw the second header to the canvas
-      textContext.fillStyle = GlobalStyles.styles.colorNormalDimmed;
-      textContext.font = `${headerWeight} ${this.headerFontSize}px 'Source Sans Pro', sans-serif`;
       top += this.metricSpacing + (this.headerFontSize / 2);
-      textContext.fillText(this.detailed.bottom.header, this.textCanvas.width / 2, top);
+      if (bottomData) {
+        textContext.fillStyle = GlobalStyles.styles.colorNormalDimmed;
+        textContext.font = `${headerWeight} ${this.headerFontSize}px 'Source Sans Pro', sans-serif`;
+        textContext.fillText(bottomData.header, this.textCanvas.width / 2, top);
+      }
       top += (this.headerFontSize / 2);
 
       // Draw the second metric to the canvas
-      textContext.fillStyle = GlobalStyles.getColorTraffic(this.object.getClass());
-      const bottomMetricDisplayValue = generateDisplayValue(_.get(this.object, this.detailed.bottom.data), this.detailed.bottom.format);
-      textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
       top += (this.metricFontSize / 2);
-      textContext.fillText(bottomMetricDisplayValue, this.textCanvas.width / 2, top);
+      if (bottomData) {
+        textContext.fillStyle = GlobalStyles.getColorTraffic(this.object.getClass());
+        textContext.font = `${metricWeight} ${this.metricFontSize}px 'Source Sans Pro', sans-serif`;
+        const bottomMetricDisplayValue = generateDisplayValue(_.get(this.object, bottomData.data), bottomData.format);
+        textContext.fillText(bottomMetricDisplayValue, this.textCanvas.width / 2, top);
+      }
       top += (this.metricFontSize / 2);
     } else {
       // The node is still loading so show a loading message
@@ -255,22 +288,23 @@ class DetailedNodeView extends NodeView {
     }
   }
 
+  addArcSlice (startAngle, percent, color, includeInSegments) {
+    const size = Math.PI * percent;
+    const slice = new THREE.RingGeometry(this.innerRadius - arcMeterWidth, this.innerRadius - 1, 30, 8, startAngle, size);
+    const mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true });
+    const mesh = new THREE.Mesh(slice, mat);
+    mesh.position.set(0, 0, this.depth + 5);
+    mesh.rotation.y = Math.PI;
+    mesh.userData.type = 'arc';
+
+    if (includeInSegments) { this.arcMeterSegments.push(mesh); }
+    this.container.add(mesh);
+
+    return { mesh: mesh, angle: startAngle + size };
+  }
+
   updateArcMeter () {
-    const arcMeterWidth = 15;
-    let arcMeterStartAngle = 0;
-    const addNewArcSlice = (percent, color) => {
-      const size = Math.PI * percent;
-      const slice = new THREE.RingGeometry(this.innerRadius - arcMeterWidth, this.innerRadius - 1, 30, 8, arcMeterStartAngle, size);
-      const mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true });
-      const mesh = new THREE.Mesh(slice, mat);
-      mesh.position.set(0, 0, this.depth + 2);
-      mesh.rotation.y = Math.PI;
-
-      this.arcMeterSegments.push(mesh);
-      this.container.add(mesh);
-
-      arcMeterStartAngle += size;
-    };
+    let startAngle = 0;
 
     if (this.loaded) {
       // remove the old arc segments
@@ -279,15 +313,12 @@ class DetailedNodeView extends NodeView {
 
       const arcData = _.get(this.object, this.detailed.arc.data, undefined);
       if (arcData) {
-        // arc background
-        addNewArcSlice(1, GlobalStyles.styles.colorArcBackground);
-        arcMeterStartAngle = 0;
-
         // arc slices
         _.each(arcData.values, value => {
           const percent = value.value / arcData.total;
           const colorKey = value.class || value.name;
-          addNewArcSlice(percent, GlobalStyles.getColorTraffic(colorKey));
+          const { angle } = this.addArcSlice(startAngle, percent, GlobalStyles.getColorTraffic(colorKey), true);
+          startAngle = angle;
         });
 
         // mark
@@ -301,8 +332,8 @@ class DetailedNodeView extends NodeView {
           }
           // line
           const linePosition = (Math.PI * line) - 0.01;
-          arcMeterStartAngle = linePosition;
-          addNewArcSlice(0.0075, lineColor);
+          startAngle = linePosition;
+          this.addArcSlice(startAngle, 0.0075, lineColor, true);
           const startingX = 1;
           // arrow
           const triangleShape = new THREE.Shape();
@@ -314,7 +345,7 @@ class DetailedNodeView extends NodeView {
           triangleShape.lineTo(startingX + triangleWidth, trianglePointRadius - triangleSize);
           triangleShape.lineTo(startingX, trianglePointRadius);
           const triangleGeometry = new THREE.ShapeGeometry(triangleShape);
-          const triangleMaterial = new THREE.MeshBasicMaterial({ color: GlobalStyles.styles.colorTraffic.normal, side: THREE.DoubleSide });
+          const triangleMaterial = new THREE.MeshBasicMaterial({ color: GlobalStyles.styles.colorTraffic.normal, side: THREE.DoubleSide, transparent: true });
 
           const triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial);
           triangleMesh.position.set(0, 0, this.depth + 3);
@@ -333,6 +364,10 @@ class DetailedNodeView extends NodeView {
     this.textMaterial.opacity = opacity;
 
     _.each(this.donutGraphSegments, segment => {
+      segment.material.opacity = opacity;
+    });
+
+    _.each(this.arcMeterSegments, segment => {
       segment.material.opacity = opacity;
     });
   }

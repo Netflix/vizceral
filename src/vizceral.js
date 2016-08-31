@@ -606,23 +606,30 @@ class Vizceral extends EventEmitter {
     if (this.currentGraph) {
       this.raycaster.setFromCamera(this.mouse, this.camera);
       const intersects = this.raycaster.intersectObjects(this.currentGraph.view.getInteractiveChildren());
-      let object;
+      let userData = {};
       if (intersects.length > 0) {
         if (intersects[0].object.userData.object) {
-          object = intersects[0].object.userData.object;
-          object = (object.loaded && object.isInteractive()) ? object : undefined;
+          userData = intersects[0].object.userData;
+          userData = (userData.object && userData.object.loaded && userData.object.isInteractive()) ? userData : {};
         } else {
           Console.warn('Mouse cursor intersected with a visible object that does not have an associated object model. The object should be set at userData.object');
         }
       }
-      if (object && object.isClickable()) {
+      if (userData.object && userData.object.isClickable()) {
         this.renderer.domElement.style.cursor = 'pointer';
       } else {
         this.renderer.domElement.style.cursor = 'auto';
       }
 
-      if (this.currentGraph.intersectedObject !== object) {
-        this.currentGraph.setIntersectedObject(object);
+      if (this.currentGraph.intersectedObject !== userData.object) {
+        if (this.currentGraph.intersectedObject) {
+          this.currentGraph.intersectedObject.setType(undefined);
+        }
+        this.currentGraph.setIntersectedObject(userData.object);
+      }
+
+      if (userData.object && userData.object.type !== userData.type) {
+        userData.object.setType(userData.type);
       }
     }
   }

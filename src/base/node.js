@@ -179,6 +179,13 @@ class Node extends GraphObject {
       && _.every(this.outgoingConnections, connection => connection.defaultFiltered));
   }
 
+  setType (type) {
+    super.setType(type);
+    if (this.view === this.views.detailed) {
+      this.view.updateText();
+    }
+  }
+
   render () {
     this.views = {
       standard: new NodeViewStandard(this),
