@@ -145,7 +145,7 @@ class DetailedNodeView extends NodeView {
     const hasArcMeter = this.detailed.arc && this.detailed.arc.data;
     if (hasArcMeter) {
       // arc background
-      const { mesh } = this.addArcSlice(0, 1, GlobalStyles.styles.colorArcBackground, false);
+      const { mesh } = this.addArcSlice(0, 1, GlobalStyles.styles.colorArcBackground, true);
       this.meshes.arcBackground = mesh;
       this.addInteractiveChild(mesh, 'arc');
     }
@@ -248,22 +248,33 @@ class DetailedNodeView extends NodeView {
     this.detailed = definition;
   }
 
+  /**
+   * Add a new slice to the donut graph
+   *
+   * @param {number} startAngle - The angle (in radians) to start drawing the donut slice
+   * @param {number} percent - The percent of the donut to fill with this new donut slice
+   * @param {string} color - A string representation of the color to make this slice
+   */
+  addNewDonutSlice (startAngle, percent, color) {
+    const size = Math.PI * 2 * percent;
+    const slice = new THREE.RingGeometry(this.innerRadius, this.radius, 30, 8, startAngle, size);
+    const mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true });
+    const mesh = new THREE.Mesh(slice, mat);
+    mesh.position.set(0, 0, this.depth + 2);
+    mesh.rotation.y = Math.PI;
+
+    this.donutGraphSegments.push(mesh);
+    this.container.add(mesh);
+
+    return startAngle + size;
+  }
+
+  /**
+   * Update the donut graph if there is updated information to be rendered or if the donut graph
+   * represents a new set of data
+   */
   updateDonutGraph () {
-    let donutGraphStartAngle = Math.PI * 0.5;
-
-    const addNewDonutSlice = (percent, color) => {
-      const size = Math.PI * 2 * percent;
-      const slice = new THREE.RingGeometry(this.innerRadius, this.radius, 30, 8, donutGraphStartAngle, size);
-      const mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true });
-      const mesh = new THREE.Mesh(slice, mat);
-      mesh.position.set(0, 0, this.depth + 2);
-      mesh.rotation.y = Math.PI;
-
-      this.donutGraphSegments.push(mesh);
-      this.container.add(mesh);
-
-      donutGraphStartAngle += size;
-    };
+    let startAngle = Math.PI * 0.5;
 
     if (this.loaded) {
       // Remove the old donut segments
@@ -273,22 +284,33 @@ class DetailedNodeView extends NodeView {
       const donutData = _.get(this.object, this.detailed.donut.data, undefined);
       const donutIndices = _.get(this.detailed, ['donut', 'indices'], undefined);
       if (donutIndices) {
+        // add donut slices
         _.each(donutIndices, (index) => {
           if (donutData[index.key] !== undefined) {
             const colorKey = index.class || index.key;
-            addNewDonutSlice(donutData[index.key], GlobalStyles.getColorTraffic(colorKey));
+            startAngle = this.addNewDonutSlice(startAngle, donutData[index.key], GlobalStyles.getColorTraffic(colorKey));
           }
         });
       } else {
+        // add donut slices
         _.each(donutData, (classPercent, key) => {
           const colorKey = _.get(this.detailed, ['donut', 'classes', key], key);
-          addNewDonutSlice(classPercent, GlobalStyles.getColorTraffic(colorKey));
+          startAngle = this.addNewDonutSlice(startAngle, classPercent, GlobalStyles.getColorTraffic(colorKey));
         });
       }
     }
   }
 
-  addArcSlice (startAngle, percent, color, includeInSegments) {
+
+  /**
+   * Add a new slice to the arc meter
+   *
+   * @param {number} startAngle - The angle (in radians) to start drawing the arc slice
+   * @param {number} percent - The percent of the arc to fill with this new arc slice
+   * @param {string} color - A string representation of the color to make this slice
+   * @param {boolean=} permanent - Whether to include this slice permanently (Added for the use of the background color slice)
+   */
+  addArcSlice (startAngle, percent, color, permanent) {
     const size = Math.PI * percent;
     const slice = new THREE.RingGeometry(this.innerRadius - arcMeterWidth, this.innerRadius - 1, 30, 8, startAngle, size);
     const mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true });
@@ -297,7 +319,7 @@ class DetailedNodeView extends NodeView {
     mesh.rotation.y = Math.PI;
     mesh.userData.type = 'arc';
 
-    if (includeInSegments) { this.arcMeterSegments.push(mesh); }
+    if (!permanent) { this.arcMeterSegments.push(mesh); }
     this.container.add(mesh);
 
     return { mesh: mesh, angle: startAngle + size };
@@ -317,7 +339,7 @@ class DetailedNodeView extends NodeView {
         _.each(arcData.values, value => {
           const percent = value.value / arcData.total;
           const colorKey = value.class || value.name;
-          const { angle } = this.addArcSlice(startAngle, percent, GlobalStyles.getColorTraffic(colorKey), true);
+          const { angle } = this.addArcSlice(startAngle, percent, GlobalStyles.getColorTraffic(colorKey), false);
           startAngle = angle;
         });
 
@@ -333,7 +355,7 @@ class DetailedNodeView extends NodeView {
           // line
           const linePosition = (Math.PI * line) - 0.01;
           startAngle = linePosition;
-          this.addArcSlice(startAngle, 0.0075, lineColor, true);
+          this.addArcSlice(startAngle, 0.0075, lineColor, false);
           const startingX = 1;
           // arrow
           const triangleShape = new THREE.Shape();
