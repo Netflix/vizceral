@@ -55,6 +55,14 @@ class GraphObject extends EventEmitter {
     }
   }
 
+  showNotices () {
+    Console.warn('Attempted to show notices on a GraphObject base class. Extend the GraphObject base class and provide a showNotices() function.');
+  }
+
+  setType (type) {
+    this.type = type;
+  }
+
   render () {
     Console.warn('Attempted to render a GraphObject base class. Extend the GraphObject base class and provide a render() function.');
   }
