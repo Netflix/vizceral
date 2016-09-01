@@ -605,6 +605,7 @@ class Vizceral extends EventEmitter {
   calculateMouseOver () {
     if (this.currentGraph) {
       this.raycaster.setFromCamera(this.mouse, this.camera);
+      this.raycaster.linePrecision = this.currentGraph.linePrecision || 1;
       const intersects = this.raycaster.intersectObjects(this.currentGraph.view.getInteractiveChildren());
       let userData = {};
       if (intersects.length > 0) {

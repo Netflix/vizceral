@@ -102,6 +102,9 @@ class ConnectionView extends BaseView {
     this.maxParticles = maxParticles;
     this.dimmedLevel = 0.05;
 
+    this.centerVector = new THREE.Vector3(0, 0, 0);
+    this.length = 0;
+
     this.uniforms = {
       amplitude: { type: 'f', value: 1.0 },
       color: { type: 'c', value: new THREE.Color(0xFFFFFF) },
@@ -155,8 +158,17 @@ class ConnectionView extends BaseView {
     this.container.add(this.particles);
 
     // TODO: Use a THREE.Line and THREE.LineBasicMaterial with linewidth for the interactive object...
-
-    this.updatePosition();
+    // Line used to support interactivity
+    this.interactiveLineGeometry = new THREE.Geometry();
+    this.interactiveLineMaterial = new THREE.LineBasicMaterial({
+      depthTest: true,
+      depthWrite: false,
+      transparent: true,
+      opacity: 0
+    });
+    this.interactiveLine = new THREE.Line(this.interactiveLineGeometry, this.interactiveLineMaterial);
+    this.addInteractiveChild(this.interactiveLine);
+    this.container.add(this.interactiveLine);
 
     // Add the connection notice
     this.noticeView = new ConnectionNoticeView(this);
@@ -202,21 +214,28 @@ class ConnectionView extends BaseView {
     this.depth = this.dimmed ? Constants.DEPTH.dimmedConnection : Constants.DEPTH.normalConnection;
 
     // Position and rotate the connection to be between the two nodes
-    const startPosition = this.object.source.getView().container.position;
-    const endPosition = this.object.target.getView().container.position;
-    const start = new THREE.Vector3(startPosition.x, startPosition.y, this.depth);
+    this.startPosition = this.object.source.getView().container.position;
+    this.endPosition = this.object.target.getView().container.position;
+    const start = new THREE.Vector3(this.startPosition.x, this.startPosition.y, this.depth);
     this.particles.position.set(start.x, start.y, start.z);
 
     if (!depthOnly) {
-      const centerX = (startPosition.x + endPosition.x) / 2;
-      const centerY = (startPosition.y + endPosition.y) / 2;
+      // particles
+      const centerX = (this.startPosition.x + this.endPosition.x) / 2;
+      const centerY = (this.startPosition.y + this.endPosition.y) / 2;
       this.centerVector = new THREE.Vector3(centerX, centerY, this.depth);
-      const end = new THREE.Vector3(endPosition.x, endPosition.y, this.depth);
-      const direction = new THREE.Vector3().copy(end)
-                                           .sub(start)
-                                           .normalize();
-      this.length = start.distanceTo(end);
+      const end = new THREE.Vector3(this.endPosition.x, this.endPosition.y, this.depth);
+      const direction = new THREE.Vector3().copy(end).sub(start).normalize();
       this.particles.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), direction);
+
+      // update length to know how far particles are to travel
+      this.length = start.distanceTo(end);
+
+      // interactivity
+      this.interactiveLine.geometry.vertices[0] = start;
+      this.interactiveLine.geometry.vertices[1] = end;
+      this.interactiveLine.geometry.verticesNeedUpdate = true;
+      this.interactiveLine.geometry.computeBoundingSphere();
     }
 
     if (this.noticeView) {
@@ -375,6 +394,8 @@ class ConnectionView extends BaseView {
   cleanup () {
     this.geometry.dispose();
     this.shaderMaterial.dispose();
+    this.interactiveLineGeometry.dispose();
+    this.interactiveLineMaterial.dispose();
   }
 }
 

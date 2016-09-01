@@ -23,6 +23,7 @@ import TrafficGraph from '../base/trafficGraph';
 class RegionTrafficGraph extends TrafficGraph {
   constructor (name, mainView, graphWidth, graphHeight) {
     super(name, mainView, graphWidth, graphHeight, RegionNode, RegionConnection, false);
+    this.linePrecision = 4;
     this.data = {};
   }
 

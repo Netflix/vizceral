@@ -67,6 +67,7 @@ function positionNodes (nodes) {
 class GlobalTrafficGraph extends TrafficGraph {
   constructor (name, mainView, graphWidth, graphHeight) {
     super(name, mainView, graphWidth, graphHeight, GlobalNode, GlobalConnection, true);
+    this.linePrecision = 50;
     this.state = {
       nodes: [],
       connections: []
