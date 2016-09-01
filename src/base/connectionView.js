@@ -249,7 +249,7 @@ class ConnectionView extends BaseView {
       this.addInteractiveChildren(this.noticeView.getInteractiveChildren());
       this.container.add(this.noticeView.container);
     } else {
-      _.remove(this.interactiveChildren, child => _.find(this.noticeView.getInteractiveChildren(), noticeChild => child === noticeChild));
+      this.removeInteractiveChildren(this.noticeView.getInteractiveChildren());
       this.container.remove(this.noticeView.container);
     }
   }
