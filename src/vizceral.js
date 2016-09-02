@@ -130,8 +130,8 @@ class Vizceral extends EventEmitter {
     this.filters = {};
 
     this.renderers = {
-      'global': GlobalTrafficGraph,
-      'region': RegionTrafficGraph
+      global: GlobalTrafficGraph,
+      region: RegionTrafficGraph
     };
   }
 
@@ -172,11 +172,11 @@ class Vizceral extends EventEmitter {
     graph.on('nodeContextSizeChanged', dimensions => this.emit('nodeContextSizeChanged', dimensions));
   }
 
-  createGraph(graphData, mainView, graphWidth, graphHeight){
+  createGraph (graphData, mainView, width, height) {
     let graph;
-    if(this.renderers[graphData.renderer]){
-      graph = new (this.renderers[graphData.renderer])(graphData.name, mainView, graphWidth, graphHeight);
-    }else{
+    if (this.renderers[graphData.renderer]) {
+      graph = new (this.renderers[graphData.renderer])(graphData.name, mainView, width, height);
+    } else {
       Console.log(`Attempted to create a graph type that does not exist: ${graphData.renderer} Presently registered renderers are ${Object.keys(this.renderers)}`);
     }
     return graph;
@@ -498,7 +498,7 @@ class Vizceral extends EventEmitter {
     }
   }
 
-  setRenderers(renderers){
+  setRenderers (renderers) {
     Object.assign(this.renderers, renderers);
   }
 
