@@ -36,6 +36,12 @@ import RendererUtils from './rendererUtils';
 * @property {object} node - The node object that has been highlighted, or the highlighted node that has been updated.
 */
 /**
+* The `connectionHighlighted` event is fired whenever a connection is highlighted.
+*
+* @event connectionHighlighted
+* @property {object} connection - The connection object that has been highlighted, or the highlighted connection that has been updated.
+*/
+/**
 * The `rendered` event is fired whenever a graph is rendered.
 *
 * @event rendered
@@ -238,7 +244,16 @@ class Vizceral extends EventEmitter {
    * @param {object} node - The node to highlight
    */
   setHighlightedNode (node) {
-    this.currentGraph.highlightNode(node);
+    this.currentGraph.highlightObject(node);
+  }
+
+  /**
+   * Sets the highlighted connection.  If the connection is undefined, clears any highlighting.
+   *
+   * @param {object} connection - The connection to highlight
+   */
+  setHighlightedConnection (connection) {
+    this.currentGraph.highlightObject(connection);
   }
 
   /**
@@ -385,10 +400,10 @@ class Vizceral extends EventEmitter {
         if (nodeToHighlight) {
           const node = topLevelNodeGraph.getNode(nodeToHighlight);
           if (node) {
-            topLevelNodeGraph.highlightNode(node);
+            topLevelNodeGraph.highlightObject(node);
           }
-        } else if (topLevelNodeGraph.highlightedNode) {
-          topLevelNodeGraph.highlightNode();
+        } else if (topLevelNodeGraph.highlightedObject) {
+          topLevelNodeGraph.highlightObject();
         }
       }
 
@@ -465,8 +480,8 @@ class Vizceral extends EventEmitter {
     if (this.currentGraph) {
       const currentViewLength = this.currentView ? this.currentView.length : 0;
 
-      if (this.currentGraph && this.currentGraph.highlightedNode) {
-        this.setHighlightedNode(undefined);
+      if (this.currentGraph && this.currentGraph.highlightedObject) {
+        this.setHighlightedObject(undefined);
       } else if (currentViewLength > 0) {
         this.currentView = this.currentView.slice(0, -1);
         this.setView(this.currentView);

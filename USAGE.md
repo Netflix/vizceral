@@ -14,6 +14,14 @@ Copyright 2016 Netflix, Inc.
     See the License for the specific language governing permissions and
     limitations under the License.
 
+# connectionHighlighted
+
+The `connectionHighlighted` event is fired whenever a connection is highlighted.
+
+**Properties**
+
+-   `connection` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The connection object that has been highlighted, or the highlighted connection that has been updated.
+
 # rendered
 
 The `rendered` event is fired whenever a graph is rendered.
@@ -111,6 +119,14 @@ Sets the highlighted node.  If the node is undefined, clears any highlighting.
 **Parameters**
 
 -   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node to highlight
+
+# setHighlightedConnection
+
+Sets the highlighted connection.  If the connection is undefined, clears any highlighting.
+
+**Parameters**
+
+-   `connection` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The connection to highlight
 
 # findNodes
 

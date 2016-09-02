@@ -71,7 +71,7 @@ class TrafficGraph extends EventEmitter {
   updateView () {
     if (this.current && this.hasPositionData) {
       if (this.searchString) { this.highlightMatchedNodes(this.searchString); }
-      if (this.highlightedNode) { this.highlightNode(this.highlightedNode); }
+      if (this.highlightedObject) { this.highlightObject(this.highlightedObject); }
       this.view.updateState();
       this.emitRendered();
     }
@@ -134,7 +134,7 @@ class TrafficGraph extends EventEmitter {
         if (node.nodes) {
           targetString += `::${node.nodes.map(n => n.name).join('::')}`;
         }
-        const match = (node === this.highlightedNode || targetString.indexOf(searchString) !== -1);
+        const match = (node === this.highlightedObject || targetString.indexOf(searchString) !== -1);
         if (match && !node.hidden) {
           matches.total++;
           if (node.isVisible()) {
@@ -154,14 +154,36 @@ class TrafficGraph extends EventEmitter {
     return matches;
   }
 
-  highlightNode (nodeToHighlight) {
-    this.highlightedNode = nodeToHighlight;
-    this.highlightConnectedNodes(nodeToHighlight);
-    const nodeName = nodeToHighlight ? nodeToHighlight.getName() : undefined;
-    _.each(this.nodes, node => {
-      node.getView().setHighlight(nodeName === node.getName());
-    });
-    this.emit('nodeHighlighted', nodeToHighlight);
+  highlightObject (objectToHighlight) {
+    if (this.highlightedObject !== objectToHighlight) {
+      const oldObject = this.highlightedObject;
+      this.highlightedObject = objectToHighlight;
+      this.highlightConnectedNodes(objectToHighlight);
+      const nodeName = objectToHighlight ? objectToHighlight instanceof this.NodeClass && objectToHighlight.getName() : undefined;
+      _.each(this.nodes, node => {
+        node.getView().setHighlight(nodeName === node.getName());
+      });
+      const connectionName = objectToHighlight ? objectToHighlight instanceof this.ConnectionClass && objectToHighlight.getName() : undefined;
+      _.each(this.connections, connection => {
+        connection.getView().setHighlight(connectionName === connection.getName());
+      });
+
+      if (oldObject) {
+        if (oldObject instanceof this.NodeClass && (!objectToHighlight || objectToHighlight instanceof this.ConnectionClass)) {
+          this.emit('nodeHighlighted', undefined);
+        } else if (oldObject instanceof this.ConnectionClass && (!objectToHighlight || objectToHighlight instanceof this.NodeClass)) {
+          this.emit('connectionHighlighted', undefined);
+        }
+      }
+
+      if (objectToHighlight) {
+        if (objectToHighlight instanceof this.NodeClass) {
+          this.emit('nodeHighlighted', objectToHighlight);
+        } else if (objectToHighlight instanceof this.ConnectionClass) {
+          this.emit('connectionHighlighted', objectToHighlight);
+        }
+      }
+    }
   }
 
   showLabels (showLabels) {
@@ -230,7 +252,7 @@ class TrafficGraph extends EventEmitter {
       this.cachedState = undefined;
     } else {
       this.updateView();
-      this.emitNodeUpdated();
+      this.emitObjectUpdated();
     }
   }
 
@@ -354,16 +376,20 @@ class TrafficGraph extends EventEmitter {
         } else {
           this.updateView();
         }
-        this.emitNodeUpdated();
+        this.emitObjectUpdated();
       } else {
         this.cachedState = state;
       }
     }
   }
 
-  emitNodeUpdated () {
-    if (this.highlightedNode) {
-      this.emit('nodeHighlighted', this.highlightedNode);
+  emitObjectUpdated () {
+    if (this.highlightedObject) {
+      if (this.highlightedObject instanceof this.NodeClass) {
+        this.emit('nodeHighlighted', this.highlightedObject);
+      } else if (this.highlightedObject instanceof this.ConnectionClass) {
+        this.emit('connectionHighlighted', this.highlightedObject);
+      }
     } else if (this.getSelectedNode && this.getSelectedNode()) {
       this.emit('nodeUpdated', this.getSelectedNode());
     }

@@ -15,7 +15,6 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
 import { knuthShuffle as shuffle } from 'knuth-shuffle';
 import * as THREE from 'three';
 
@@ -207,6 +206,15 @@ class ConnectionView extends BaseView {
 
     if (this.object.hasNotices()) {
       this.noticeView.setOpacity(opacity);
+    }
+  }
+
+  setHighlight (highlight) {
+    // TODO: Actually highlight the connection
+    if (this.highlight !== highlight) {
+      this.highlight = highlight;
+      // this.refresh(true);
+      // this.updatePosition();
     }
   }
 

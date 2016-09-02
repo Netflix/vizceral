@@ -32,7 +32,7 @@ class RegionTrafficGraph extends TrafficGraph {
     if (changed) {
       // Remove the mouseover effect
       this.setIntersectedObject(undefined);
-      this.highlightNode(undefined);
+      this.highlightObject(undefined);
 
       // If there was a node selected...
       if (this.nodeName) {
@@ -67,7 +67,7 @@ class RegionTrafficGraph extends TrafficGraph {
     const changed = super.setIntersectedObject(object);
     if (changed) {
       // Change node highlighting
-      if (!this.highlightedNode) {
+      if (!this.highlightedObject) {
         if (!this.intersectedObject) {
           // If we are not hovering over anything, clear the highlighting
           this.highlightConnectedNodes(undefined);
@@ -82,11 +82,11 @@ class RegionTrafficGraph extends TrafficGraph {
   handleIntersectedObjectClick () {
     // If we clicked on nothing, clear highlight
     if (!this.intersectedObject) {
-      this.highlightNode(undefined);
-    } else if (this.intersectedObject instanceof this.NodeClass) {
-      // If we are not currently focused on a node, highlight the clicked node
+      this.highlightObject(undefined);
+    } else if (this.intersectedObject instanceof this.NodeClass || this.intersectedObject instanceof this.ConnectionClass) {
+      // If we are not currently focused on a node, highlight the clicked object
       if (!this.nodeName) {
-        this.highlightNode(this.intersectedObject);
+        this.highlightObject(this.intersectedObject);
       }
     }
   }
