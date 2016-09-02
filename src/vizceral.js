@@ -672,14 +672,14 @@ class Vizceral extends EventEmitter {
           clearTimeout(this.mouseOverTimer);
         }
 
-        if (userData.object) {
-          // if switching to an object, set a timeout to perform the hover effect
+        if (userData.object && !(this.currentGraph && this.currentGraph.highlightedObject)) {
+          // if switching to an object and nothing is highlighted, set a timeout to perform the hover effect
           this.mouseOverTimer = setTimeout(() => {
             this.currentGraph.setIntersectedObject(this.objectToSwitch);
           }, 100);
         } else {
-          // if removing a hover effect, do it immediately
-          this.currentGraph.setIntersectedObject(undefined);
+          // if removing a hover effect, or there is a highlighted object, do it immediately
+          this.currentGraph.setIntersectedObject(userData.object);
         }
       }
 
