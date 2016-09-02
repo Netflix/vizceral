@@ -34,7 +34,7 @@ Otherwise, to integrate it from scratch:
 
     // Add event handlers for the vizceral events
     viz.on('viewChanged', view => {});
-    viz.on('nodeHighlighted', node => {});
+    viz.on('objectHighlighted', object => {});
     viz.on('rendered', data => {});
     viz.on('nodeContextSizeChanged', dimensions => {});
 

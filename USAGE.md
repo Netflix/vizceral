@@ -14,14 +14,6 @@ Copyright 2016 Netflix, Inc.
     See the License for the specific language governing permissions and
     limitations under the License.
 
-# connectionHighlighted
-
-The `connectionHighlighted` event is fired whenever a connection is highlighted.
-
-**Properties**
-
--   `connection` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The connection object that has been highlighted, or the highlighted connection that has been updated.
-
 # rendered
 
 The `rendered` event is fired whenever a graph is rendered.
@@ -62,13 +54,14 @@ The `matchesFound` event is fired whenever nodes are found via findNodes().
 
 -   `matches` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The matches object { total, visible }
 
-# nodeHighlighted
+# objectHighlighted
 
-The `nodeHighlighted` event is fired whenever a node is highlighted.
+The `objectHighlighted` event is fired whenever an object is highlighted.
+`object.type` will be either 'node' or 'connection'
 
 **Properties**
 
--   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node object that has been highlighted, or the highlighted node that has been updated.
+-   `object` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The object that has been highlighted, or the highlighted object that has been updated.
 
 # constructor
 
@@ -155,7 +148,7 @@ Ex:
 
 -   `viewArray` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** the array containing the view to set.
 -   `nodeArray`   (optional, default `[]`)
--   `nodeToHighlight` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** a node to set as highlighted in the current viewArray
+-   `objectNameToHighlight` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** a node or connection to set as highlighted in the current viewArray
 
 # setModes
 

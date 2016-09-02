@@ -104,6 +104,14 @@ class TrafficGraph extends EventEmitter {
     return nodes[0];
   }
 
+  getConnection (connectionName) {
+    return this.connections[connectionName];
+  }
+
+  getGraphObject (objectName) {
+    return this.getNode(objectName) || this.getConnection(objectName);
+  }
+
   highlightMatchedNodes (searchString) {
     this.searchString = searchString;
     const dimDefault = !!searchString;
@@ -156,7 +164,6 @@ class TrafficGraph extends EventEmitter {
 
   highlightObject (objectToHighlight) {
     if (this.highlightedObject !== objectToHighlight) {
-      const oldObject = this.highlightedObject;
       this.highlightedObject = objectToHighlight;
       this.highlightConnectedNodes(objectToHighlight);
       const nodeName = objectToHighlight ? objectToHighlight instanceof this.NodeClass && objectToHighlight.getName() : undefined;
@@ -168,21 +175,7 @@ class TrafficGraph extends EventEmitter {
         connection.getView().setHighlight(connectionName === connection.getName());
       });
 
-      if (oldObject) {
-        if (oldObject instanceof this.NodeClass && (!objectToHighlight || objectToHighlight instanceof this.ConnectionClass)) {
-          this.emit('nodeHighlighted', undefined);
-        } else if (oldObject instanceof this.ConnectionClass && (!objectToHighlight || objectToHighlight instanceof this.NodeClass)) {
-          this.emit('connectionHighlighted', undefined);
-        }
-      }
-
-      if (objectToHighlight) {
-        if (objectToHighlight instanceof this.NodeClass) {
-          this.emit('nodeHighlighted', objectToHighlight);
-        } else if (objectToHighlight instanceof this.ConnectionClass) {
-          this.emit('connectionHighlighted', objectToHighlight);
-        }
-      }
+      this.emit('objectHighlighted', objectToHighlight);
     }
   }
 
@@ -196,10 +189,6 @@ class TrafficGraph extends EventEmitter {
   setModes (modes) {
     _.each(this.nodes, node => node.setModes(modes));
     if (this.view) { this.view.invalidateInteractiveChildren(); }
-  }
-
-  getConnection (sourceName, targetName) {
-    return this.connections[`${sourceName}--${targetName}`];
   }
 
   setIntersectedObject (object) {
@@ -301,7 +290,7 @@ class TrafficGraph extends EventEmitter {
 
         // Update all the existing connections and create new ones
         _.each(state.connections, stateConnection => {
-          let connection = this.getConnection(stateConnection.source, stateConnection.target);
+          let connection = this.getConnection(`${stateConnection.source}--${stateConnection.target}`);
           if (connection) {
             connection.update(stateConnection);
             connection.valid = true;
@@ -385,11 +374,7 @@ class TrafficGraph extends EventEmitter {
 
   emitObjectUpdated () {
     if (this.highlightedObject) {
-      if (this.highlightedObject instanceof this.NodeClass) {
-        this.emit('nodeHighlighted', this.highlightedObject);
-      } else if (this.highlightedObject instanceof this.ConnectionClass) {
-        this.emit('connectionHighlighted', this.highlightedObject);
-      }
+      this.emit('objectHighlighted', this.highlightedObject);
     } else if (this.getSelectedNode && this.getSelectedNode()) {
       this.emit('nodeUpdated', this.getSelectedNode());
     }

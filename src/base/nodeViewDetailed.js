@@ -181,14 +181,14 @@ class DetailedNodeView extends NodeView {
       let topData;
       let bottomData;
       // Get which text to draw
-      if (!this.object.type) {
+      if (!this.object.context) {
         // get the default top/bottom
         topData = this.detailed.top;
         bottomData = this.detailed.bottom;
       } else {
         // get the named top/bottom
-        topData = this.detailed[this.object.type].top;
-        bottomData = this.detailed[this.object.type].bottom;
+        topData = this.detailed[this.object.context].top;
+        bottomData = this.detailed[this.object.context].bottom;
       }
 
       // Draw the top header to the canvas

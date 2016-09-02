@@ -30,16 +30,11 @@ import RendererUtils from './rendererUtils';
 
 
 /**
-* The `nodeHighlighted` event is fired whenever a node is highlighted.
+* The `objectHighlighted` event is fired whenever an object is highlighted.
+* `object.type` will be either 'node' or 'connection'
 *
-* @event nodeHighlighted
-* @property {object} node - The node object that has been highlighted, or the highlighted node that has been updated.
-*/
-/**
-* The `connectionHighlighted` event is fired whenever a connection is highlighted.
-*
-* @event connectionHighlighted
-* @property {object} connection - The connection object that has been highlighted, or the highlighted connection that has been updated.
+* @event objectHighlighted
+* @property {object} object - The object that has been highlighted, or the highlighted object that has been updated.
 */
 /**
 * The `rendered` event is fired whenever a graph is rendered.
@@ -171,11 +166,11 @@ class Vizceral extends EventEmitter {
   }
 
   _attachGraphHandlers (graph) {
-    graph.on('rendered', renderInfo => this.emit('rendered', renderInfo));
-    graph.on('nodeHighlighted', node => this.emit('nodeHighlighted', node));
-    graph.on('nodeFocused', node => this.emit('nodeFocused', node));
-    graph.on('setView', view => this.setView(view));
     graph.on('nodeContextSizeChanged', dimensions => this.emit('nodeContextSizeChanged', dimensions));
+    graph.on('objectHighlighted', highlightedObject => this.emit('objectHighlighted', highlightedObject));
+    graph.on('nodeFocused', node => this.emit('nodeFocused', node));
+    graph.on('rendered', renderInfo => this.emit('rendered', renderInfo));
+    graph.on('setView', view => this.setView(view));
   }
 
   createGraph (graphData, mainView, width, height) {
@@ -229,7 +224,7 @@ class Vizceral extends EventEmitter {
 
       // Now that the initial data is loaded, check if we can set the initial node
       if (this.initialView) {
-        this.setView(this.initialView, this.initialNodeToHighlight);
+        this.setView(this.initialView, this.initialObjectToHighlight);
       }
 
       if (newGraphs) {
@@ -296,7 +291,7 @@ class Vizceral extends EventEmitter {
   checkInitialView () {
     const initialView = {
       view: undefined,
-      highlighted: this.initialNodeToHighlight,
+      highlighted: this.initialObjectToHighlight,
       redirectedFrom: undefined
     };
 
@@ -356,18 +351,18 @@ class Vizceral extends EventEmitter {
    * ['us-east-1', 'api'] - show the view for the api node in the us-east-1 graph if it exists
    *
    * @param {array} viewArray - the array containing the view to set.
-   * @param {string} nodeToHighlight - a node to set as highlighted in the current viewArray
+   * @param {string} objectNameToHighlight - a node or connection to set as highlighted in the current viewArray
    */
-  setView (nodeArray = [], nodeToHighlight) {
+  setView (nodeArray = [], objectNameToHighlight) {
     let redirectedFrom;
     // If nothing has been selected yet, it's the initial node
     if (!this.currentView) {
       this.initialView = nodeArray;
-      this.initialNodeToHighlight = nodeToHighlight;
+      this.initialObjectToHighlight = objectNameToHighlight;
       const initialView = this.checkInitialView();
       if (!initialView.view) { return; }
       nodeArray = initialView.view;
-      nodeToHighlight = initialView.highlighted;
+      objectNameToHighlight = initialView.highlighted;
       redirectedFrom = initialView.redirectedFrom;
     }
 
@@ -395,12 +390,12 @@ class Vizceral extends EventEmitter {
         viewChanged = true;
       }
 
-      // If passed in a node to highlight, try to highlight.
+      // If passed in an object to highlight, try to highlight.
       if (!newSecondLevelNode) {
-        if (nodeToHighlight) {
-          const node = topLevelNodeGraph.getNode(nodeToHighlight);
-          if (node) {
-            topLevelNodeGraph.highlightObject(node);
+        if (objectNameToHighlight) {
+          const objectToHighlight = topLevelNodeGraph.getNode(objectNameToHighlight);
+          if (objectToHighlight) {
+            topLevelNodeGraph.highlightObject(objectToHighlight);
           }
         } else if (topLevelNodeGraph.highlightedObject) {
           topLevelNodeGraph.highlightObject();
@@ -663,8 +658,8 @@ class Vizceral extends EventEmitter {
       if (this.objectToSwitch !== userData.object) {
         this.objectToSwitch = userData.object;
         if (this.currentGraph.intersectedObject) {
-          // If an object was previously moused over, clear the type
-          this.currentGraph.intersectedObject.setType(undefined);
+          // If an object was previously moused over, clear the context
+          this.currentGraph.intersectedObject.setContext(undefined);
         }
 
         // if waiting for a hover effect on something else, clear it before moving on
@@ -683,8 +678,8 @@ class Vizceral extends EventEmitter {
         }
       }
 
-      if (userData.object && userData.object.type !== userData.type) {
-        userData.object.setType(userData.type);
+      if (userData.object && userData.object.context !== userData.context) {
+        userData.object.setContext(userData.context);
       }
     }
   }

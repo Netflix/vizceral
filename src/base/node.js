@@ -25,6 +25,7 @@ import Notices from '../notices';
 class Node extends GraphObject {
   constructor (node, renderer) {
     super();
+    this.type = 'node';
     this.update(node);
     this.minimumNoticeLevel = 0;
 
@@ -179,8 +180,8 @@ class Node extends GraphObject {
       && _.every(this.outgoingConnections, connection => connection.defaultFiltered));
   }
 
-  setType (type) {
-    super.setType(type);
+  setContext (type) {
+    super.setContext(type);
     if (this.view === this.views.detailed) {
       this.view.updateText();
     }

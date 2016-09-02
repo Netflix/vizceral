@@ -24,6 +24,7 @@ const Console = console;
 class Connection extends GraphObject {
   constructor (options) {
     super();
+    this.type = 'connection';
     this.source = options.source;
     this.target = options.target;
 
