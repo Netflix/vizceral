@@ -14,7 +14,8 @@
     "build": "npm run doc && npm run build:js",
     "build:js": "webpack --bail && webpack --bail -p",
     "watch": "webpack --watch -d",
-    "release": "release"
+    "release": "release",
+    "validate": "npm ls"
   },
   "devDependencies": {
     "babel-core": "^6.9.0",
@@ -29,6 +30,7 @@
     "eslint-plugin-import": "^1.10.2",
     "file-loader": "^0.9.0",
     "lodash-webpack-plugin": "^0.9.3",
+    "precommit-hook": "^3.0.0",
     "raw-loader": "^0.5.1",
     "release-script": "^1.0.2",
     "style-loader": "^0.13.1",
@@ -54,6 +56,9 @@
     "flow",
     "intuition",
     "visceral"
+  ],
+  "pre-commit": [
+    "lint"
   ],
   "author": "Justin Reynolds <jreynolds@netflix.com>",
   "license": "Apache-2.0"

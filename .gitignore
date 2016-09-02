@@ -7,6 +7,8 @@ bower_components
 npm-debug.log
 /dist
 *.map
+.jshintignore
+.jshintrc
 
 # System files
 .DS_Store
