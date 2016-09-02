@@ -26,6 +26,8 @@ Otherwise, to integrate it from scratch:
 
 2.  Start using the component
 
+    *ES6 Example*
+
     ```js
     import Vizceral from 'vizceral';
     const viz = new Vizceral();
@@ -56,6 +58,43 @@ Otherwise, to integrate it from scratch:
     viz.setView();
     viz.animate();
 
+    ```
+
+    *HTML/ES5 Example*
+
+    ```html
+    <html>
+      <head>
+        <script src="./dist/vizceral.js"></script>
+        <script>
+          function run () {
+            var viz = new Vizceral.default(document.getElementById('vizceral'));
+            viz.updateData({
+              name: 'us-west-2',
+              renderer: 'global',
+              nodes: [
+                {name: 'INTERNET'},
+                {name: 'service'}
+              ],
+              connections: [
+                {
+                  source: 'INTERNET',
+                  target: 'service',
+                  metrics: { normal: 100, warning: 95, danger: 5 },
+                  metadata: { streaming: true }
+                }
+              ]
+            });
+            viz.setView();
+            viz.animate();
+          }
+        </script>
+        <title>Vanilla Vizceral Example with Sample Data</title>
+      </head>
+      <body onload='run()'>
+        <canvas id='vizceral'></canvas>
+      </body>
+    </html>
     ```
 
 Note: The component will not show anything unless you call `updateData` on the component with relevant traffic data.
