@@ -23,8 +23,11 @@ import Hammer from 'hammerjs';
 
 import GlobalDefinitions from './globalDefinitions';
 import GlobalStyles from './globalStyles';
-import TrafficGraphFactory from './trafficGraphFactory';
+import GlobalTrafficGraph from './global/globalTrafficGraph';
+import RegionTrafficGraph from './region/regionTrafficGraph';
+
 import RendererUtils from './rendererUtils';
+
 
 /**
 * The `nodeHighlighted` event is fired whenever a node is highlighted.
@@ -125,6 +128,11 @@ class Vizceral extends EventEmitter {
     this.graphs = {};
     this.options = {};
     this.filters = {};
+
+    this.renderers = {
+      global: GlobalTrafficGraph,
+      region: RegionTrafficGraph
+    };
   }
 
 
@@ -164,6 +172,16 @@ class Vizceral extends EventEmitter {
     graph.on('nodeContextSizeChanged', dimensions => this.emit('nodeContextSizeChanged', dimensions));
   }
 
+  createGraph (graphData, mainView, width, height) {
+    let graph;
+    if (this.renderers[graphData.renderer]) {
+      graph = new (this.renderers[graphData.renderer])(graphData.name, mainView, width, height);
+    } else {
+      Console.log(`Attempted to create a graph type that does not exist: ${graphData.renderer} Presently registered renderers are ${Object.keys(this.renderers)}`);
+    }
+    return graph;
+  }
+
   createAndUpdateGraphs (graphData, baseGraphObject) {
     let graphCreated = false;
     if (graphData && graphData.renderer && graphData.nodes && graphData.nodes.length > 0) {
@@ -174,7 +192,7 @@ class Vizceral extends EventEmitter {
       // Create a graph
       if (!baseGraphObject[graphData.name]) {
         graphCreated = true;
-        baseGraphObject[graphData.name] = TrafficGraphFactory.NewTrafficGraph(graphData, this, graphWidth, graphHeight);
+        baseGraphObject[graphData.name] = this.createGraph(graphData, this, graphWidth, graphHeight);
         this._attachGraphHandlers(baseGraphObject[graphData.name]);
         baseGraphObject[graphData.name].setFilters(this.filters);
         baseGraphObject[graphData.name].showLabels(this.options.showLabels);
@@ -478,6 +496,10 @@ class Vizceral extends EventEmitter {
     if (this.currentGraph) {
       this.currentGraph.setFilters(filters);
     }
+  }
+
+  setRenderers (renderers) {
+    Object.assign(this.renderers, renderers);
   }
 
   setCurrentGraph (graph) {
