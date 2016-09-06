@@ -22,8 +22,7 @@ import GlobalNode from './globalNode';
 import RendererUtils from '../rendererUtils';
 import TrafficGraph from '../base/trafficGraph';
 
-const orbitSize = 1100;
-function updatePosition (node, nodeCount, nodeIndex) {
+function updatePosition (node, nodeCount, nodeIndex, orbitSize) {
   const rotationAdjustment = nodeCount % 2 === 0 ? Math.PI / 4 : (5 / 6) * Math.PI;
   node.size = 120;
   const adjustment = (((2 * Math.PI) * nodeIndex) / nodeCount) + rotationAdjustment;
@@ -33,7 +32,7 @@ function updatePosition (node, nodeCount, nodeIndex) {
   };
 }
 
-function positionNodes (nodes) {
+function positionNodes (nodes, orbitSize) {
   let nodeIndex = 0;
   const nodeCount = nodes.length - 1;
 
@@ -46,7 +45,7 @@ function positionNodes (nodes) {
     const node = nodeMap[nodeName];
     if (nodeName !== 'INTERNET') {
       nodeIndex++;
-      updatePosition(node, nodeCount, nodeIndex);
+      updatePosition(node, nodeCount, nodeIndex, orbitSize);
     } else {
       node.size = 150;
       node.position = {
@@ -67,6 +66,8 @@ function positionNodes (nodes) {
 class GlobalTrafficGraph extends TrafficGraph {
   constructor (name, mainView, graphWidth, graphHeight) {
     super(name, mainView, graphWidth, graphHeight, GlobalNode, GlobalConnection, true);
+
+    this.orbitSize = Math.min(graphWidth, graphHeight);
     this.linePrecision = 50;
     this.state = {
       nodes: [],
@@ -120,7 +121,7 @@ class GlobalTrafficGraph extends TrafficGraph {
     }
     this.state.maxVolume = maxVolume * 1.5;
 
-    positionNodes(this.state.nodes);
+    positionNodes(this.state.nodes, this.orbitSize);
     super.setState(this.state);
   }
 
