@@ -339,7 +339,7 @@ class DetailedNodeView extends NodeView {
     const mesh = new THREE.Mesh(slice, mat);
     mesh.position.set(0, 0, this.depth + 5);
     mesh.rotation.y = Math.PI;
-    mesh.userData.type = 'arc';
+    mesh.userData.context = 'arc';
 
     if (!permanent) { this.arcMeterSegments.push(mesh); }
     this.container.add(mesh);

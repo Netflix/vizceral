@@ -31,10 +31,10 @@ class BaseView {
     this.meshes = {};
   }
 
-  addInteractiveChild (child, type) {
+  addInteractiveChild (child, context) {
     if (!_.find(this.interactiveChildren, { id: child.id })) {
       child.userData.object = this.object;
-      child.userData.type = type;
+      child.userData.context = context;
       this.interactiveChildren.push(child);
     }
   }
@@ -116,10 +116,10 @@ class BaseView {
     return changed;
   }
 
-  addChildElement (geometry, material, type) {
+  addChildElement (geometry, material, context) {
     const mesh = new THREE.Mesh(geometry, material);
     this.container.add(mesh);
-    this.addInteractiveChild(mesh, type);
+    this.addInteractiveChild(mesh, context);
     return mesh;
   }
 }
