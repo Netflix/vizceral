@@ -274,7 +274,7 @@ class Vizceral extends EventEmitter {
   calculateIntersectedObject (x, y) {
     this.updateMousePosition(x, y);
     this.disableHoverInteractions = false;
-    this.calculateMouseOver();
+    this.calculateMouseOver(true);
     return this.currentGraph && this.currentGraph.getIntersectedObject();
   }
 
@@ -632,7 +632,7 @@ class Vizceral extends EventEmitter {
     this.setCurrentGraph(graph);
   }
 
-  calculateMouseOver () {
+  calculateMouseOver (immediate) {
     if (this.currentGraph) {
       this.raycaster.setFromCamera(this.mouse, this.camera);
       this.raycaster.linePrecision = this.currentGraph.linePrecision || 1;
@@ -665,7 +665,7 @@ class Vizceral extends EventEmitter {
           clearTimeout(this.mouseOverTimer);
         }
 
-        if (userData.object && !(this.currentGraph && this.currentGraph.highlightedObject)) {
+        if (!immediate && userData.object && !(this.currentGraph && this.currentGraph.highlightedObject)) {
           // if switching to an object and nothing is highlighted, set a timeout to perform the hover effect
           this.mouseOverTimer = setTimeout(() => {
             this.currentGraph.setIntersectedObject(this.objectToSwitch);
