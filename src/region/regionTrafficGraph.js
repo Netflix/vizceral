@@ -83,11 +83,11 @@ class RegionTrafficGraph extends TrafficGraph {
     // If we clicked on nothing, clear highlight
     if (!this.intersectedObject) {
       this.highlightObject(undefined);
-    } else if (this.intersectedObject instanceof this.NodeClass || this.intersectedObject instanceof this.ConnectionClass) {
-      // If we are not currently focused on a node, highlight the clicked object
-      if (!this.nodeName) {
-        this.highlightObject(this.intersectedObject);
-      }
+    } else if ((this.intersectedObject instanceof this.NodeClass && !this.nodeName)
+             || (this.intersectedObject instanceof this.ConnectionClass)) {
+      // If clicked on a node and there is no focused node, highlight.
+      // Or if clicked on a connection, highlight.
+      this.highlightObject(this.intersectedObject);
     }
   }
 
