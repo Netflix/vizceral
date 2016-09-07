@@ -391,15 +391,13 @@ class Vizceral extends EventEmitter {
       }
 
       // If passed in an object to highlight, try to highlight.
-      if (!newSecondLevelNode) {
-        if (objectNameToHighlight) {
-          const objectToHighlight = topLevelNodeGraph.getNode(objectNameToHighlight);
-          if (objectToHighlight) {
-            topLevelNodeGraph.highlightObject(objectToHighlight);
-          }
-        } else if (topLevelNodeGraph.highlightedObject) {
-          topLevelNodeGraph.highlightObject();
+      if (objectNameToHighlight) {
+        const objectToHighlight = topLevelNodeGraph.getGraphObject(objectNameToHighlight);
+        if (objectToHighlight) {
+          topLevelNodeGraph.highlightObject(objectToHighlight);
         }
+      } else if (topLevelNodeGraph.highlightedObject) {
+        topLevelNodeGraph.highlightObject();
       }
 
       // If switching to the top level node view from the global view, animate in
