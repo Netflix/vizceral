@@ -16,6 +16,8 @@
  *
  */
 import Node from '../base/node';
+import NodeViewStandard from '../base/nodeViewStandard';
+import NodeViewDetailed from '../base/nodeViewDetailed';
 
 class RegionNode extends Node {
   constructor (node) {
@@ -28,7 +30,11 @@ class RegionNode extends Node {
   }
 
   render () {
-    super.render();
+    this.views = {
+      standard: new NodeViewStandard(this),
+      detailed: new NodeViewDetailed(this)
+    };
+
     // Set the default view renderer
     this.view = this.views.standard;
   }

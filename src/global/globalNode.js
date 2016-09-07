@@ -18,6 +18,7 @@
 import _ from 'lodash';
 
 import Node from '../base/node';
+import NodeViewDetailed from '../base/nodeViewDetailed';
 
 class GlobalNode extends Node {
   constructor (node) {
@@ -43,7 +44,10 @@ class GlobalNode extends Node {
   }
 
   render () {
-    super.render();
+    this.views = {
+      detailed: new NodeViewDetailed(this)
+    };
+
     // Set the default view renderer
     this.view = this.views.detailed;
   }

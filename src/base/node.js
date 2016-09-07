@@ -18,9 +18,9 @@
 import _ from 'lodash';
 
 import GraphObject from './graphObject';
-import NodeViewStandard from './nodeViewStandard';
-import NodeViewDetailed from './nodeViewDetailed';
 import Notices from '../notices';
+
+const Console = console;
 
 class Node extends GraphObject {
   constructor (node, renderer) {
@@ -188,10 +188,7 @@ class Node extends GraphObject {
   }
 
   render () {
-    this.views = {
-      standard: new NodeViewStandard(this),
-      detailed: new NodeViewDetailed(this)
-    };
+    Console.warn('Attempted to render a Node base class. Extend the Node base class and provide a render() function that creates a views property.');
   }
 
   showNotices () {
