@@ -333,12 +333,16 @@ class ConnectionView extends BaseView {
       this.opacityAttr.needsUpdate = true;
 
       let color = GlobalStyles.threeStyles.colorTraffic.normal;
+
+      let accumulator = 0;
       for (const index in this.object.volumePercentKeysSorted) { // eslint-disable-line no-restricted-syntax, guard-for-in
         const key = this.object.volumePercentKeysSorted[index];
-        if (this.object.volumePercent[key] > rand) {
+        if (this.object.volumePercent[key] + accumulator > rand) {
           color = GlobalStyles.getColorTrafficThree(key);
           break;
         }
+
+        accumulator += this.object.volumePercent[key];
       }
       this.setParticleColor(this.lastParticleIndex, color);
 
