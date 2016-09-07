@@ -207,6 +207,8 @@ class TrafficGraph extends EventEmitter {
    */
   highlightObject (objectToHighlight, force) {
     if (this.highlightedObject !== objectToHighlight || force) {
+      // clear search string
+      this.searchString = '';
       this.highlightedObject = objectToHighlight;
       this.highlightConnectedNodes(objectToHighlight);
       const nodeName = objectToHighlight ? objectToHighlight instanceof this.NodeClass && objectToHighlight.getName() : undefined;
