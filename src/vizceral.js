@@ -260,15 +260,25 @@ class Vizceral extends EventEmitter {
    * @returns {object} { total, totalMatches, visible, visibleMatches }
    */
   findNodes (searchString) {
-    this.disableHoverInteractions = !!searchString;
-    const matchesFound = this.currentGraph.highlightMatchedNodes(searchString);
     if (this.currentGraph) {
-      matchesFound.total = this.currentGraph.nodeCounts.total;
-      matchesFound.visible = this.currentGraph.nodeCounts.visible;
-    }
+      this.disableHoverInteractions = !!searchString;
+      // If !!searchString, clear any highlighted object
+      if (this.disableHoverInteractions && this.currentGraph.highlightedObject) {
+        this.currentGraph.highlightObject();
+      }
 
-    this.emit('matchesFound', matchesFound);
-    return matchesFound;
+      // if !searchString and highlighted object, do nothing
+      if (searchString || !this.currentGraph.highlightedObject) {
+        // Highlight matches
+        const matchesFound = this.currentGraph.highlightMatchedNodes(searchString);
+        matchesFound.total = this.currentGraph.nodeCounts.total;
+        matchesFound.visible = this.currentGraph.nodeCounts.visible;
+
+        this.emit('matchesFound', matchesFound);
+        return matchesFound;
+      }
+    }
+    return undefined;
   }
 
   calculateIntersectedObject (x, y) {
