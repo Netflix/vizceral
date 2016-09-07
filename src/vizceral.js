@@ -25,6 +25,7 @@ import GlobalDefinitions from './globalDefinitions';
 import GlobalStyles from './globalStyles';
 import GlobalTrafficGraph from './global/globalTrafficGraph';
 import RegionTrafficGraph from './region/regionTrafficGraph';
+import DNSTrafficGraph from './dns/dnsTrafficGraph';
 
 import RendererUtils from './rendererUtils';
 
@@ -132,7 +133,8 @@ class Vizceral extends EventEmitter {
 
     this.renderers = {
       global: GlobalTrafficGraph,
-      region: RegionTrafficGraph
+      region: RegionTrafficGraph,
+      dns: DNSTrafficGraph
     };
   }
 
