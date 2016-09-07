@@ -18,6 +18,7 @@
 import _ from 'lodash';
 
 import Node from '../base/node';
+import NodeViewDetailed from '../base/nodeViewDetailed';
 
 class GlobalNode extends Node {
   constructor (node) {
@@ -36,6 +37,19 @@ class GlobalNode extends Node {
       });
     }
     return updated;
+  }
+
+  isInteractive () {
+    return !this.isEntryNode();
+  }
+
+  setContext (context) {
+    super.setContext(context);
+    this.view.updateText();
+  }
+
+  render () {
+    this.view = new NodeViewDetailed(this);
   }
 }
 

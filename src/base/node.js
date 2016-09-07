@@ -18,9 +18,9 @@
 import _ from 'lodash';
 
 import GraphObject from './graphObject';
-import NodeViewStandard from './nodeViewStandard';
-import NodeViewDetailed from './nodeViewDetailed';
 import Notices from '../notices';
+
+const Console = console;
 
 class Node extends GraphObject {
   constructor (node, renderer) {
@@ -180,41 +180,18 @@ class Node extends GraphObject {
       && _.every(this.outgoingConnections, connection => connection.defaultFiltered));
   }
 
-  setContext (type) {
-    super.setContext(type);
-    if (this.view === this.views.detailed) {
-      this.view.updateText();
-    }
+  setContext (context) {
+    super.setContext(context);
   }
 
   render () {
-    this.views = {
-      standard: new NodeViewStandard(this),
-      detailed: new NodeViewDetailed(this)
-    };
-    // Set the default view renderer
-    this.view = this.graphRenderer === 'global' ? this.views.detailed : this.views.standard;
+    Console.warn('Attempted to render a Node base class. Extend the Node base class and provide a render() function that creates a view property.');
   }
 
   showNotices () {
     if (this.view) { Notices.showNotices(this.view.container, this.notices); }
   }
 
-
-  showDetailedView (showDetailed) {
-    if (!this.views) { this.render(); }
-    const detailedViewShown = this.view === this.views.detailed;
-    if (detailedViewShown !== showDetailed) {
-      if (showDetailed) {
-        this.view = this.views.detailed;
-        this.focused = true;
-        this.view.refresh(true);
-      } else {
-        this.view = this.views.standard;
-        this.focused = false;
-      }
-    }
-  }
 
   updateData (totalVolume) {
     let updated = false;
@@ -263,9 +240,7 @@ class Node extends GraphObject {
     if (this.options.showLabel !== showLabel) {
       this.options.showLabel = showLabel;
       if (this.view !== undefined) {
-        _.each(this.views, view => {
-          view.showLabel(showLabel);
-        });
+        this.view.showLabel(showLabel);
       }
     }
   }
@@ -286,14 +261,9 @@ class Node extends GraphObject {
     return this.getName() === 'INTERNET';
   }
 
-  isInteractive () {
-    return (this.graphRenderer === 'global' && !this.isEntryNode())
-      || (this.graphRenderer === 'region' && this.view !== this.views.detailed);
-  }
-
   cleanup () {
-    if (this.views) {
-      _.each(this.views, view => view.cleanup());
+    if (this.view) {
+      this.view.cleanup();
     }
   }
 }
