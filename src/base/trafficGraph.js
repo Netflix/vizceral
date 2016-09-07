@@ -70,9 +70,12 @@ class TrafficGraph extends EventEmitter {
 
   updateView () {
     if (this.current && this.hasPositionData) {
-      if (this.searchString) { this.highlightMatchedNodes(this.searchString); }
-      if (this.highlightedObject) { this.highlightObject(this.highlightedObject); }
+      // First, update the state of the view, hiding and showing any necessary nodes or connections
       this.view.updateState();
+      // Re-apply highlighting to the graph is case there are new nodes or connections
+      if (this.searchString) { this.highlightMatchedNodes(this.searchString); }
+      if (this.highlightedObject) { this.highlightObject(this.highlightedObject, true); }
+      // Update listeners that something was rendered or re-rendered.
       this.emitRendered();
     }
   }
@@ -196,8 +199,14 @@ class TrafficGraph extends EventEmitter {
     return matches;
   }
 
-  highlightObject (objectToHighlight) {
-    if (this.highlightedObject !== objectToHighlight) {
+  /**
+   * Highlight an object (node or connection) on the graph.
+   *
+   * @param {object} objectToHighlight The graph object to attempt to highlight
+   * @param {boolean} force Force an update of the highlighted node, even if it is already highlighted
+   */
+  highlightObject (objectToHighlight, force) {
+    if (this.highlightedObject !== objectToHighlight || force) {
       this.highlightedObject = objectToHighlight;
       this.highlightConnectedNodes(objectToHighlight);
       const nodeName = objectToHighlight ? objectToHighlight instanceof this.NodeClass && objectToHighlight.getName() : undefined;
