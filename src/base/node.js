@@ -180,36 +180,18 @@ class Node extends GraphObject {
       && _.every(this.outgoingConnections, connection => connection.defaultFiltered));
   }
 
-  setContext (type) {
-    super.setContext(type);
-    if (this.view === this.views.detailed) {
-      this.view.updateText();
-    }
+  setContext (context) {
+    super.setContext(context);
   }
 
   render () {
-    Console.warn('Attempted to render a Node base class. Extend the Node base class and provide a render() function that creates a views property.');
+    Console.warn('Attempted to render a Node base class. Extend the Node base class and provide a render() function that creates a view property.');
   }
 
   showNotices () {
     if (this.view) { Notices.showNotices(this.view.container, this.notices); }
   }
 
-
-  showDetailedView (showDetailed) {
-    if (!this.views) { this.render(); }
-    const detailedViewShown = this.view === this.views.detailed;
-    if (detailedViewShown !== showDetailed) {
-      if (showDetailed) {
-        this.view = this.views.detailed;
-        this.focused = true;
-        this.view.refresh(true);
-      } else {
-        this.view = this.views.standard;
-        this.focused = false;
-      }
-    }
-  }
 
   updateData (totalVolume) {
     let updated = false;
@@ -258,9 +240,7 @@ class Node extends GraphObject {
     if (this.options.showLabel !== showLabel) {
       this.options.showLabel = showLabel;
       if (this.view !== undefined) {
-        _.each(this.views, view => {
-          view.showLabel(showLabel);
-        });
+        this.view.showLabel(showLabel);
       }
     }
   }
@@ -282,8 +262,8 @@ class Node extends GraphObject {
   }
 
   cleanup () {
-    if (this.views) {
-      _.each(this.views, view => view.cleanup());
+    if (this.view) {
+      this.view.cleanup();
     }
   }
 }

@@ -29,6 +29,29 @@ class RegionNode extends Node {
     return this.view !== this.views.detailed;
   }
 
+  showDetailedView (showDetailed) {
+    if (!this.views) { this.render(); }
+    const detailedViewShown = this.view === this.views.detailed;
+    if (detailedViewShown !== showDetailed) {
+      if (showDetailed) {
+        this.view = this.views.detailed;
+        this.focused = true;
+        this.view.refresh(true);
+      } else {
+        this.view = this.views.standard;
+        this.focused = false;
+      }
+      this.view.showLabel(this.options.showLabel);
+    }
+  }
+
+  setContext (context) {
+    super.setContext(context);
+    if (this.view === this.views.detailed) {
+      this.view.updateText();
+    }
+  }
+
   render () {
     this.views = {
       standard: new NodeViewStandard(this),
@@ -37,6 +60,12 @@ class RegionNode extends Node {
 
     // Set the default view renderer
     this.view = this.views.standard;
+  }
+
+  cleanup () {
+    if (this.views) {
+      Object.keys(this.views).forEach(key => this.views[key].cleanup());
+    }
   }
 
 }

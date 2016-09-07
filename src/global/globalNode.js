@@ -43,13 +43,13 @@ class GlobalNode extends Node {
     return !this.isEntryNode();
   }
 
-  render () {
-    this.views = {
-      detailed: new NodeViewDetailed(this)
-    };
+  setContext (context) {
+    super.setContext(context);
+    this.view.updateText();
+  }
 
-    // Set the default view renderer
-    this.view = this.views.detailed;
+  render () {
+    this.view = new NodeViewDetailed(this);
   }
 }
 
