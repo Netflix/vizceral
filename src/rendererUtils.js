@@ -39,18 +39,19 @@ class RendererUtils {
   /**
    * @typedef Dimensions
    * @type Object
-   * @property {number} x - The X screen coordinate
-   * @property {number} y - The Y screen coordinate
-   * @property {number} width - The width of the object in screen coordinates
-   * @property {number} height - The height of the object in screen coordinates
+   * @property {number} x The X screen coordinate
+   * @property {number} y The Y screen coordinate
+   * @property {number} width The width of the object in screen coordinates
+   * @property {number} height The height of the object in screen coordinates
    */
+
   /**
    * Translate the location of a THREE.Object3D rendered by the Three.js renderer in screen coordinates
    * relative to the renderer's dom element
    *
-   * @param  {Object} obj - The THREE.js Object3D() to calculate screen dimensions for
-   * @param  {string} [anchorPoint] - The anchor point to map to screen coordinates; Undefined is middle, TL or BL
-   * @return {Dimensions} - The x,y anchor point and the width and height of the object
+   * @param  {Object} obj The THREE.js Object3D() to calculate screen dimensions for
+   * @param  {string} [anchorPoint] The anchor point to map to screen coordinates; Undefined is middle, TL or BL
+   * @returns {Dimensions} The x,y anchor point and the width and height of the object
    */
   toScreenPosition (obj, anchorPoint) {
     if (!obj) { return undefined; }

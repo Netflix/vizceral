@@ -251,9 +251,9 @@ class DetailedNodeView extends NodeView {
   /**
    * Add a new slice to the donut graph
    *
-   * @param {number} startAngle - The angle (in radians) to start drawing the donut slice
-   * @param {number} percent - The percent of the donut to fill with this new donut slice
-   * @param {string} color - A string representation of the color to make this slice
+   * @param {number} startAngle The angle (in radians) to start drawing the donut slice
+   * @param {number} percent The percent of the donut to fill with this new donut slice
+   * @param {string} color A string representation of the color to make this slice
    */
   addNewDonutSlice (startAngle, percent, color) {
     const size = Math.PI * 2 * percent;
@@ -278,7 +278,7 @@ class DetailedNodeView extends NodeView {
     /**
      * Get the start angle of the donut graph based on the totalPercent of the donut to be filled
      *
-     * @param {number} totalPercent - A percent in decimal form between 0 and 1
+     * @param {number} totalPercent A percent in decimal form between 0 and 1
      */
     const getStartAngle = (totalPercent) => {
       let startAngle = Math.PI * 0.5;
@@ -327,10 +327,10 @@ class DetailedNodeView extends NodeView {
   /**
    * Add a new slice to the arc meter
    *
-   * @param {number} startAngle - The angle (in radians) to start drawing the arc slice
-   * @param {number} percent - The percent of the arc to fill with this new arc slice
-   * @param {string} color - A string representation of the color to make this slice
-   * @param {boolean=} permanent - Whether to include this slice permanently (Added for the use of the background color slice)
+   * @param {number} startAngle The angle (in radians) to start drawing the arc slice
+   * @param {number} percent The percent of the arc to fill with this new arc slice
+   * @param {string} color A string representation of the color to make this slice
+   * @param {boolean=} permanent Whether to include this slice permanently (Added for the use of the background color slice)
    */
   addArcSlice (startAngle, percent, color, permanent) {
     const size = Math.PI * percent;

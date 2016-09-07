@@ -34,38 +34,38 @@ import RendererUtils from './rendererUtils';
 * `object.type` will be either 'node' or 'connection'
 *
 * @event objectHighlighted
-* @property {object} object - The object that has been highlighted, or the highlighted object that has been updated.
+* @property {object} object The object that has been highlighted, or the highlighted object that has been updated.
 */
 /**
 * The `rendered` event is fired whenever a graph is rendered.
 *
 * @event rendered
-* @property {string} name - the name of the graph that was rendered
-* @property (boolean} rendered - true only if the graph has been rendered AND has position data
+* @property {string} name the name of the graph that was rendered
+* @property (boolean} rendered true only if the graph has been rendered AND has position data
 */
 /**
 * The `viewChanged` event is fired whenever the view changes
 *
 * @event viewChanged
-* @property {array} view - The currently selected view (e.g. [] for global, ['us-east-1'] for one node deep, ['us-east-1', 'api'] for two nodes deep)
+* @property {array} view The currently selected view (e.g. [] for global, ['us-east-1'] for one node deep, ['us-east-1', 'api'] for two nodes deep)
 */
 /**
 * The `nodeFocused` event is fired whenever a node gains focus or the currently focused node is updated
 *
 * @event nodeFocused
-* @property {object} node - The node object that has been focused, or the focused node that has been updated.
+* @property {object} node The node object that has been focused, or the focused node that has been updated.
 */
 /**
 * The `nodeContextSizeChanged` event is fired whenever the context panel size for node context size changes
 *
 * @event nodeContextSizeChanged
-* @property {object} dimensions - The dimensions of the node context panels
+* @property {object} dimensions The dimensions of the node context panels
 */
 /**
 * The `matchesFound` event is fired whenever nodes are found via findNodes().
 *
 * @event matchesFound
-* @property {object} matches - The matches object { total, visible }
+* @property {object} matches The matches object { total, visible }
 */
 
 
@@ -79,7 +79,7 @@ class Vizceral extends EventEmitter {
   /**
    * Represents a Vizceral component.
    * @constructor
-   * @param {object} [canvas] - The canvas to render the graph onto; if not provided, will create a canvas accessible by this.renderer.domElement
+   * @param {object} [canvas] The canvas to render the graph onto; if not provided, will create a canvas accessible by this.renderer.domElement
    */
   constructor (canvas) {
     super();
@@ -140,7 +140,7 @@ class Vizceral extends EventEmitter {
   /**
    * Get an array of all possible defined styles
    *
-   * @return {array}  Array of all possible styles
+   * @returns {array}  Array of all possible styles
    */
   getStyles () {
     return Object.keys(GlobalStyles.styles);
@@ -215,7 +215,7 @@ class Vizceral extends EventEmitter {
    * Set the new set of traffic data to render. This is expected to be called
    * with the complete set of traffic data anytime there is an update.
    *
-   * @param {object} data - The traffic data that matches the format in DATAFORMATS.md
+   * @param {object} data The traffic data that matches the format in DATAFORMATS.md
    */
   updateData (trafficData) {
     if (trafficData && trafficData.nodes) {
@@ -236,7 +236,7 @@ class Vizceral extends EventEmitter {
   /**
    * Sets the highlighted node.  If the node is undefined, clears any highlighting.
    *
-   * @param {object} node - The node to highlight
+   * @param {object} node The node to highlight
    */
   setHighlightedNode (node) {
     this.currentGraph.highlightObject(node);
@@ -245,7 +245,7 @@ class Vizceral extends EventEmitter {
   /**
    * Sets the highlighted connection.  If the connection is undefined, clears any highlighting.
    *
-   * @param {object} connection - The connection to highlight
+   * @param {object} connection The connection to highlight
    */
   setHighlightedConnection (connection) {
     this.currentGraph.highlightObject(connection);
@@ -255,9 +255,9 @@ class Vizceral extends EventEmitter {
    * Highlight nodes that match searchString.  Searches the node name and the list
    * of sub nodes, if nodes have one.
    *
-   * @param {string} searchString - The string to match against the nodes.
+   * @param {string} searchString The string to match against the nodes.
    *
-   * @returns {object} - { total, totalMatches, visible, visibleMatches }
+   * @returns {object} { total, totalMatches, visible, visibleMatches }
    */
   findNodes (searchString) {
     this.disableHoverInteractions = !!searchString;
@@ -350,8 +350,8 @@ class Vizceral extends EventEmitter {
    * ['us-east-1'] - show the graph view for 'us-east-1' if it exists
    * ['us-east-1', 'api'] - show the view for the api node in the us-east-1 graph if it exists
    *
-   * @param {array} viewArray - the array containing the view to set.
-   * @param {string} objectNameToHighlight - a node or connection to set as highlighted in the current viewArray
+   * @param {array} viewArray the array containing the view to set.
+   * @param {string} objectNameToHighlight a node or connection to set as highlighted in the current viewArray
    */
   setView (nodeArray = [], objectNameToHighlight) {
     let redirectedFrom;
@@ -485,7 +485,7 @@ class Vizceral extends EventEmitter {
   /**
    * Get a specific node object
    *
-   * @param {array} nodeArray - e.g. [ node1, node2 ]
+   * @param {array} nodeArray e.g. [ node1, node2 ]
    */
   getNode (nodeArray) {
     if (nodeArray && nodeArray.length === 2 && this.graphs[nodeArray[0]]) {
@@ -497,7 +497,7 @@ class Vizceral extends EventEmitter {
   /**
    * Set the set of filters to apply along with their current values.
    *
-   * @param {object} filters - The filters that match the format in DATAFORMATS.md
+   * @param {object} filters The filters that match the format in DATAFORMATS.md
    */
   setFilters (filters) {
     this.filters = filters;

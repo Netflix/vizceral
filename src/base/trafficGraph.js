@@ -77,6 +77,14 @@ class TrafficGraph extends EventEmitter {
     }
   }
 
+  /**
+   * Set whether this graph is the currently displayed graph or not.
+   * This is important to call for the newly current graph so that it can update properly,
+   * and important to call for the previous graph so we can cleanup any renderers that we
+   * don't need to keep around
+   *
+   * @param {boolean} current Whether to set this graph as current or not
+   */
   setCurrent (current) {
     if (this.current !== current) {
       this.current = current;
@@ -90,6 +98,13 @@ class TrafficGraph extends EventEmitter {
     }
   }
 
+  /**
+   * Get a node object by name. Also will match on sub-node names if no match found in the
+   * top-level graph.
+   *
+   * @param {string} nodeName the name of the node to get
+   * @returns {object} The node object that matches on nodeName, otherwise undefined
+   */
   getNode (nodeName) {
     // Check if the node exists by direct name first
     if (this.nodes[nodeName]) { return this.nodes[nodeName]; }
@@ -104,14 +119,33 @@ class TrafficGraph extends EventEmitter {
     return nodes[0];
   }
 
+  /**
+   * Get a connection object by name.
+   *
+   * @param {string} connectionName the name of the connection to get
+   * @returns {object} The connection object that matches on connectionName, otherwise undefined
+   */
   getConnection (connectionName) {
     return this.connections[connectionName];
   }
 
+  /**
+   * Get a graph object, node or connection, by name.
+   *
+   * @param {string} objectName the name of the node or connection to get
+   * @returns {object} The node or connection object that matches on objectName, otherwise undefined
+   */
   getGraphObject (objectName) {
     return this.getNode(objectName) || this.getConnection(objectName);
   }
 
+  /**
+   * Highlight nodes that match the passed in searchString.
+   * Also will match on sub-node names if no match found in the top-level graph.
+   *
+   * @param {string} searchString The string to match.
+   * @returns {{total: number, visible: number}} The total matches and the matches that are visible
+   */
   highlightMatchedNodes (searchString) {
     this.searchString = searchString;
     const dimDefault = !!searchString;
@@ -235,6 +269,11 @@ class TrafficGraph extends EventEmitter {
     return this.nodeCounts.total > 0;
   }
 
+  /**
+   * Validate the current state.  If setState(state) was called while this graph was not current,
+   * all calculations were deferred. This makes sure that the current view is up to date with the
+   * most current state.
+   */
   validateState () {
     if (this.cachedState) {
       this.setState(this.cachedState);
@@ -496,7 +535,7 @@ class TrafficGraph extends EventEmitter {
    * _updateNodeFilters(filters) to eliminate the any orphaned nodes or
    * connections to nowhere.
    *
-   * @param  {object} filters - An object map of filters in the form of
+   * @param  {object} filters An object map of filters in the form of
    *                    { node: [], connection: [] }. Each respective array
    *                    containing filter configuration objects as described in
    *                    DATAFORMATS.md
@@ -521,7 +560,7 @@ class TrafficGraph extends EventEmitter {
    * _updateConnectionFilters(filters) to eliminate the any connections to
    * nowhere or orphaned nodes.
    *
-   * @param  {object} filters - An object map of filters in the form of
+   * @param  {object} filters An object map of filters in the form of
    *                    { node: [], connection: [] }. Each respective array
    *                    containing filter configuration objects as described in
    *                    DATAFORMATS.md
