@@ -37,6 +37,16 @@ class GlobalNode extends Node {
     }
     return updated;
   }
+
+  isInteractive () {
+    return !this.isEntryNode();
+  }
+
+  render () {
+    super.render();
+    // Set the default view renderer
+    this.view = this.views.detailed;
+  }
 }
 
 export default GlobalNode;

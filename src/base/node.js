@@ -192,8 +192,6 @@ class Node extends GraphObject {
       standard: new NodeViewStandard(this),
       detailed: new NodeViewDetailed(this)
     };
-    // Set the default view renderer
-    this.view = this.graphRenderer === 'global' ? this.views.detailed : this.views.standard;
   }
 
   showNotices () {
@@ -284,11 +282,6 @@ class Node extends GraphObject {
 
   isEntryNode () {
     return this.getName() === 'INTERNET';
-  }
-
-  isInteractive () {
-    return (this.graphRenderer === 'global' && !this.isEntryNode())
-      || (this.graphRenderer === 'region' && this.view !== this.views.detailed);
   }
 
   cleanup () {

@@ -22,6 +22,17 @@ class RegionNode extends Node {
     super(node, 'region');
     this.loaded = true;
   }
+
+  isInteractive () {
+    return this.view !== this.views.detailed;
+  }
+
+  render () {
+    super.render();
+    // Set the default view renderer
+    this.view = this.views.standard;
+  }
+
 }
 
 export default RegionNode;
