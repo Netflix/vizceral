@@ -65,7 +65,7 @@ function positionNodes (nodes, orbitSize) {
 
 class GlobalTrafficGraph extends TrafficGraph {
   constructor (name, mainView, graphWidth, graphHeight) {
-    super(name, mainView, graphWidth, graphHeight, GlobalNode, GlobalConnection, true);
+    super(name, mainView, graphWidth, graphHeight, GlobalNode, GlobalConnection);
 
     this.orbitSize = Math.min(graphWidth, graphHeight);
     this.linePrecision = 50;
@@ -123,17 +123,6 @@ class GlobalTrafficGraph extends TrafficGraph {
 
     positionNodes(this.state.nodes, this.orbitSize);
     super.setState(this.state);
-  }
-
-  _updateFilteredElements () {
-    const graph = { nodes: [], edges: [] };
-    _.each(this.connections, connection => {
-      graph.edges.push({ name: connection.getName(), visible: connection.isVisible(), source: connection.source.getName(), target: connection.target.getName() });
-    });
-    _.each(this.nodes, node => {
-      graph.nodes.push({ name: node.getName(), visible: node.isVisible(), position: node.position, weight: node.depth });
-    });
-    this._relayout(graph);
   }
 
   handleIntersectedObjectClick () {
