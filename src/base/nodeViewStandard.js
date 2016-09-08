@@ -22,28 +22,6 @@ import NodeNameView from './nodeNameView';
 import GlobalStyles from '../globalStyles';
 
 const radius = 16;
-const curveSegments = 32;
-
-// Outer border
-const outerBorder = new THREE.Shape();
-outerBorder.absarc(0, 0, radius + 2, 0, Math.PI * 2, false);
-const outerBorderHole = new THREE.Path();
-outerBorderHole.absarc(0, 0, radius, 0, Math.PI * 2, true);
-outerBorder.holes.push(outerBorderHole);
-const outerBorderGeometry = new THREE.ShapeGeometry(outerBorder, { curveSegments: curveSegments });
-
-// Inner circle
-const circleShape = new THREE.Shape();
-circleShape.moveTo(radius, 0);
-circleShape.absarc(0, 0, radius, 0, 2 * Math.PI, false);
-const innerCircleGeometry = new THREE.ShapeGeometry(circleShape, { curveSegments: curveSegments });
-
-// Notice dot
-const noticeShape = new THREE.Shape();
-const dotRadius = radius * 0.5;
-noticeShape.moveTo(dotRadius, 0);
-noticeShape.absarc(0, 0, dotRadius, 0, 2 * Math.PI, false);
-const noticeDotGeometry = new THREE.ShapeGeometry(noticeShape, { curveSegments: curveSegments });
 
 class NodeViewStandard extends NodeView {
   constructor (service) {
@@ -53,9 +31,9 @@ class NodeViewStandard extends NodeView {
     const dotColor = GlobalStyles.getColorTrafficThree(this.object.getClass());
     this.dotMaterial = new THREE.MeshBasicMaterial({ color: dotColor, transparent: true });
 
-    this.meshes.outerBorder = this.addChildElement(outerBorderGeometry, this.borderMaterial);
-    this.meshes.innerCircle = this.addChildElement(innerCircleGeometry, this.innerCircleMaterial);
-    this.meshes.noticeDot = this.addChildElement(noticeDotGeometry, this.dotMaterial);
+    this.meshes.outerBorder = this.addChildElement(NodeView.getOuterBorderGeometry(radius), this.borderMaterial);
+    this.meshes.innerCircle = this.addChildElement(NodeView.getInnerCircleGeometry(radius), this.innerCircleMaterial);
+    this.meshes.noticeDot = this.addChildElement(NodeView.getNoticeDotGeometry(radius), this.dotMaterial);
     this.refreshNotices();
 
     // Add the service name
