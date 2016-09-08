@@ -72,6 +72,7 @@ Otherwise, to integrate it from scratch:
             viz.updateData({
               name: 'us-west-2',
               renderer: 'global',
+              maxVolume: 500,
               nodes: [
                 {name: 'INTERNET'},
                 {name: 'service'}
