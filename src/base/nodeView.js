@@ -22,6 +22,24 @@ import BaseView from './baseView';
 import GlobalStyles from '../globalStyles';
 import Constants from './constants';
 
+const curveSegments = 32;
+
+
+function getOrSet (obj, key, func) {
+  let result = obj[key];
+  if (result === undefined) {
+    result = func();
+    obj[key] = result;
+  }
+  return result;
+}
+
+const outerBorderGeometries = {};
+const innerCircleGeometries = {};
+const innerBorderGeometries = {};
+const donutGeometries = {};
+const noticeDotGeometries = {};
+
 class NodeView extends BaseView {
   constructor (node) {
     super(node);
@@ -192,6 +210,58 @@ class NodeView extends BaseView {
     if (this.nameView) { this.nameView.cleanup(); }
     this.borderMaterial.dispose();
     this.innerCircleMaterial.dispose();
+  }
+
+  static getOuterBorderGeometry (radius) {
+    return getOrSet(outerBorderGeometries, radius, () => {
+      const border = new THREE.Shape();
+      border.absarc(0, 0, radius + 2, 0, Math.PI * 2, false);
+      const borderHole = new THREE.Path();
+      borderHole.absarc(0, 0, radius, 0, Math.PI * 2, true);
+      border.holes.push(borderHole);
+      return new THREE.ShapeGeometry(border, { curveSegments: curveSegments });
+    });
+  }
+
+  static getInnerCircleGeometry (radius) {
+    return getOrSet(innerCircleGeometries, radius, () => {
+      const circleShape = new THREE.Shape();
+      circleShape.moveTo(radius, 0);
+      circleShape.absarc(0, 0, radius, 0, 2 * Math.PI, false);
+      return new THREE.ShapeGeometry(circleShape, { curveSegments: curveSegments });
+    });
+  }
+
+  static getInnerBorderGeometry (radius) {
+    return getOrSet(innerBorderGeometries, radius, () => {
+      const innerBorder = new THREE.Shape();
+      innerBorder.absarc(0, 0, radius, 0, Math.PI * 2, false);
+      const innerBorderHole = new THREE.Path();
+      innerBorderHole.absarc(0, 0, radius - 2, 0, Math.PI * 2, true);
+      innerBorder.holes.push(innerBorderHole);
+      return new THREE.ShapeGeometry(innerBorder, { curveSegments: curveSegments });
+    });
+  }
+
+  static getDonutGeometry (radius, innerRadius) {
+    return getOrSet(donutGeometries, `${radius}:${innerRadius}`, () => {
+      const arcShape = new THREE.Shape();
+      arcShape.absarc(0, 0, radius, 0, Math.PI * 2, false);
+      const holePath = new THREE.Path();
+      holePath.absarc(0, 0, innerRadius, 0, Math.PI * 2, true);
+      arcShape.holes.push(holePath);
+      return new THREE.ShapeGeometry(arcShape, { curveSegments: curveSegments });
+    });
+  }
+
+  static getNoticeDotGeometry (radius) {
+    return getOrSet(noticeDotGeometries, radius, () => {
+      const noticeShape = new THREE.Shape();
+      const dotRadius = radius * 0.5;
+      noticeShape.moveTo(dotRadius, 0);
+      noticeShape.absarc(0, 0, dotRadius, 0, 2 * Math.PI, false);
+      return new THREE.ShapeGeometry(noticeShape, { curveSegments: curveSegments });
+    });
   }
 }
 

@@ -44,65 +44,6 @@ function generateDisplayValue (value, format) {
 
 const zAxis = new THREE.Vector3(0, 0, 1);
 
-const outerBorderGeometries = {};
-function getOuterBorderGeometry (radius) {
-  let geometry = outerBorderGeometries[radius];
-  if (geometry === undefined) {
-    const border = new THREE.Shape();
-    border.absarc(0, 0, radius + 2, 0, Math.PI * 2, false);
-    const borderHole = new THREE.Path();
-    borderHole.absarc(0, 0, radius, 0, Math.PI * 2, true);
-    border.holes.push(borderHole);
-    geometry = new THREE.ShapeGeometry(border, { curveSegments: 32 });
-    outerBorderGeometries[radius] = geometry;
-  }
-  return geometry;
-}
-
-const innerCircleGeometries = {};
-function getInnerCircleGeometry (radius) {
-  let geometry = innerCircleGeometries[radius];
-  if (geometry === undefined) {
-    const circleShape = new THREE.Shape();
-    circleShape.moveTo(radius, 0);
-    circleShape.absarc(0, 0, radius, 0, 2 * Math.PI, false);
-    geometry = new THREE.ShapeGeometry(circleShape, { curveSegments: 32 });
-    innerCircleGeometries[radius] = geometry;
-  }
-  return geometry;
-}
-
-const innerBorderGeometries = {};
-function getInnerBorderGeometry (radius) {
-  let geometry = innerBorderGeometries[radius];
-  if (geometry === undefined) {
-    const innerBorder = new THREE.Shape();
-    innerBorder.absarc(0, 0, radius, 0, Math.PI * 2, false);
-    const innerBorderHole = new THREE.Path();
-    innerBorderHole.absarc(0, 0, radius - 2, 0, Math.PI * 2, true);
-    innerBorder.holes.push(innerBorderHole);
-    geometry = new THREE.ShapeGeometry(innerBorder, { curveSegments: 32 });
-    innerBorderGeometries[radius] = geometry;
-  }
-  return geometry;
-}
-
-const donutGeometries = {};
-function getDonutGeometry (radius, innerRadius) {
-  const key = `${radius}:${innerRadius}`;
-  let geometry = donutGeometries[key];
-  if (geometry === undefined) {
-    const arcShape = new THREE.Shape();
-    arcShape.absarc(0, 0, radius, 0, Math.PI * 2, false);
-    const holePath = new THREE.Path();
-    holePath.absarc(0, 0, innerRadius, 0, Math.PI * 2, true);
-    arcShape.holes.push(holePath);
-    geometry = new THREE.ShapeGeometry(arcShape, { curveSegments: 32 });
-    donutGeometries[key] = geometry;
-  }
-  return geometry;
-}
-
 class DetailedNodeView extends NodeView {
   constructor (service) {
     super(service);
@@ -115,11 +56,11 @@ class DetailedNodeView extends NodeView {
     this.radius = this.object.size || 120;
     this.innerRadius = this.radius * 0.8;
 
-    this.meshes.outerBorder = this.addChildElement(getOuterBorderGeometry(this.radius), this.borderMaterial);
-    this.meshes.innerCircle = this.addChildElement(getInnerCircleGeometry(this.radius), this.innerCircleMaterial);
+    this.meshes.outerBorder = this.addChildElement(NodeView.getOuterBorderGeometry(this.radius), this.borderMaterial);
+    this.meshes.innerCircle = this.addChildElement(NodeView.getInnerCircleGeometry(this.radius), this.innerCircleMaterial);
     this.meshes.innerCircle.position.setZ(-10);
-    this.meshes.donut = this.addChildElement(getDonutGeometry(this.radius, this.innerRadius), this.donutMaterial, 'donut');
-    this.meshes.innerBorder = this.addChildElement(getInnerBorderGeometry(this.innerRadius), this.borderMaterial);
+    this.meshes.donut = this.addChildElement(NodeView.getDonutGeometry(this.radius, this.innerRadius), this.donutMaterial, 'donut');
+    this.meshes.innerBorder = this.addChildElement(NodeView.getInnerBorderGeometry(this.innerRadius), this.borderMaterial);
     this.meshes.innerBorder.position.setZ(100);
 
     // Add the service name
