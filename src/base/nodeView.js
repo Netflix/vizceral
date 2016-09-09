@@ -47,11 +47,12 @@ class NodeView extends BaseView {
 
     this.depth = 5;
 
-    this.donutInternalColor = GlobalStyles.threeStyles.colorDonutInternalColor.clone();
+    this.donutInternalColor = GlobalStyles.rgba.colorDonutInternalColor;
+    this.donutInternalColorThree = new THREE.Color(this.donutInternalColor.r, this.donutInternalColor.g, this.donutInternalColor.b);
 
-    const borderColor = GlobalStyles.getColorTrafficThree(node.getClass());
-    this.borderMaterial = new THREE.MeshBasicMaterial({ color: borderColor, transparent: true });
-    this.innerCircleMaterial = new THREE.MeshBasicMaterial({ color: this.donutInternalColor, transparent: true });
+    const borderColor = GlobalStyles.getColorTrafficRGBA(node.getClass());
+    this.borderMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(borderColor.r, borderColor.g, borderColor.b), transparent: true, opacity: borderColor.a });
+    this.innerCircleMaterial = new THREE.MeshBasicMaterial({ color: this.donutInternalColorThree, transparent: true });
   }
 
   setOpacity (opacity) {
@@ -99,18 +100,19 @@ class NodeView extends BaseView {
     if (this.object.classInvalidated || force) {
       this.object.classInvalidated = false;
       const nodeClass = this.object.getClass();
+      const borderColor = GlobalStyles.getColorTrafficRGBA(nodeClass, this.highlight);
       if (this.highlight) {
-        this.innerCircleMaterial.color.set(GlobalStyles.getColorTrafficThree(nodeClass, true));
+        this.innerCircleMaterial.color.setRGB(borderColor.r, borderColor.g, borderColor.b);
         this.meshes.innerCircle.geometry.colorsNeedUpdate = true;
-        this.borderMaterial.color.set(GlobalStyles.getColorTrafficThree(nodeClass, true));
+        this.borderMaterial.color.setRGB(borderColor.r, borderColor.g, borderColor.b);
         this.meshes.outerBorder.geometry.colorsNeedUpdate = true;
         if (this.meshes.innerBorder) { this.meshes.innerBorder.geometry.colorsNeedUpdate = true; }
       } else {
         if (this.getOpacity() === 1) {
-          this.innerCircleMaterial.color.set(this.donutInternalColor);
+          this.innerCircleMaterial.color.set(this.donutInternalColorThree);
           this.meshes.innerCircle.geometry.colorsNeedUpdate = true;
         }
-        this.borderMaterial.color.set(GlobalStyles.getColorTrafficThree(nodeClass));
+        this.borderMaterial.color.setRGB(borderColor.r, borderColor.g, borderColor.b);
         this.meshes.outerBorder.geometry.colorsNeedUpdate = true;
         if (this.meshes.innerBorder) { this.meshes.innerBorder.geometry.colorsNeedUpdate = true; }
       }

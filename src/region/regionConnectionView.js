@@ -27,7 +27,7 @@ class RegionConnectionView extends ConnectionView {
     // Add the connection line
     this.connectionLineGeometry = new THREE.Geometry();
     this.connectionLineMaterial = new THREE.LineBasicMaterial({
-      color: GlobalStyles.threeStyles.colorConnectionLine,
+      color: GlobalStyles.styles.colorConnectionLine,
       blending: THREE.AdditiveBlending,
       depthTest: true,
       depthWrite: false,

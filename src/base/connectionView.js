@@ -136,9 +136,9 @@ class ConnectionView extends BaseView {
       vertices[(i * 3) + 2] = customWidth ? connectionDepth - (normalDistribution() * connectionDepth * 2) : -2;
 
       // Custom colors
-      customColors[i] = GlobalStyles.threeStyles.colorTraffic.normal.r;
-      customColors[i + 1] = GlobalStyles.threeStyles.colorTraffic.normal.g;
-      customColors[i + 2] = GlobalStyles.threeStyles.colorTraffic.normal.b;
+      customColors[i] = GlobalStyles.rgba.colorTraffic.normal.r;
+      customColors[i + 1] = GlobalStyles.rgba.colorTraffic.normal.g;
+      customColors[i + 2] = GlobalStyles.rgba.colorTraffic.normal.b;
 
       customOpacities[i] = 0;
       sizes[i] = 6;
@@ -332,13 +332,13 @@ class ConnectionView extends BaseView {
       this.opacityAttr.array[this.lastParticleIndex] = 1.0;
       this.opacityAttr.needsUpdate = true;
 
-      let color = GlobalStyles.threeStyles.colorTraffic.normal;
+      let color = GlobalStyles.rgba.colorTraffic.normal;
 
       let accumulator = 0;
       for (const index in this.object.volumePercentKeysSorted) { // eslint-disable-line no-restricted-syntax, guard-for-in
         const key = this.object.volumePercentKeysSorted[index];
         if (this.object.volumePercent[key] + accumulator > rand) {
-          color = GlobalStyles.getColorTrafficThree(key);
+          color = GlobalStyles.getColorTrafficRGBA(key);
           break;
         }
 
@@ -393,6 +393,9 @@ class ConnectionView extends BaseView {
     const colorAttr = this.particles.geometry.getAttribute('customColor');
     colorAttr.setXYZ(index, color.r, color.g, color.b);
     colorAttr.needsUpdate = true;
+
+    this.opacityAttr.array[index] = color.a;
+    this.opacityAttr.needsUpdate = true;
   }
 
   setParticleSize (index, size) {

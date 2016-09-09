@@ -28,8 +28,8 @@ class NodeViewStandard extends NodeView {
     super(service);
     this.radius = radius;
 
-    const dotColor = GlobalStyles.getColorTrafficThree(this.object.getClass());
-    this.dotMaterial = new THREE.MeshBasicMaterial({ color: dotColor, transparent: true });
+    const dotColor = GlobalStyles.getColorTrafficRGBA(this.object.getClass());
+    this.dotMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(dotColor.r, dotColor.g, dotColor.b), transparent: true, opacity: dotColor.a });
 
     this.meshes.outerBorder = this.addChildElement(NodeView.getOuterBorderGeometry(radius), this.borderMaterial);
     this.meshes.innerCircle = this.addChildElement(NodeView.getInnerCircleGeometry(radius), this.innerCircleMaterial);
@@ -51,8 +51,8 @@ class NodeViewStandard extends NodeView {
   refreshNotices () {
     if (this.object.hasNotices()) {
       const noticeSeverity = this.object.highestNoticeLevel();
-      this.dotColor = GlobalStyles.getColorSeverityThree(noticeSeverity);
-      this.dotMaterial.color.set(this.dotColor);
+      this.dotColor = GlobalStyles.getColorSeverityRGBA(noticeSeverity);
+      this.dotMaterial.color.setRGB(this.dotColor.r, this.dotColor.g, this.dotColor.b);
       this.dotMaterial.opacity = this.opacity;
       this.meshes.noticeDot.geometry.colorsNeedUpdate = true;
     } else {
@@ -67,7 +67,7 @@ class NodeViewStandard extends NodeView {
     if (this.highlight) {
       this.dotMaterial.color.set(this.donutInternalColor);
     } else {
-      this.dotMaterial.color.set(this.dotColor);
+      this.dotMaterial.color.setRGB(this.dotColor.r, this.dotColor.g, this.dotColor.b);
     }
     this.meshes.noticeDot.geometry.colorsNeedUpdate = true;
 
