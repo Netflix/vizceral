@@ -198,13 +198,14 @@ class DetailedNodeView extends NodeView {
    * @param {number} percent The percent of the donut to fill with this new donut slice
    * @param {string} color A string representation of the color to make this slice
    */
-  addNewDonutSlice (startAngle, percent, color) {
+  addDonutSlice (startAngle, percent, color) {
     const size = Math.PI * 2 * percent;
     const slice = new THREE.RingGeometry(this.innerRadius, this.radius, 30, 8, startAngle, size);
     const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(color.r, color.g, color.b), side: THREE.DoubleSide, transparent: true, opacity: color.a });
     const mesh = new THREE.Mesh(slice, mat);
     mesh.position.set(0, 0, this.depth + 2);
     mesh.rotation.y = Math.PI;
+    mesh.userData.defaultOpacity = color.a;
 
     this.donutGraphSegments.push(mesh);
     this.container.add(mesh);
@@ -252,7 +253,7 @@ class DetailedNodeView extends NodeView {
         _.each(donutIndices, (index) => {
           if (donutData[index.key] !== undefined) {
             const colorKey = index.class || index.key;
-            startAngle = this.addNewDonutSlice(startAngle, donutData[index.key], GlobalStyles.getColorTrafficRGBA(colorKey));
+            startAngle = this.addDonutSlice(startAngle, donutData[index.key], GlobalStyles.getColorTrafficRGBA(colorKey));
           }
         });
       } else {
@@ -261,7 +262,7 @@ class DetailedNodeView extends NodeView {
         // add donut slices
         _.each(donutData, (classPercent, key) => {
           const colorKey = _.get(this.detailed, ['donut', 'classes', key], key);
-          startAngle = this.addNewDonutSlice(startAngle, classPercent, GlobalStyles.getColorTrafficRGBA(colorKey));
+          startAngle = this.addDonutSlice(startAngle, classPercent, GlobalStyles.getColorTrafficRGBA(colorKey));
         });
       }
     }
@@ -283,6 +284,7 @@ class DetailedNodeView extends NodeView {
     mesh.position.set(0, 0, this.depth + 5);
     mesh.rotation.y = Math.PI;
     mesh.userData.context = 'arc';
+    mesh.userData.defaultOpacity = color.a;
 
     if (!permanent) { this.arcMeterSegments.push(mesh); }
     this.container.add(mesh);
@@ -348,16 +350,17 @@ class DetailedNodeView extends NodeView {
 
   setOpacity (opacity) {
     super.setOpacity(opacity);
-    this.donutMaterial.opacity = opacity;
-    this.innerCircleMaterial.opacity = opacity;
+    const borderOpacity = opacity * this.borderColor.a;
+    this.donutMaterial.opacity = borderOpacity;
+    this.innerCircleMaterial.opacity = borderOpacity;
     this.textMaterial.opacity = opacity;
 
     _.each(this.donutGraphSegments, segment => {
-      segment.material.opacity = opacity;
+      segment.material.opacity = opacity * segment.userData.defaultOpacity;
     });
 
     _.each(this.arcMeterSegments, segment => {
-      segment.material.opacity = opacity;
+      segment.material.opacity = opacity * segment.userData.defaultOpacity;
     });
   }
 

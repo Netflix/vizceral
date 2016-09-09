@@ -44,7 +44,7 @@ class NodeViewStandard extends NodeView {
   setOpacity (opacity) {
     super.setOpacity(opacity);
     if (this.object.hasNotices()) {
-      this.dotMaterial.opacity = opacity;
+      this.dotMaterial.opacity = opacity * this.dotColor.a;
     }
   }
 
@@ -53,7 +53,7 @@ class NodeViewStandard extends NodeView {
       const noticeSeverity = this.object.highestNoticeLevel();
       this.dotColor = GlobalStyles.getColorSeverityRGBA(noticeSeverity);
       this.dotMaterial.color.setRGB(this.dotColor.r, this.dotColor.g, this.dotColor.b);
-      this.dotMaterial.opacity = this.opacity;
+      this.dotMaterial.opacity = this.opacity * this.dotColor.a;
       this.meshes.noticeDot.geometry.colorsNeedUpdate = true;
     } else {
       this.dotMaterial.opacity = 0;

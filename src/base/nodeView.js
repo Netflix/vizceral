@@ -50,14 +50,14 @@ class NodeView extends BaseView {
     this.donutInternalColor = GlobalStyles.rgba.colorDonutInternalColor;
     this.donutInternalColorThree = new THREE.Color(this.donutInternalColor.r, this.donutInternalColor.g, this.donutInternalColor.b);
 
-    const borderColor = GlobalStyles.getColorTrafficRGBA(node.getClass());
-    this.borderMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(borderColor.r, borderColor.g, borderColor.b), transparent: true, opacity: borderColor.a });
+    this.borderColor = GlobalStyles.getColorTrafficRGBA(node.getClass());
+    this.borderMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(this.borderColor.r, this.borderColor.g, this.borderColor.b), transparent: true, opacity: this.borderColor.a });
     this.innerCircleMaterial = new THREE.MeshBasicMaterial({ color: this.donutInternalColorThree, transparent: true });
   }
 
   setOpacity (opacity) {
     super.setOpacity(opacity);
-    this.borderMaterial.opacity = opacity;
+    this.borderMaterial.opacity = opacity * this.borderColor.a;
     // Fade the inner node color to background color since setting opacity will show the particles hiding behind the node.
     if (!this.highlight) {
       this.innerCircleMaterial.color.setStyle(chroma.mix(GlobalStyles.styles.colorPageBackground, GlobalStyles.styles.colorDonutInternalColor, opacity).css());

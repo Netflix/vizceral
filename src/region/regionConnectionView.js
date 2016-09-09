@@ -59,7 +59,7 @@ class RegionConnectionView extends ConnectionView {
 
   setOpacity (opacity) {
     super.setOpacity(opacity);
-    this.connectionLine.material.opacity = opacity;
+    this.connectionLine.material.opacity = opacity * this.lineColor.a;
   }
 
   cleanup () {
