@@ -28,8 +28,8 @@ class NodeViewStandard extends NodeView {
     super(service);
     this.radius = radius;
 
-    const dotColor = GlobalStyles.getColorTrafficRGBA(this.object.getClass());
-    this.dotMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(dotColor.r, dotColor.g, dotColor.b), transparent: true, opacity: dotColor.a });
+    this.dotColor = GlobalStyles.getColorTrafficRGBA(this.object.getClass());
+    this.dotMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(this.dotColor.r, this.dotColor.g, this.dotColor.b), transparent: true, opacity: this.dotColor.a });
 
     this.meshes.outerBorder = this.addChildElement(NodeView.getOuterBorderGeometry(radius), this.borderMaterial);
     this.meshes.innerCircle = this.addChildElement(NodeView.getInnerCircleGeometry(radius), this.innerCircleMaterial);
