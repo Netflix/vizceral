@@ -25,13 +25,15 @@ class RegionConnectionView extends ConnectionView {
     super(connection, 650, false);
 
     // Add the connection line
+    this.lineColor = GlobalStyles.rgba.colorConnectionLine;
     this.connectionLineGeometry = new THREE.Geometry();
     this.connectionLineMaterial = new THREE.LineBasicMaterial({
-      color: GlobalStyles.threeStyles.colorConnectionLine,
+      color: new THREE.Color(this.lineColor.r, this.lineColor.g, this.lineColor.b),
       blending: THREE.AdditiveBlending,
       depthTest: true,
       depthWrite: false,
-      transparent: true
+      transparent: true,
+      opacity: this.lineColor.a
     });
     this.connectionLine = new THREE.Line(this.connectionLineGeometry, this.connectionLineMaterial);
     this.container.add(this.connectionLine);
@@ -57,7 +59,7 @@ class RegionConnectionView extends ConnectionView {
 
   setOpacity (opacity) {
     super.setOpacity(opacity);
-    this.connectionLine.material.opacity = opacity;
+    this.connectionLine.material.opacity = opacity * this.lineColor.a;
   }
 
   cleanup () {

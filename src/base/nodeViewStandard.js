@@ -28,8 +28,8 @@ class NodeViewStandard extends NodeView {
     super(service);
     this.radius = radius;
 
-    const dotColor = GlobalStyles.getColorTrafficThree(this.object.getClass());
-    this.dotMaterial = new THREE.MeshBasicMaterial({ color: dotColor, transparent: true });
+    this.dotColor = GlobalStyles.getColorTrafficRGBA(this.object.getClass());
+    this.dotMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(this.dotColor.r, this.dotColor.g, this.dotColor.b), transparent: true, opacity: this.dotColor.a });
 
     this.meshes.outerBorder = this.addChildElement(NodeView.getOuterBorderGeometry(radius), this.borderMaterial);
     this.meshes.innerCircle = this.addChildElement(NodeView.getInnerCircleGeometry(radius), this.innerCircleMaterial);
@@ -44,16 +44,16 @@ class NodeViewStandard extends NodeView {
   setOpacity (opacity) {
     super.setOpacity(opacity);
     if (this.object.hasNotices()) {
-      this.dotMaterial.opacity = opacity;
+      this.dotMaterial.opacity = opacity * this.dotColor.a;
     }
   }
 
   refreshNotices () {
     if (this.object.hasNotices()) {
       const noticeSeverity = this.object.highestNoticeLevel();
-      this.dotColor = GlobalStyles.getColorSeverityThree(noticeSeverity);
-      this.dotMaterial.color.set(this.dotColor);
-      this.dotMaterial.opacity = this.opacity;
+      this.dotColor = GlobalStyles.getColorSeverityRGBA(noticeSeverity);
+      this.dotMaterial.color.setRGB(this.dotColor.r, this.dotColor.g, this.dotColor.b);
+      this.dotMaterial.opacity = this.opacity * this.dotColor.a;
       this.meshes.noticeDot.geometry.colorsNeedUpdate = true;
     } else {
       this.dotMaterial.opacity = 0;
@@ -67,7 +67,7 @@ class NodeViewStandard extends NodeView {
     if (this.highlight) {
       this.dotMaterial.color.set(this.donutInternalColor);
     } else {
-      this.dotMaterial.color.set(this.dotColor);
+      this.dotMaterial.color.setRGB(this.dotColor.r, this.dotColor.g, this.dotColor.b);
     }
     this.meshes.noticeDot.geometry.colorsNeedUpdate = true;
 
