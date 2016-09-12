@@ -31,6 +31,10 @@ class GraphObject extends EventEmitter {
     return this.name;
   }
 
+  getDisplayName () {
+    return this.displayName || this.name;
+  }
+
   hasNotices () {
     if (this.notices && this.notices.length > 0) {
       if (this.minimumNoticeLevel > 0) {

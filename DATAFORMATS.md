@@ -19,6 +19,7 @@ The traffic data expected to be passed in regularly to `ele.updateData(traffic)`
         },
         {
           name: 'apiproxy-prod',
+          displayName: 'proxy', // OPTIONAL Override the name on the label
           notices: [ // OPTIONAL Any notices that you want to show up in the sidebar
             {
               title: 'Notice about something',
