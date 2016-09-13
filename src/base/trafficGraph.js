@@ -223,6 +223,14 @@ class TrafficGraph extends EventEmitter {
     }
   }
 
+  handleIntersectedObjectClick () {
+
+  }
+
+  handleIntersectedObjectDoubleClick () {
+
+  }
+
   showLabels (showLabels) {
     this.displayOptions.showLabels = showLabels;
     // Show labels
