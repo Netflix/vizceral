@@ -55,6 +55,8 @@ class Connection extends GraphObject {
 
   update (data) {
     this.metadata = data.metadata || this.metadata;
+    this.annotations = data.annotations || this.annotations;
+
     this.class = data.class || 'normal';
     this.volume = data.metrics ? _.clone(data.metrics) : {};
     if (_.isEmpty(this.volume)) {
