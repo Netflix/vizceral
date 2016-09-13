@@ -21,7 +21,7 @@ import DnsConnectionView from './dnsConnectionView';
 class DnsConnection extends Connection {
   constructor (options) {
     super(options);
-    this.graphRenderer = 'global';
+    this.graphRenderer = 'dns';
   }
 
   render () {
