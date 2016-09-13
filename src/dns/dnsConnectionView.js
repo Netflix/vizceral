@@ -31,13 +31,26 @@ function distance (a, b) {
   return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
 }
 
+
+function rotate (point, theta) {
+  return {
+    x: point.x * Math.cos(theta) - point.y * Math.sin(theta),
+    y: point.x * Math.sin(theta) + point.y * Math.cos(theta)
+  };
+}
+
 // Given three points, A B C, find the center of a circle that goes through all three.
 function CalculateCircleCenter (A, B, C) {
   const aSlope = (B.y - A.y) / (B.x - A.x);
   const bSlope = (C.y - B.y) / (C.x - B.x);
 
   if (aSlope === 0 || bSlope === 0) {
-    return CalculateCircleCenter(B, C, A);
+    // rotate the points about origin to retry and then rotate the answer back.
+    // this should avoid div by zero.
+    // we could pick any acute angle here and be garuanteed this will take less than three tries.
+    // i've discovered a clever proof for this, but I don't have room in the margin.
+    const angle = Math.PI / 3;
+    return rotate(CalculateCircleCenter(rotate(A, angle), rotate(B, angle), rotate(C, angle)), -1 * angle);
   }
 
   const center = {};
@@ -66,7 +79,6 @@ class DnsConnectionView extends ConnectionView {
       this.annotationGeometry,
       this.annotationMesh
     ], x => { try { x.dispose(); } catch (e) { Console.log(e); } });
-    // TODO: cleanup annotations.
   }
 
   setParticleLevels () {
