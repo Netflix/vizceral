@@ -486,7 +486,7 @@ class Vizceral extends EventEmitter {
       const currentViewLength = this.currentView ? this.currentView.length : 0;
 
       if (this.currentGraph && this.currentGraph.highlightedObject) {
-        this.setHighlightedObject(undefined);
+        this.currentGraph.setHighlightedObject(undefined);
       } else if (currentViewLength > 0) {
         this.currentView = this.currentView.slice(0, -1);
         this.setView(this.currentView);
