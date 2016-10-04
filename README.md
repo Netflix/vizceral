@@ -165,7 +165,7 @@ To see your changes to `vizceral` locally, you'll need to link the package with 
 
 ## Supported Browsers
 
-Currently only developing with Chrome in mind. Seems to work in Safari and Firefox, but more testing is needed.
+Current development focuses on most recent version of Chrome. Minor sanity checking for the latest versions of Safari and Firefox.
 
 ## TODO
 
