@@ -134,6 +134,12 @@ class DetailedNodeView extends NodeView {
         bottomData = this.detailed[this.object.context].bottom;
       }
 
+      // If the context that was selected has nothing to draw, draw default
+      if (!topData && !bottomData) {
+        topData = this.detailed.top;
+        bottomData = this.detailed.bottom;
+      }
+
       // Draw the top header to the canvas
       top += (this.headerFontSize / 2);
       if (topData) {
