@@ -370,7 +370,7 @@ class TrafficGraph extends EventEmitter {
         if (state.maxVolume) {
           this.volume.max = state.maxVolume;
         } else {
-          Console.error(`maxVolume required to calculate relative particle density, but no maxVolume provided for ${state.name}. See https://github.com/Netflix/vizceral/blob/master/DATAFORMATS.md`);
+          Console.error(`maxVolume required to calculate relative particle density, but no maxVolume provided for ${state.name}. See https://github.com/Netflix/Vizceral/wiki/How-to-Use#graph-data-format`);
         }
 
         // Check for updated current volume
@@ -556,7 +556,7 @@ class TrafficGraph extends EventEmitter {
    * @param  {object} filters An object map of filters in the form of
    *                    { node: [], connection: [] }. Each respective array
    *                    containing filter configuration objects as described in
-   *                    DATAFORMATS.md
+   *                    https://github.com/Netflix/Vizceral/wiki/How-to-Use#graph-data-format
    */
   _updateConnectionFilters (filters) {
     let changed = false;
@@ -581,7 +581,7 @@ class TrafficGraph extends EventEmitter {
    * @param  {object} filters An object map of filters in the form of
    *                    { node: [], connection: [] }. Each respective array
    *                    containing filter configuration objects as described in
-   *                    DATAFORMATS.md
+   *                    https://github.com/Netflix/Vizceral/wiki/Configuration#filters
    */
   _updateNodeFilters (filters) {
     let changed = false;

@@ -92,7 +92,7 @@ Update the global definitions
 
 **Parameters**
 
--   `An` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** object map of definitions. See the format and defaults in (DATAFORMATS.md)
+-   `An` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** object map of definitions. See the format and defaults in (<https://github.com/Netflix/Vizceral/wiki/Configuration#definitions-for-data-to-display>)
 -   `definitions`  
 
 # updateData
@@ -102,7 +102,7 @@ with the complete set of traffic data anytime there is an update.
 
 **Parameters**
 
--   `data` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The traffic data that matches the format in DATAFORMATS.md
+-   `data` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The traffic data that matches the format in (<https://github.com/Netflix/Vizceral/wiki/How-to-Use#graph-data-format>)
 -   `trafficData`  
 
 # setHighlightedNode
@@ -177,4 +177,4 @@ Set the set of filters to apply along with their current values.
 
 **Parameters**
 
--   `filters` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The filters that match the format in DATAFORMATS.md
+-   `filters` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The filters that match the format in (<https://github.com/Netflix/Vizceral/wiki/Configuration#filters>)
