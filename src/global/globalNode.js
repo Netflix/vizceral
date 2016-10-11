@@ -15,8 +15,6 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
-
 import Node from '../base/node';
 import NodeViewDetailed from '../base/nodeViewDetailed';
 
@@ -26,26 +24,8 @@ class GlobalNode extends Node {
     this.loaded = this.isEntryNode();
   }
 
-  updateData (totalVolume) {
-    const updated = super.updateData(totalVolume);
-    if (updated) {
-      this.data.globalClassPercents = this.data.globalClassPercents || {};
-      const percentGlobal = this.data.volume / totalVolume;
-      // generate global class percents
-      _.each(this.data.classPercents, (classPercent, key) => {
-        this.data.globalClassPercents[key] = classPercent * percentGlobal;
-      });
-    }
-    return updated;
-  }
-
   isInteractive () {
     return !this.isEntryNode();
-  }
-
-  setContext (context) {
-    super.setContext(context);
-    this.view.updateText();
   }
 
   render () {

@@ -182,6 +182,7 @@ class Node extends GraphObject {
 
   setContext (context) {
     super.setContext(context);
+    if (this.view) { this.view.updateText(); }
   }
 
   render () {
@@ -222,6 +223,16 @@ class Node extends GraphObject {
         });
       }
     }
+
+    if (updated) {
+      this.data.globalClassPercents = this.data.globalClassPercents || {};
+      const percentGlobal = this.data.volume / totalVolume;
+      // generate global class percents
+      _.each(this.data.classPercents, (classPercent, key) => {
+        this.data.globalClassPercents[key] = classPercent * percentGlobal;
+      });
+    }
+
     return updated;
   }
 

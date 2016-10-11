@@ -45,13 +45,6 @@ class RegionNode extends Node {
     }
   }
 
-  setContext (context) {
-    super.setContext(context);
-    if (this.view === this.views.detailed) {
-      this.view.updateText();
-    }
-  }
-
   render () {
     this.views = {
       standard: new NodeViewStandard(this),
@@ -63,6 +56,7 @@ class RegionNode extends Node {
   }
 
   cleanup () {
+    super.cleanup();
     if (this.views) {
       Object.keys(this.views).forEach(key => this.views[key].cleanup());
     }
