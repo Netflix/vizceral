@@ -56,7 +56,7 @@ class RegionTrafficGraph extends TrafficGraph {
       this.highlightObject(undefined);
     } else if ((this.intersectedObject instanceof this.NodeClass)
              || (this.intersectedObject instanceof this.ConnectionClass)) {
-      // If clicked on a node and there is no focused node, highlight.
+      // If clicked on a node and highlighting is allowed, highlight
       // Or if clicked on a connection, highlight.
       this.highlightObject(this.intersectedObject);
     }
@@ -137,7 +137,7 @@ class RegionTrafficGraph extends TrafficGraph {
 
     if (Object.keys(graph.nodes).length > 0 && Object.keys(graph.edges).length > 0) {
       Console.info(`Layout: Updating the layout for ${this.name} with the worker...`);
-      this.layoutWorker.postMessage({ graph: graph, dimensions: this.layoutDimensions });
+      this.layoutWorker.postMessage({ graph: graph, dimensions: this.layoutDimensions, entryNode: 'INTERNET' });
     } else {
       Console.warn(`Layout: Attempted to update the layout for ${this.name} but there are zero nodes and/or zero connections.`);
     }

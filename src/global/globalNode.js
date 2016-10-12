@@ -21,11 +21,25 @@ import NodeViewDetailed from '../base/nodeViewDetailed';
 class GlobalNode extends Node {
   constructor (node) {
     super(node, 'global');
-    this.loaded = this.isEntryNode();
+    this.refreshLoaded();
   }
 
   isInteractive () {
     return !this.isEntryNode();
+  }
+
+  refreshLoaded () {
+    this.loaded = this.isEntryNode() || (this.nodes && this.nodes.length > 0);
+  }
+
+  invalidateIncomingVolume () {
+    super.invalidateIncomingVolume();
+    this.refreshLoaded();
+  }
+
+  invalidateOutgoingVolume () {
+    super.invalidateOutgoingVolume();
+    this.refreshLoaded();
   }
 
   render () {

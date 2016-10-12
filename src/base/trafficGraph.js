@@ -287,6 +287,10 @@ class TrafficGraph extends EventEmitter {
     return this.nodeCounts.total > 0;
   }
 
+  getEntryNodes () {
+    return _.filter(this.nodes, n => n.isEntryNode());
+  }
+
   /**
    * Validate the current state.  If setState(state) was called while this graph was not current,
    * all calculations were deferred. This makes sure that the current view is up to date with the
@@ -374,7 +378,7 @@ class TrafficGraph extends EventEmitter {
         }
 
         // Check for updated current volume
-        const currentVolume = this.nodes.INTERNET ? this.nodes.INTERNET.getOutgoingVolume() : 0;
+        const currentVolume = _.sumBy(this.getEntryNodes(), n => n.getOutgoingVolume());
         if (currentVolume !== undefined && this.volume.current !== currentVolume) {
           this.volume.current = currentVolume;
         }

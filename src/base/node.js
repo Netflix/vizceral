@@ -269,7 +269,7 @@ class Node extends GraphObject {
   }
 
   isEntryNode () {
-    return this.getName() === 'INTERNET';
+    return this.incomingConnections.length === 0 && this.outgoingConnections.length > 0;
   }
 
   cleanup () {

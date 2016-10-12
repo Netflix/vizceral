@@ -34,7 +34,7 @@ function updatePosition (node, nodeCount, nodeIndex, orbitSize) {
 
 function positionNodes (nodes, orbitSize) {
   let nodeIndex = 0;
-  const nodeCount = nodes.length - 1;
+  const nodeCount = Object.keys(nodes).length - 1;
 
   const sortedNodeNames = _.map(nodes, 'name');
   sortedNodeNames.sort();
@@ -43,7 +43,7 @@ function positionNodes (nodes, orbitSize) {
   const nodeMap = _.keyBy(nodes, 'name');
   _.each(sortedNodeNames, nodeName => {
     const node = nodeMap[nodeName];
-    if (nodeName !== 'INTERNET') {
+    if (!node.isEntryNode()) {
       nodeIndex++;
       updatePosition(node, nodeCount, nodeIndex, orbitSize);
     } else {
@@ -121,8 +121,9 @@ class GlobalTrafficGraph extends TrafficGraph {
     }
     this.state.maxVolume = maxVolume * 1.5;
 
-    positionNodes(this.state.nodes, this.orbitSize);
     super.setState(this.state);
+    positionNodes(this.nodes, this.orbitSize);
+    this._relayout();
   }
 
   handleIntersectedObjectClick () {
@@ -170,6 +171,10 @@ class GlobalTrafficGraph extends TrafficGraph {
       div.style.display = current ? 'block' : 'none';
     });
     this.updateLabelScreenDimensions(true);
+  }
+
+  highlightObject () {
+    // no-op
   }
 
   update (time) {
