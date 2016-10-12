@@ -132,6 +132,14 @@ class DNSTrafficGraph extends TrafficGraph {
     positionNodes(this.state.nodes, this.dimensions);
     super.setState(this.state);
   }
+
+  setFilters () {
+    // no-op
+  }
+
+  _relayout () {
+    // no-op
+  }
 }
 
 export default DNSTrafficGraph;

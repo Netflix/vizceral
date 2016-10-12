@@ -179,7 +179,7 @@ class TrafficGraph extends EventEmitter {
           targetString += `::${node.nodes.map(n => n.name).join('::')}`;
         }
         const match = (node === this.highlightedObject || targetString.indexOf(searchString) !== -1);
-        if (match && !node.hidden) {
+        if (match) {
           matches.total++;
           if (node.isVisible()) {
             matches.visible++;
@@ -334,7 +334,6 @@ class TrafficGraph extends EventEmitter {
           let node = this.nodes[stateNode.name];
           if (!node) {
             node = new this.NodeClass(stateNode);
-            node.hidden = this.node && !this.nodes[this.node].connectedTo(node.getName());
             node.updatePosition(stateNode.position, index);
             this.nodes[stateNode.name] = node;
             layoutModified = true;
@@ -359,11 +358,6 @@ class TrafficGraph extends EventEmitter {
             connection = this._buildConnection(stateConnection);
             if (connection) {
               connection.valid = true;
-              connection.hidden = this.node && !connection.connectedTo(this.node);
-              if (!connection.hidden) {
-                connection.source.hidden = false;
-                connection.target.hidden = false;
-              }
               this.connections[connection.getName()] = connection;
               layoutModified = true;
             }
@@ -544,8 +538,26 @@ class TrafficGraph extends EventEmitter {
     connection.target.removeIncomingConnection(connection);
   }
 
-  setFilters () {
-    // noop
+  setFilters (filters) {
+    let filtersChanged = false;
+    _.each(filters, filter => {
+      if (!this.filters[filter.name]) {
+        this.filters[filter.name] = filter;
+        filtersChanged = true;
+      }
+      if (filter.value !== this.filters[filter.name].value) {
+        this.filters[filter.name].value = filter.value;
+        filtersChanged = true;
+      }
+      if (this.filters[filter.name].defaultValue === undefined) {
+        this.filters[filter.name].defaultValue = this.filters[filter.name].value;
+        filtersChanged = true;
+      }
+    });
+
+    if (this.isPopulated() && filtersChanged) {
+      this._relayout();
+    }
   }
 
   /**
@@ -595,8 +607,8 @@ class TrafficGraph extends EventEmitter {
         changed = true;
       }
       if (!node.isVisible()) {
-        _.each(node.incomingConnections, c => { c.hidden = true; });
-        _.each(node.outgoingConnections, c => { c.hidden = true; });
+        _.each(node.incomingConnections, c => { c.filtered = true; });
+        _.each(node.outgoingConnections, c => { c.filtered = true; });
       }
     });
     if (changed) { this._updateConnectionFilters(filters); }
@@ -636,7 +648,56 @@ class TrafficGraph extends EventEmitter {
   }
 
   _relayout () {
-    // no-op
+    // Update filters
+    const graph = { nodes: [], edges: [] };
+
+    let totalNodes = 0;
+    let visibleNodes = 0;
+
+    // Go through all the filters and separate the node and connection filters
+    const filters = { connection: [], node: [] };
+    _.each(this.filters, filter => {
+      if (filter.type === 'connection') {
+        filters.connection.push(filter);
+      } else if (filter.type === 'node') {
+        filters.node.push(filter);
+      }
+    });
+
+    _.each(this.nodes, node => {
+      delete node.forceLabel;
+    });
+
+    _.each(this.nodes, n => { n.filtered = false; });
+    _.each(this.connections, c => { c.filtered = false; });
+    this._updateConnectionFilters(filters);
+    this._updateNodeFilters(filters);
+
+    const subsetOfDefaultVisibleNodes = _.every(this.nodes, n => !n.isVisible() || (n.isVisible() && !n.defaultFiltered));
+    const subsetOfDefaultVisibleConnections = _.every(this.connections, c => !c.isVisible() || (c.isVisible() && !c.defaultFiltered));
+    const useInLayout = o => ((subsetOfDefaultVisibleNodes && subsetOfDefaultVisibleConnections) ? !o.defaultFiltered : o.isVisible());
+
+    // build the layout graph
+    _.each(this.connections, connection => {
+      graph.edges.push({ visible: useInLayout(connection), source: connection.source.getName(), target: connection.target.getName() });
+    });
+    _.each(this.nodes, node => {
+      graph.nodes.push({ name: node.getName(), visible: useInLayout(node), position: node.position, weight: node.depth });
+      if (node.connected) {
+        totalNodes++;
+        if (node.isVisible()) { visibleNodes++; }
+      }
+    });
+
+    this.nodeCounts.total = totalNodes;
+    this.nodeCounts.visible = visibleNodes;
+
+    if (Object.keys(graph.nodes).length > 0 && Object.keys(graph.edges).length > 0) {
+      Console.info(`Layout: Updating the layout for ${this.name} with the worker...`);
+      this.layoutWorker.postMessage({ graph: graph, dimensions: this.layoutDimensions, entryNode: 'INTERNET' });
+    } else {
+      Console.warn(`Layout: Attempted to update the layout for ${this.name} but there are zero nodes and/or zero connections.`);
+    }
   }
 }
 

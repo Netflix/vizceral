@@ -126,6 +126,14 @@ class GlobalTrafficGraph extends TrafficGraph {
     this._relayout();
   }
 
+  setFilters () {
+    // no-op
+  }
+
+  _relayout () {
+    // no-op
+  }
+
   handleIntersectedObjectClick () {
     if (this.intersectedObject && this.intersectedObject.graphRenderer === 'global') {
       this.emit('setView', [this.intersectedObject.getName()]);
