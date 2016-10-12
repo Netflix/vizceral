@@ -464,10 +464,24 @@ class Vizceral extends EventEmitter {
    * @param {array} viewArray e.g. [ node1, node2 ]
    */
   getNode (viewArray) {
-    if (viewArray && viewArray.length === 2 && this.graphs[viewArray[0]]) {
-      return this.graphs[viewArray[0]].getNode(viewArray[1]);
-    }
-    return undefined;
+    let currentGraph = this.graphs[this.rootGraphName];
+    let node;
+    _.every(viewArray, (nodeName, index) => {
+      const nextNode = currentGraph.getNode(nodeName);
+      if (nextNode) {
+        if (index === viewArray.length - 1) {
+          node = nextNode;
+          return false;
+        }
+        const nextGraph = currentGraph.graphs[nextNode];
+        if (nextGraph) {
+          currentGraph = nextGraph;
+          return true;
+        }
+      }
+      return false;
+    });
+    return node;
   }
 
   /**
