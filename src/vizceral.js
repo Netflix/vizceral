@@ -303,37 +303,27 @@ class Vizceral extends EventEmitter {
 
     // If there is an initial node to set and there is not a current selected node
     if (this.initialView && !this.currentView) {
-      const topLevelNode = this.initialView && this.initialView[0];
-      const nodeName = this.initialView && this.initialView[1];
-
-      // Is the root graph loaded yet?
-      if (Object.keys(this.graphs).length > 0) {
-        // Is the set of top level nodes loaded yet?
-        if (Object.keys(this.graphs[this.rootGraphName].graphs).length > 0) {
-          // Does the specified node exist?
-          if (topLevelNode && this.graphs[this.rootGraphName].graphs[topLevelNode]) {
-            // If a node name was not passed in...
-            if (!nodeName) {
-              initialView.view = [topLevelNode];
-            } else if (this.graphs[this.rootGraphName].graphs[topLevelNode].isPopulated()) {
-              // Is there data loaded for the specified topLevelNode?
-              // TODO: Get multiple matches and set filters if there are multiple?
-              const node = this.graphs[this.rootGraphName].graphs[topLevelNode].getNode(nodeName);
-              // if a node was matched, navigate to the node
-              if (node) {
-                initialView.view = [topLevelNode, node.name];
-              } else {
-                // Navigate to the topLevelNode since the node was not found.
-                initialView.view = [topLevelNode];
-              }
+      // Are there graphs yet?
+      const existingView = [];
+      let currentGraph = this.graphs[this.rootGraphName];
+      if (currentGraph) {
+        // travel through nodes to see if passed in one exists.
+        // create graphs for the stack until the one we asked for
+        _.every(this.initialView, viewNodeName => {
+          const realNode = currentGraph.getNode(viewNodeName);
+          if (realNode) {
+            const newGraph = currentGraph.graphs[realNode.name];
+            if (newGraph) {
+              existingView.push(realNode.name);
+              currentGraph = newGraph;
+              return true;
             }
-          } else {
-            initialView.view = [];
           }
-        } else {
-          // Load the global view
-          initialView.view = [];
-        }
+          return false;
+        });
+
+        initialView.view = existingView;
+
         if (initialView.view && this.initialView && !_.isEqual(initialView.view, this.initialView)) {
           initialView.redirectedFrom = this.initialView;
         }
@@ -374,7 +364,7 @@ class Vizceral extends EventEmitter {
 
     let newGraph = this.graphs[this.rootGraphName];
     let sliceEnd = 0;
-    // recursively chech for the existence of viewArray, popping one off the end each time until global
+    // recursively check for the existence of viewArray, popping one off the end each time until global
     if (viewArray && viewArray.length > 0) {
       viewArray.every((nodeName, index) => {
         const nextLevelNode = newGraph.getNode(nodeName);
