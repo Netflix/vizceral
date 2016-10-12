@@ -70,6 +70,7 @@ class Node extends GraphObject {
 
   removeIncomingConnection (connection) {
     _.remove(this.incomingConnections, incomingConnection => incomingConnection.name === connection.name);
+    this.invalidateIncomingVolume();
     if (this.incomingConnections.length === 0 && this.outgoingConnections.length === 0) {
       this.connected = false;
     }
@@ -77,6 +78,7 @@ class Node extends GraphObject {
 
   removeOutgoingConnection (connection) {
     _.remove(this.outgoingConnections, outgoingConnection => outgoingConnection.name === connection.name);
+    this.invalidateOutgoingVolume();
     if (this.incomingConnections.length === 0 && this.outgoingConnections.length === 0) {
       this.connected = false;
     }
