@@ -178,7 +178,7 @@ class Vizceral extends EventEmitter {
     return graph;
   }
 
-  createAndUpdateGraphs (graphData, baseGraphObject) {
+  createAndUpdateGraphs (graphData, baseGraph) {
     let graphCreated = false;
     if (graphData && graphData.renderer && graphData.nodes && graphData.nodes.length > 0) {
       if (!graphData.name) {
@@ -186,20 +186,21 @@ class Vizceral extends EventEmitter {
         return graphCreated;
       }
       // Create a graph
-      if (!baseGraphObject[graphData.name]) {
+      if (!baseGraph.graphs[graphData.name]) {
         graphCreated = true;
-        baseGraphObject[graphData.name] = this.createGraph(graphData, this, graphWidth, graphHeight);
-        this._attachGraphHandlers(baseGraphObject[graphData.name]);
-        baseGraphObject[graphData.name].setFilters(this.filters);
-        baseGraphObject[graphData.name].showLabels(this.options.showLabels);
+        baseGraph.graphs[graphData.name] = this.createGraph(graphData, this, graphWidth, graphHeight);
+        this._attachGraphHandlers(baseGraph.graphs[graphData.name]);
+        baseGraph.graphs[graphData.name].setFilters(this.filters);
+        baseGraph.graphs[graphData.name].showLabels(this.options.showLabels);
+        baseGraph.graphs[graphData.name].parentGraph = baseGraph;
       }
 
       // Update the data
-      baseGraphObject[graphData.name].setState(graphData);
+      baseGraph.graphs[graphData.name].setState(graphData);
 
       // create sub graphs
       _.each(graphData.nodes, nodeData => {
-        const subGraphCreated = this.createAndUpdateGraphs(nodeData, baseGraphObject[graphData.name].graphs);
+        const subGraphCreated = this.createAndUpdateGraphs(nodeData, baseGraph.graphs[graphData.name]);
         graphCreated = graphCreated || subGraphCreated;
       });
     }
@@ -215,7 +216,7 @@ class Vizceral extends EventEmitter {
   updateData (trafficData) {
     if (trafficData && trafficData.nodes) {
       this.rootGraphName = trafficData.name;
-      const newGraphs = this.createAndUpdateGraphs(trafficData, this.graphs);
+      const newGraphs = this.createAndUpdateGraphs(trafficData, this);
 
       // Now that the initial data is loaded, check if we can set the initial node
       if (this.initialView) {
@@ -393,15 +394,12 @@ class Vizceral extends EventEmitter {
     // If the view changed, set it.
     const newView = viewArray.slice(0, sliceEnd);
     if (!_.isEqual(newView, this.currentView)) {
-      // TODO: Animate into all the things...
-      if (this.currentView && newView.length === 0 && this.currentView.length === 1) {
-        // if zooming out to global graph
+      const difference = this.currentView ? (newView.length - this.currentView.length) : 0;
+      if (difference === -1) {
         this.zoomOutOfNode();
-      } else if (this.currentView && newView.length === 1 && this.currentView.length === 0) {
-        // if zooming in from global graph
+      } else if (difference === 1) {
         this.zoomIntoNode(newGraph.name);
       } else {
-        // set node
         this.selectGraph(newGraph);
       }
 
@@ -554,56 +552,56 @@ class Vizceral extends EventEmitter {
   }
 
   zoomIntoNode (nodeName) {
-    const entryPosition = this.graphs[this.rootGraphName].nodes[nodeName].position;
-    if (this.currentGraph && this.currentGraph === this.graphs[this.rootGraphName]) {
-      const fromGraph = this.graphs[this.rootGraphName];
-      const toGraph = this.graphs[this.rootGraphName].graphs[nodeName];
-
-      const parametersFrom = {
-        exitingX: fromGraph.view.container.position.x,
-        exitingY: fromGraph.view.container.position.y,
-        exitingScale: fromGraph.view.container.scale.x,
-        enteringX: entryPosition.x,
-        enteringY: entryPosition.y,
-        enteringScale: 0
-      };
-      const parametersTo = {
-        exitingX: 0 - (entryPosition.x * 10),
-        exitingY: 0 - (entryPosition.y * 10),
-        enteringX: 0,
-        enteringY: 0,
-        exitingScale: 10,
-        enteringScale: 1
-      };
-      this.zoomBetweenGraphs(fromGraph, toGraph, parametersFrom, parametersTo);
+    if (this.currentGraph) {
+      const nodeToZoomInto = this.currentGraph.nodes[nodeName];
+      const toGraph = this.currentGraph.graphs[nodeName];
+      if (nodeToZoomInto && toGraph) {
+        const entryPosition = nodeToZoomInto.position;
+        const parametersFrom = {
+          exitingX: this.currentGraph.view.container.position.x,
+          exitingY: this.currentGraph.view.container.position.y,
+          exitingScale: this.currentGraph.view.container.scale.x,
+          enteringX: entryPosition.x,
+          enteringY: entryPosition.y,
+          enteringScale: 0
+        };
+        const parametersTo = {
+          exitingX: 0 - (entryPosition.x * 10),
+          exitingY: 0 - (entryPosition.y * 10),
+          enteringX: 0,
+          enteringY: 0,
+          exitingScale: 10,
+          enteringScale: 1
+        };
+        this.zoomBetweenGraphs(this.currentGraph, toGraph, parametersFrom, parametersTo);
+      }
     }
   }
 
   zoomOutOfNode () {
     if (this.currentGraph && this.currentGraph !== this.graphs[this.rootGraphName]) {
-      const currentNode = this.graphs[this.rootGraphName].getNode(this.currentGraph.name);
-      const entryPosition = this.graphs[this.rootGraphName].nodes[this.currentGraph.name].position;
+      const parentGraph = this.currentGraph.parentGraph;
+      if (parentGraph) {
+        const currentNodeInParent = parentGraph.getNode(this.currentGraph.name);
 
-      const toGraph = this.graphs[this.rootGraphName];
-      const fromGraph = this.graphs[this.rootGraphName].graphs[this.currentGraph.name];
-
-      const parametersFrom = {
-        enteringX: 0 - (entryPosition.x * 10),
-        enteringY: 0 - (entryPosition.y * 10),
-        enteringScale: 10,
-        exitingX: fromGraph.view.container.position.x,
-        exitingY: fromGraph.view.container.position.y,
-        exitingScale: fromGraph.view.container.scale.x
-      };
-      const parametersTo = {
-        enteringX: 0,
-        enteringY: 0,
-        exitingX: currentNode.position.x,
-        exitingY: currentNode.position.y,
-        enteringScale: 1,
-        exitingScale: 0
-      };
-      this.zoomBetweenGraphs(fromGraph, toGraph, parametersFrom, parametersTo);
+        const parametersFrom = {
+          enteringX: 0 - (currentNodeInParent.position.x * 10),
+          enteringY: 0 - (currentNodeInParent.position.y * 10),
+          enteringScale: 10,
+          exitingX: this.currentGraph.view.container.position.x,
+          exitingY: this.currentGraph.view.container.position.y,
+          exitingScale: this.currentGraph.view.container.scale.x
+        };
+        const parametersTo = {
+          enteringX: 0,
+          enteringY: 0,
+          exitingX: currentNodeInParent.position.x,
+          exitingY: currentNodeInParent.position.y,
+          enteringScale: 1,
+          exitingScale: 0
+        };
+        this.zoomBetweenGraphs(this.currentGraph, parentGraph, parametersFrom, parametersTo);
+      }
     }
   }
 
