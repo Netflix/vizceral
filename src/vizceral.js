@@ -51,12 +51,6 @@ import RendererUtils from './rendererUtils';
 * @property {array} view The currently selected view (e.g. [] for global, ['us-east-1'] for one node deep, ['us-east-1', 'api'] for two nodes deep)
 */
 /**
-* The `nodeFocused` event is fired whenever a node gains focus or the currently focused node is updated
-*
-* @event nodeFocused
-* @property {object} node The node object that has been focused, or the focused node that has been updated.
-*/
-/**
 * The `nodeContextSizeChanged` event is fired whenever the context panel size for node context size changes
 *
 * @event nodeContextSizeChanged
@@ -170,7 +164,6 @@ class Vizceral extends EventEmitter {
   _attachGraphHandlers (graph) {
     graph.on('nodeContextSizeChanged', dimensions => this.emit('nodeContextSizeChanged', dimensions));
     graph.on('objectHighlighted', highlightedObject => this.emit('objectHighlighted', highlightedObject));
-    graph.on('nodeFocused', node => this.emit('nodeFocused', node));
     graph.on('rendered', renderInfo => this.emit('rendered', renderInfo));
     graph.on('setView', view => this.setView(view));
   }
@@ -354,94 +347,77 @@ class Vizceral extends EventEmitter {
   /**
    * Set the current view of the component to the passed in array. If the passed
    * in array does not match an existing node at the passed in depth, the component will try
-   * each level up the array until it finds a match, defaulting to the global
+   * each level up the array until it finds a match, defaulting to the top level
    * view.
    *
    * Ex:
-   * [] - show the base global view
+   * [] - show the base graph view
    * ['us-east-1'] - show the graph view for 'us-east-1' if it exists
    * ['us-east-1', 'api'] - show the view for the api node in the us-east-1 graph if it exists
    *
    * @param {array} viewArray the array containing the view to set.
    * @param {string} objectNameToHighlight a node or connection to set as highlighted in the current viewArray
    */
-  setView (nodeArray = [], objectNameToHighlight) {
+  setView (viewArray = [], objectNameToHighlight) {
     let redirectedFrom;
     // If nothing has been selected yet, it's the initial node
     if (!this.currentView) {
-      this.initialView = nodeArray;
+      this.initialView = viewArray;
       this.initialObjectToHighlight = objectNameToHighlight;
       const initialView = this.checkInitialView();
       if (!initialView.view) { return; }
-      nodeArray = initialView.view;
+      viewArray = initialView.view;
       objectNameToHighlight = initialView.highlighted;
       redirectedFrom = initialView.redirectedFrom;
     }
 
-    let newTopLevelNode = nodeArray[0];
-    let newSecondLevelNode = nodeArray[1];
-
-    let viewChanged = false;
-    let topLevelNodeChanged = false;
-
-    // Check if it is a valid top level node. Also catch if no top level node...
-    const topLevelNodeGraph = this.graphs[this.rootGraphName].graphs[newTopLevelNode];
-    if (topLevelNodeGraph !== undefined) {
-      // Switch to the top level node view
-      if (!this.currentGraph || this.currentGraph.name !== newTopLevelNode) {
-        topLevelNodeChanged = true;
-        viewChanged = true;
-      }
-
-      // Check if second node exists (or sub-node name matches)
-      const newNode = topLevelNodeGraph.getNode(newSecondLevelNode);
-      newSecondLevelNode = newNode ? newNode.name : undefined;
-
-      if (topLevelNodeGraph.nodeName !== newSecondLevelNode) {
-        topLevelNodeGraph.setFocusedNode(newSecondLevelNode);
-        viewChanged = true;
-      }
-
-      // If passed in an object to highlight, try to highlight.
-      if (objectNameToHighlight) {
-        const objectToHighlight = topLevelNodeGraph.getGraphObject(objectNameToHighlight);
-        if (objectToHighlight) {
-          topLevelNodeGraph.highlightObject(objectToHighlight);
+    let newGraph = this.graphs[this.rootGraphName];
+    let sliceEnd = 0;
+    // recursively chech for the existence of viewArray, popping one off the end each time until global
+    if (viewArray && viewArray.length > 0) {
+      viewArray.every((nodeName, index) => {
+        const nextLevelNode = newGraph.getNode(nodeName);
+        if (nextLevelNode) {
+          const newGraphCandidate = newGraph.graphs[nextLevelNode.name];
+          if (newGraphCandidate) {
+            newGraph = newGraphCandidate;
+            sliceEnd = index + 1;
+            return true;
+          }
+          Console.warn(`Attemped to select a graph that was not found; ${viewArray.join()}`);
         }
-      } else if (topLevelNodeGraph.highlightedObject) {
-        topLevelNodeGraph.highlightObject();
-      }
-
-      // If switching to the top level node view from the global view, animate in
-      if (this.currentGraph === this.graphs[this.rootGraphName]) {
-        this.zoomIntoNode(newTopLevelNode);
-        viewChanged = true;
-      } else if (topLevelNodeChanged) {
-        this.selectGraph(topLevelNodeGraph);
-      }
-    } else if (this.currentGraph !== this.graphs[this.rootGraphName]) {
-      // If no top level node was passed in, switch to the global view
-      newTopLevelNode = undefined;
-      newSecondLevelNode = undefined;
-      if (this.currentGraph && this.currentGraph !== this.graphs[this.rootGraphName]) {
-        this.zoomOutOfNode();
-      } else {
-        this.selectGraph(this.graphs[this.rootGraphName]);
-      }
-      viewChanged = true;
+        return false;
+      });
     }
 
-    if (viewChanged) {
-      const currentView = [];
-      if (newTopLevelNode) {
-        currentView.push(newTopLevelNode);
-        if (newSecondLevelNode) {
-          currentView.push(newSecondLevelNode);
-        }
+    // If the view changed, set it.
+    const newView = viewArray.slice(0, sliceEnd);
+    if (!_.isEqual(newView, this.currentView)) {
+      // TODO: Animate into all the things...
+      if (this.currentView && newView.length === 0 && this.currentView.length === 1) {
+        // if zooming out to global graph
+        this.zoomOutOfNode();
+      } else if (this.currentView && newView.length === 1 && this.currentView.length === 0) {
+        // if zooming in from global graph
+        this.zoomIntoNode(newGraph.name);
+      } else {
+        // set node
+        this.selectGraph(newGraph);
       }
-      this.currentView = currentView;
+
+      this.currentView = newView;
       this.calculateMouseOver();
       this.emit('viewChanged', { view: this.currentView, graph: this.currentGraph, redirectedFrom: redirectedFrom });
+    }
+
+    // If passed in an object to highlight, try to highlight.
+    if (objectNameToHighlight) {
+      const objectToHighlight = newGraph.getGraphObject(objectNameToHighlight);
+      if (objectToHighlight) {
+        newGraph.highlightObject(objectToHighlight);
+      }
+    } else if (newGraph.highlightedObject) {
+      newGraph.highlightObject();
     }
   }
 
@@ -497,11 +473,11 @@ class Vizceral extends EventEmitter {
   /**
    * Get a specific node object
    *
-   * @param {array} nodeArray e.g. [ node1, node2 ]
+   * @param {array} viewArray e.g. [ node1, node2 ]
    */
-  getNode (nodeArray) {
-    if (nodeArray && nodeArray.length === 2 && this.graphs[nodeArray[0]]) {
-      return this.graphs[nodeArray[0]].getNode(nodeArray[1]);
+  getNode (viewArray) {
+    if (viewArray && viewArray.length === 2 && this.graphs[viewArray[0]]) {
+      return this.graphs[viewArray[0]].getNode(viewArray[1]);
     }
     return undefined;
   }
@@ -611,9 +587,6 @@ class Vizceral extends EventEmitter {
       const toGraph = this.graphs[this.rootGraphName];
       const fromGraph = this.graphs[this.rootGraphName].graphs[this.currentGraph.name];
 
-      // clear any node that may have been zoomed in
-      fromGraph.setFocusedNode(undefined);
-
       const parametersFrom = {
         enteringX: 0 - (entryPosition.x * 10),
         enteringY: 0 - (entryPosition.y * 10),
@@ -637,7 +610,7 @@ class Vizceral extends EventEmitter {
   // Needed for all graphs
   selectGraph (graph) {
     if (this.currentGraph !== undefined) {
-      this.scene.remove(this.currentGraph.view.container);
+      this.scene.remove(this.currentGraph.getView().container);
       this.currentGraph.setCurrent(false);
     }
     this.scene.add(graph.view.container);

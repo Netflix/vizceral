@@ -29,39 +29,8 @@ class RegionTrafficGraph extends TrafficGraph {
     this.data = {};
   }
 
-  setFocusedNode (nodeName) {
-    const changed = (this.nodes[nodeName] || nodeName === undefined) && this.nodeName !== nodeName;
-    if (changed) {
-      // Remove the mouseover effect
-      this.setIntersectedObject(undefined);
-      this.highlightObject(undefined);
-
-      // If there was a node selected...
-      if (this.nodeName) {
-        // make sure to reset the node view
-        this.view.removeObject(this.nodes[this.nodeName]);
-        this.nodes[this.nodeName].showDetailedView(false);
-      }
-
-      this.nodeName = nodeName;
-
-      // If a new node was passed in...
-      if (this.nodeName) {
-        // switch to the detailed node view
-        this.view.removeObject(this.nodes[this.nodeName]);
-        this.nodes[this.nodeName].showDetailedView(true);
-        this.emit('nodeFocused', this.nodes[this.nodeName]);
-      } else {
-        this.emit('nodeFocused', undefined);
-      }
-
-      this.updateVisibleInfo();
-      this._relayout();
-    }
-  }
-
   updateVisibleInfo () {
-    const minimumNoticeLevel = this.nodeName ? 0 : 1;
+    const minimumNoticeLevel = 0;
     _.each(this.connections, connection => { connection.setMinimumNoticeLevel(minimumNoticeLevel); });
   }
 
@@ -85,7 +54,7 @@ class RegionTrafficGraph extends TrafficGraph {
     // If we clicked on nothing, clear highlight
     if (!this.intersectedObject) {
       this.highlightObject(undefined);
-    } else if ((this.intersectedObject instanceof this.NodeClass && !this.nodeName)
+    } else if ((this.intersectedObject instanceof this.NodeClass)
              || (this.intersectedObject instanceof this.ConnectionClass)) {
       // If clicked on a node and there is no focused node, highlight.
       // Or if clicked on a connection, highlight.
@@ -97,10 +66,6 @@ class RegionTrafficGraph extends TrafficGraph {
     if (this.intersectedObject && this.intersectedObject.graphRenderer === 'region') {
       this.emit('setView', [this.name, this.intersectedObject.getName()]);
     }
-  }
-
-  getSelectedNode () {
-    return this.nodes[this.nodeName];
   }
 
   setFilters (filters) {
@@ -142,30 +107,9 @@ class RegionTrafficGraph extends TrafficGraph {
       }
     });
 
-    // If we are focused on a node, hide nodes that aren't related and force related nodes TO be shown.
-    const defaultHidden = this.nodeName !== undefined;
-    _.each(this.connections, connection => { connection.hidden = defaultHidden; });
     _.each(this.nodes, node => {
-      node.hidden = defaultHidden;
       delete node.forceLabel;
     });
-    if (defaultHidden) {
-      this.nodes[this.nodeName].hidden = false;
-
-      // Show all the incoming connections and the source nodes
-      _.each(this.nodes[this.nodeName].incomingConnections, connection => {
-        connection.hidden = false;
-        connection.source.hidden = false;
-        connection.source.forceLabel = true;
-      });
-
-      // Show all the outgoing connections and the target nodes
-      _.each(this.nodes[this.nodeName].outgoingConnections, connection => {
-        connection.hidden = false;
-        connection.target.hidden = false;
-        connection.target.forceLabel = true;
-      });
-    }
 
     _.each(this.nodes, n => { n.filtered = false; });
     _.each(this.connections, c => { c.filtered = false; });
@@ -174,7 +118,7 @@ class RegionTrafficGraph extends TrafficGraph {
 
     const subsetOfDefaultVisibleNodes = _.every(this.nodes, n => !n.isVisible() || (n.isVisible() && !n.defaultFiltered));
     const subsetOfDefaultVisibleConnections = _.every(this.connections, c => !c.isVisible() || (c.isVisible() && !c.defaultFiltered));
-    const useInLayout = o => ((!this.nodeName && subsetOfDefaultVisibleNodes && subsetOfDefaultVisibleConnections) ? !o.defaultFiltered : o.isVisible());
+    const useInLayout = o => ((subsetOfDefaultVisibleNodes && subsetOfDefaultVisibleConnections) ? !o.defaultFiltered : o.isVisible());
 
     // build the layout graph
     _.each(this.connections, connection => {

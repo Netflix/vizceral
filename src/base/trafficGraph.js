@@ -71,7 +71,7 @@ class TrafficGraph extends EventEmitter {
     if (this.current && this.hasPositionData) {
       // First, update the state of the view, hiding and showing any necessary nodes or connections
       this.view.updateState();
-      // Re-apply highlighting to the graph is case there are new nodes or connections
+      // Re-apply highlighting to the graph in case there are new nodes or connections
       if (this.searchString) { this.highlightMatchedNodes(this.searchString); }
       if (this.highlightedObject) { this.highlightObject(this.highlightedObject, true); }
       // Update listeners that something was rendered or re-rendered.
@@ -432,8 +432,6 @@ class TrafficGraph extends EventEmitter {
   emitObjectUpdated () {
     if (this.highlightedObject) {
       this.emit('objectHighlighted', this.highlightedObject);
-    } else if (this.getSelectedNode && this.getSelectedNode()) {
-      this.emit('nodeUpdated', this.getSelectedNode());
     }
   }
 

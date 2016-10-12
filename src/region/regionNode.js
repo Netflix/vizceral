@@ -17,7 +17,6 @@
  */
 import Node from '../base/node';
 import NodeViewStandard from '../base/nodeViewStandard';
-import NodeViewDetailed from '../base/nodeViewDetailed';
 
 class RegionNode extends Node {
   constructor (node) {
@@ -26,42 +25,13 @@ class RegionNode extends Node {
   }
 
   isInteractive () {
-    return this.view !== this.views.detailed;
-  }
-
-  showDetailedView (showDetailed) {
-    if (!this.views) { this.render(); }
-    const detailedViewShown = this.view === this.views.detailed;
-    if (detailedViewShown !== showDetailed) {
-      if (showDetailed) {
-        this.view = this.views.detailed;
-        this.focused = true;
-        this.view.refresh(true);
-      } else {
-        this.view = this.views.standard;
-        this.focused = false;
-      }
-      this.view.showLabel(this.options.showLabel);
-    }
+    return true;
   }
 
   render () {
-    this.views = {
-      standard: new NodeViewStandard(this),
-      detailed: new NodeViewDetailed(this)
-    };
-
     // Set the default view renderer
-    this.view = this.views.standard;
+    this.view = new NodeViewStandard(this);
   }
-
-  cleanup () {
-    super.cleanup();
-    if (this.views) {
-      Object.keys(this.views).forEach(key => this.views[key].cleanup());
-    }
-  }
-
 }
 
 export default RegionNode;
