@@ -395,12 +395,11 @@ class Vizceral extends EventEmitter {
       } else if (difference === 1) {
         this.zoomIntoNode(newGraph.name);
       } else {
-        this.selectGraph(newGraph);
+        this.selectGraph(newGraph, redirectedFrom);
       }
 
       this.currentView = newView;
       this.calculateMouseOver();
-      this.emit('viewChanged', { view: this.currentView, graph: this.currentGraph, redirectedFrom: redirectedFrom });
     }
 
     // If passed in an object to highlight, try to highlight.
@@ -505,10 +504,12 @@ class Vizceral extends EventEmitter {
     Object.assign(this.renderers, renderers);
   }
 
-  setCurrentGraph (graph) {
+  setCurrentGraph (graph, redirectedFrom) {
     graph.setFilters(this.filters);
     this.currentGraph = graph;
     this.currentGraph.setCurrent(true);
+
+    this.emit('viewChanged', { view: this.currentView, graph: this.currentGraph, redirectedFrom: redirectedFrom });
   }
 
   // Only necessary when global graph is present
@@ -615,13 +616,13 @@ class Vizceral extends EventEmitter {
   }
 
   // Needed for all graphs
-  selectGraph (graph) {
+  selectGraph (graph, redirectedFrom) {
     if (this.currentGraph !== undefined) {
       this.scene.remove(this.currentGraph.getView().container);
       this.currentGraph.setCurrent(false);
     }
     this.scene.add(graph.view.container);
-    this.setCurrentGraph(graph);
+    this.setCurrentGraph(graph, redirectedFrom);
   }
 
   calculateMouseOver (immediate) {
