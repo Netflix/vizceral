@@ -78,7 +78,7 @@ class GlobalTrafficGraph extends TrafficGraph {
     this.hasPositionData = true;
   }
 
-  setState (state) {
+  setState (state, force) {
     _.each(state.nodes, node => {
       const existingNodeIndex = _.findIndex(this.state.nodes, { name: node.name });
       if (existingNodeIndex !== -1) {
@@ -121,7 +121,8 @@ class GlobalTrafficGraph extends TrafficGraph {
     }
     this.state.maxVolume = maxVolume * 1.5;
 
-    super.setState(this.state);
+    super.setState(this.state, force);
+    this.validateLayout();
     positionNodes(this.nodes, this.orbitSize);
     this._relayout();
   }

@@ -180,7 +180,7 @@ class Vizceral extends EventEmitter {
 
   createAndUpdateGraphs (graphData, parentGraphData, baseGraph) {
     let graphCreated = false;
-    if (graphData && graphData.renderer && graphData.nodes && graphData.nodes.length > 0) {
+    if (graphData && graphData.renderer) {
       if (!graphData.name) {
         Console.log('Attempted to create a new graph that does not have a name');
         return graphCreated;
@@ -199,6 +199,9 @@ class Vizceral extends EventEmitter {
       // Update the data
       graph.manipulateState(graphData, parentGraphData);
       graph.setState(graphData);
+      if (graph.current) {
+        graph.validateLayout();
+      }
 
       // create sub graphs
       _.each(graphData.nodes, nodeData => {

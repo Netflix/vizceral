@@ -99,6 +99,8 @@ class TrafficGraph extends EventEmitter {
       if (current) {
         this.loadedOnce = true;
         this.validateState();
+        this.validateLayout();
+        this.emitObjectUpdated();
       } else {
         _.each(this.connections, connection => connection.cleanup());
         _.each(this.nodes, node => node.cleanup());
@@ -114,6 +116,9 @@ class TrafficGraph extends EventEmitter {
    * @returns {object} The node object that matches on nodeName, otherwise undefined
    */
   getNode (nodeName) {
+    // First, make sure the state is up to date...
+    this.validateState();
+
     // Check if the node exists by direct name first
     if (this.nodes[nodeName]) { return this.nodes[nodeName]; }
 
@@ -293,6 +298,11 @@ class TrafficGraph extends EventEmitter {
     return this.nodeCounts.total > 0;
   }
 
+  /**
+   * Return array of entry nodes; effectively nodes that have no incoming connections
+   *
+   * @returns {array} array of entry nodes
+   */
   getEntryNodes () {
     return _.filter(this.nodes, n => n.isEntryNode());
   }
@@ -304,20 +314,20 @@ class TrafficGraph extends EventEmitter {
    */
   validateState () {
     if (this.cachedState) {
-      this.setState(this.cachedState);
+      this.setState(this.cachedState, true);
       this.cachedState = undefined;
-    } else {
-      this.updateView();
-      this.emitObjectUpdated();
     }
   }
 
-  setState (state) {
+  manipulateState () {
+    // no-op
+  }
+
+  setState (state, force) {
+    let updatedState = false;
     if (state && Object.keys(state).length > 0) {
       // If this is the first update, run it, otherwise, only update if it's the current graph
-      if (!this.isPopulated() || this.current) {
-        let layoutModified = false;
-
+      if (this.current || force) {
         // first, remove nodes that aren't in the new state
         const newStateNodes = _.reduce(state.nodes, (result, node) => {
           result[node.name] = true;
@@ -329,7 +339,7 @@ class TrafficGraph extends EventEmitter {
         });
         if (nodesToRemove.length > 0) {
           nodesToRemove.forEach(node => this.removeNode(node));
-          layoutModified = true;
+          this.layoutValid = false;
         }
 
         const stateNodeMap = {};
@@ -342,7 +352,7 @@ class TrafficGraph extends EventEmitter {
             node = new this.NodeClass(stateNode);
             node.updatePosition(stateNode.position, index);
             this.nodes[stateNode.name] = node;
-            layoutModified = true;
+            this.layoutValid = false;
           } else {
             node.updatePosition(stateNode.position, index);
             node.update(stateNode);
@@ -365,7 +375,7 @@ class TrafficGraph extends EventEmitter {
             if (connection) {
               connection.valid = true;
               this.connections[connection.getName()] = connection;
-              layoutModified = true;
+              this.layoutValid = false;
             }
           }
         });
@@ -395,7 +405,7 @@ class TrafficGraph extends EventEmitter {
         });
         if (connectionsToRemove.length > 0) {
           connectionsToRemove.forEach(connection => this.removeConnection(connection));
-          layoutModified = true;
+          this.layoutValid = false;
         }
 
         const nodesToRemoveSecondPass = [];
@@ -410,26 +420,29 @@ class TrafficGraph extends EventEmitter {
         });
         if (nodesToRemoveSecondPass.length > 0) {
           nodesToRemoveSecondPass.forEach(node => this.removeNode(node));
-          layoutModified = true;
+          this.layoutValid = false;
         }
-
 
         // Invalidate all the interactive children so we do not interact with objects that no longer exist
         if (this.view) {
           this.view.invalidateInteractiveChildren();
         }
 
-        // If new elements (nodes or connections) were created or elements were
-        // removed, the graph needs to be laid out again
-        if (layoutModified) {
-          this._relayout();
-        } else {
-          this.updateView();
-        }
         this.emitObjectUpdated();
+        updatedState = true;
       } else {
         this.cachedState = state;
       }
+    }
+
+    return updatedState;
+  }
+
+  validateLayout () {
+    if (!this.layoutValid) {
+      this._relayout();
+    } else {
+      this.updateView();
     }
   }
 
