@@ -132,7 +132,7 @@ class GlobalTrafficGraph extends TrafficGraph {
   }
 
   _relayout () {
-    // no-op
+    this.updateView();
   }
 
   handleIntersectedObjectClick () {
