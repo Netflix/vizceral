@@ -21,11 +21,12 @@ import * as THREE from 'three';
 import TWEEN from 'tween.js';
 import Hammer from 'hammerjs';
 
+import DnsTrafficGraph from './dns/dnsTrafficGraph';
+import FocusedTrafficGraph from './focused/focusedTrafficGraph';
 import GlobalDefinitions from './globalDefinitions';
 import GlobalStyles from './globalStyles';
 import GlobalTrafficGraph from './global/globalTrafficGraph';
 import RegionTrafficGraph from './region/regionTrafficGraph';
-import DnsTrafficGraph from './dns/dnsTrafficGraph';
 
 import RendererUtils from './rendererUtils';
 
@@ -128,6 +129,7 @@ class Vizceral extends EventEmitter {
     this.renderers = {
       global: GlobalTrafficGraph,
       region: RegionTrafficGraph,
+      focused: FocusedTrafficGraph,
       dns: DnsTrafficGraph
     };
   }

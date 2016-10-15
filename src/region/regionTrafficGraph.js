@@ -23,7 +23,6 @@ class RegionTrafficGraph extends TrafficGraph {
   constructor (name, mainView, parentGraph, graphWidth, graphHeight) {
     super(name, mainView, parentGraph, graphWidth, graphHeight, RegionNode, RegionConnection, false);
     this.linePrecision = 4;
-    this.data = {};
   }
 
   setIntersectedObject (object) {
