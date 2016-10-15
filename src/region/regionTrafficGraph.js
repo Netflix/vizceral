@@ -15,21 +15,15 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
 import RegionConnection from './regionConnection';
 import RegionNode from './regionNode';
 import TrafficGraph from '../base/trafficGraph';
 
 class RegionTrafficGraph extends TrafficGraph {
-  constructor (name, mainView, graphWidth, graphHeight) {
-    super(name, mainView, graphWidth, graphHeight, RegionNode, RegionConnection, false);
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight) {
+    super(name, mainView, parentGraph, graphWidth, graphHeight, RegionNode, RegionConnection, false);
     this.linePrecision = 4;
     this.data = {};
-  }
-
-  updateVisibleInfo () {
-    const minimumNoticeLevel = 0;
-    _.each(this.connections, connection => { connection.setMinimumNoticeLevel(minimumNoticeLevel); });
   }
 
   setIntersectedObject (object) {

@@ -64,8 +64,8 @@ function positionNodes (nodes, orbitSize) {
 }
 
 class GlobalTrafficGraph extends TrafficGraph {
-  constructor (name, mainView, graphWidth, graphHeight) {
-    super(name, mainView, graphWidth, graphHeight, GlobalNode, GlobalConnection);
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight) {
+    super(name, mainView, parentGraph, graphWidth, graphHeight, GlobalNode, GlobalConnection);
 
     this.orbitSize = Math.min(graphWidth, graphHeight);
     this.linePrecision = 50;

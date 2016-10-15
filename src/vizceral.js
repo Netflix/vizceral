@@ -168,17 +168,17 @@ class Vizceral extends EventEmitter {
     graph.on('setView', view => this.setView(view));
   }
 
-  createGraph (graphData, mainView, width, height) {
+  createGraph (graphData, mainView, parentGraph, width, height) {
     let graph;
     if (this.renderers[graphData.renderer]) {
-      graph = new (this.renderers[graphData.renderer])(graphData.name, mainView, width, height);
+      graph = new (this.renderers[graphData.renderer])(graphData.name, mainView, parentGraph, width, height);
     } else {
       Console.log(`Attempted to create a graph type that does not exist: ${graphData.renderer} Presently registered renderers are ${Object.keys(this.renderers)}`);
     }
     return graph;
   }
 
-  createAndUpdateGraphs (graphData, baseGraph) {
+  createAndUpdateGraphs (graphData, parentGraphData, baseGraph) {
     let graphCreated = false;
     if (graphData && graphData.renderer && graphData.nodes && graphData.nodes.length > 0) {
       if (!graphData.name) {
@@ -186,21 +186,23 @@ class Vizceral extends EventEmitter {
         return graphCreated;
       }
       // Create a graph
-      if (!baseGraph.graphs[graphData.name]) {
+      let graph = baseGraph.graphs[graphData.name];
+      if (!graph) {
         graphCreated = true;
-        baseGraph.graphs[graphData.name] = this.createGraph(graphData, this, graphWidth, graphHeight);
-        this._attachGraphHandlers(baseGraph.graphs[graphData.name]);
-        baseGraph.graphs[graphData.name].setFilters(this.filters);
-        baseGraph.graphs[graphData.name].showLabels(this.options.showLabels);
-        baseGraph.graphs[graphData.name].parentGraph = baseGraph;
+        baseGraph.graphs[graphData.name] = this.createGraph(graphData, this, baseGraph, graphWidth, graphHeight);
+        graph = baseGraph.graphs[graphData.name];
+        this._attachGraphHandlers(graph);
+        graph.setFilters(this.filters);
+        graph.showLabels(this.options.showLabels);
       }
 
       // Update the data
-      baseGraph.graphs[graphData.name].setState(graphData);
+      graph.manipulateState(graphData, parentGraphData);
+      graph.setState(graphData);
 
       // create sub graphs
       _.each(graphData.nodes, nodeData => {
-        const subGraphCreated = this.createAndUpdateGraphs(nodeData, baseGraph.graphs[graphData.name]);
+        const subGraphCreated = this.createAndUpdateGraphs(nodeData, graphData, graph);
         graphCreated = graphCreated || subGraphCreated;
       });
     }
@@ -216,7 +218,7 @@ class Vizceral extends EventEmitter {
   updateData (trafficData) {
     if (trafficData && trafficData.nodes) {
       this.rootGraphName = trafficData.name;
-      const newGraphs = this.createAndUpdateGraphs(trafficData, this);
+      const newGraphs = this.createAndUpdateGraphs(trafficData, undefined, this);
 
       // Now that the initial data is loaded, check if we can set the initial node
       if (this.initialView) {
@@ -375,7 +377,7 @@ class Vizceral extends EventEmitter {
             sliceEnd = index + 1;
             return true;
           }
-          Console.warn(`Attemped to select a graph that was not found; ${viewArray.join()}`);
+          Console.warn(`Attempted to select a graph that was not found; ${viewArray.join()}`);
         }
         return false;
       });

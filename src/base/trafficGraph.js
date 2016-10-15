@@ -26,10 +26,11 @@ import TrafficGraphView from './trafficGraphView';
 const Console = console; // Eliminate eslint warnings for non-debug console messages
 
 class TrafficGraph extends EventEmitter {
-  constructor (name, mainView, graphWidth, graphHeight, NodeClass, ConnectionClass) {
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight, NodeClass, ConnectionClass) {
     super();
     this.name = name;
     this.mainView = mainView;
+    this.parentGraph = parentGraph;
     this.nodes = {};
     this.connections = {};
     this.filters = {};
@@ -67,6 +68,11 @@ class TrafficGraph extends EventEmitter {
     this.emit('rendered', { name: this.name, rendered: this.view.rendered && this.hasPositionData });
   }
 
+  /**
+   * If the graph is the currently viewed graph, update the state of the view, apply the search
+   * string, and make sure to highlight any node that is supposed to be highlighted. Emit that
+   * rendering has been updated.
+   */
   updateView () {
     if (this.current && this.hasPositionData) {
       // First, update the state of the view, hiding and showing any necessary nodes or connections
