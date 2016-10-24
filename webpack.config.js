@@ -21,7 +21,7 @@ var config = {
       {
         test: /\.js$/,
         loader: 'babel',
-        exclude: /node_modules/,
+        exclude: ['node_modules'],
       },
       { test: /\.glsl$/, loader: 'raw-loader' },
       { test: /\.woff2?$/, loader: 'url?limit=10000&mimetype=application/font-woff' },
