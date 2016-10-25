@@ -62,6 +62,7 @@ self.layout = function (options) {
   }
 
   self.postMessage(nodePositions);
+  self.close();
 };
 
 self.addEventListener('message', event => {

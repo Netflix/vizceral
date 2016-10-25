@@ -59,13 +59,6 @@ class TrafficGraph extends EventEmitter {
       showLabels: true
     };
 
-    this.layoutWorker = LayoutWorker();
-    this.layoutWorker.onmessage = event => {
-      Console.info(`Layout: Received updated layout for ${this.name} from the worker.`);
-      this._updateNodePositions(event.data);
-      this.updateView();
-    };
-
     this.nodeCounts = { total: 0, visible: 0 };
 
     this.hasPositionData = false;
@@ -715,8 +708,18 @@ class TrafficGraph extends EventEmitter {
     this.nodeCounts.visible = visibleNodes;
 
     if (Object.keys(graph.nodes).length > 0 && Object.keys(graph.edges).length > 0) {
+      const layoutWorker = LayoutWorker();
+      const layoutWorkerComplete = event => {
+        Console.info(`Layout: Received updated layout for ${this.name} from the worker.`);
+        this._updateNodePositions(event.data);
+        this.updateView();
+        layoutWorker.removeEventListener('message', layoutWorkerComplete);
+      };
       Console.info(`Layout: Updating the layout for ${this.name} with the worker...`);
-      this.layoutWorker.postMessage({ graph: graph, dimensions: this.layoutDimensions, entryNode: 'INTERNET' });
+      layoutWorker.addEventListener('message', layoutWorkerComplete);
+
+
+      layoutWorker.postMessage({ graph: graph, dimensions: this.layoutDimensions, entryNode: 'INTERNET' });
     } else {
       Console.warn(`Layout: Attempted to update the layout for ${this.name} but there are zero nodes and/or zero connections.`);
     }
