@@ -47,13 +47,18 @@ class FocusedTrafficGraph extends TrafficGraph {
     this.focusedNode = _.find(this.nodes, { focused: true });
   }
 
-  setIntersectedObject () {
-  }
-
   handleIntersectedObjectClick () {
+    if (!this.intersectedObject || (this.intersectedObject instanceof this.ConnectionClass)) {
+      this.highlightObject(this.intersectedObject);
+    }
   }
 
   handleIntersectedObjectDoubleClick () {
+    if (this.intersectedObject && this.intersectedObject.graphRenderer === 'focused') {
+      const graphIndex = this.graphIndex.slice(0, -1);
+      graphIndex.push(this.intersectedObject.getName());
+      this.emit('setView', graphIndex);
+    }
   }
 }
 

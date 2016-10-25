@@ -26,7 +26,7 @@ class FocusedNode extends Node {
   }
 
   isInteractive () {
-    return false;
+    return !this.focused;
   }
 
   render () {
