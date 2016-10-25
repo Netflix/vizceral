@@ -38,6 +38,13 @@ class TrafficGraph extends EventEmitter {
     this.ConnectionClass = ConnectionClass;
     this.volume = { max: 0, current: 0 };
 
+    if (parentGraph) {
+      this.graphIndex = parentGraph.graphIndex.slice();
+      this.graphIndex.push(name);
+    } else {
+      this.graphIndex = [];
+    }
+
     this.graphs = {};
 
     this.view = new TrafficGraphView(this);

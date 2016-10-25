@@ -172,46 +172,44 @@ class Vizceral extends EventEmitter {
 
   createGraph (graphData, mainView, parentGraph, width, height) {
     let graph;
-    if (this.renderers[graphData.renderer]) {
-      graph = new (this.renderers[graphData.renderer])(graphData.name, mainView, parentGraph, width, height);
-    } else {
-      Console.log(`Attempted to create a graph type that does not exist: ${graphData.renderer} Presently registered renderers are ${Object.keys(this.renderers)}`);
+    if (graphData && graphData.renderer) {
+      if (!graphData.name) {
+        Console.log('Attempted to create a new graph that does not have a name');
+      } else if (!this.renderers[graphData.renderer]) {
+        Console.log(`Attempted to create a graph type that does not exist: ${graphData.renderer} Presently registered renderers are ${Object.keys(this.renderers)}`);
+      } else {
+        const parent = parentGraph || this;
+        graph = parent.graphs[graphData.name];
+        if (!graph) {
+          graph = new (this.renderers[graphData.renderer])(graphData.name, mainView, parentGraph, width, height);
+          this._attachGraphHandlers(graph);
+          graph.setFilters(this.filters);
+          graph.showLabels(this.options.showLabels);
+          parent.graphs[graphData.name] = graph;
+        }
+      }
     }
     return graph;
   }
 
-  createAndUpdateGraphs (graphData, parentGraphData, baseGraph) {
-    let graphCreated = false;
-    if (graphData && graphData.renderer) {
-      if (!graphData.name) {
-        Console.log('Attempted to create a new graph that does not have a name');
-        return graphCreated;
-      }
-      // Create a graph
-      let graph = baseGraph.graphs[graphData.name];
-      if (!graph) {
-        graphCreated = true;
-        baseGraph.graphs[graphData.name] = this.createGraph(graphData, this, baseGraph, graphWidth, graphHeight);
-        graph = baseGraph.graphs[graphData.name];
-        this._attachGraphHandlers(graph);
-        graph.setFilters(this.filters);
-        graph.showLabels(this.options.showLabels);
-      }
-
-      // Update the data
-      graph.manipulateState(graphData, parentGraphData);
-      graph.setState(graphData);
-      if (graph.current) {
-        graph.validateLayout();
-      }
-
-      // create sub graphs
-      _.each(graphData.nodes, nodeData => {
-        const subGraphCreated = this.createAndUpdateGraphs(nodeData, graphData, graph);
-        graphCreated = graphCreated || subGraphCreated;
+  updateGraph (graph) {
+    if (graph) {
+      let currentGraphData = this.trafficData;
+      let parentGraphData;
+      graph.graphIndex.every(graphLevel => {
+        parentGraphData = currentGraphData;
+        currentGraphData = _.find(currentGraphData.nodes, { name: graphLevel });
+        return currentGraphData;
       });
+
+      if (currentGraphData) {
+        graph.manipulateState(currentGraphData, parentGraphData);
+        graph.setState(currentGraphData);
+        if (graph.current) {
+          graph.validateLayout();
+        }
+      }
     }
-    return graphCreated;
   }
 
   /**
@@ -222,17 +220,15 @@ class Vizceral extends EventEmitter {
    */
   updateData (trafficData) {
     if (trafficData && trafficData.nodes) {
+      this.trafficData = trafficData;
       this.rootGraphName = trafficData.name;
-      const newGraphs = this.createAndUpdateGraphs(trafficData, undefined, this);
 
       // Now that the initial data is loaded, check if we can set the initial node
       if (this.initialView) {
         this.setView(this.initialView, this.initialObjectToHighlight);
       }
 
-      if (newGraphs) {
-        this.emit('graphsUpdated', this.graphs);
-      }
+      this.updateGraph(this.currentGraph);
     }
   }
 
@@ -301,6 +297,25 @@ class Vizceral extends EventEmitter {
     this.currentGraph.handleIntersectedObjectDoubleClick();
   }
 
+  getNearestValidGraph (viewArray) {
+    let newGraph = this.getGraph(this.rootGraphName);
+    if (newGraph) {
+      viewArray.every(nodeName => {
+        const nextLevelNode = newGraph.getNode(nodeName);
+        if (nextLevelNode) {
+          const newGraphCandidate = this.getGraph(nextLevelNode.name, newGraph);
+          if (newGraphCandidate) {
+            newGraph = newGraphCandidate;
+            return true;
+          }
+          Console.warn(`Attempted to select a graph that was not found; ${viewArray.join()}`);
+        }
+        return false;
+      });
+    }
+    return newGraph;
+  }
+
   checkInitialView () {
     const initialView = {
       view: undefined,
@@ -309,27 +324,11 @@ class Vizceral extends EventEmitter {
     };
 
     // If there is an initial node to set and there is not a current selected node
-    if (this.initialView && !this.currentView) {
+    if (this.initialView && !this.currentGraph && this.rootGraphName) {
       // Are there graphs yet?
-      const existingView = [];
-      let currentGraph = this.graphs[this.rootGraphName];
-      if (currentGraph) {
-        // travel through nodes to see if passed in one exists.
-        // create graphs for the stack until the one we asked for
-        _.every(this.initialView, viewNodeName => {
-          const realNode = currentGraph.getNode(viewNodeName);
-          if (realNode) {
-            const newGraph = currentGraph.graphs[realNode.name];
-            if (newGraph) {
-              existingView.push(realNode.name);
-              currentGraph = newGraph;
-              return true;
-            }
-          }
-          return false;
-        });
-
-        initialView.view = existingView;
+      const newGraph = this.getNearestValidGraph(this.initialView);
+      if (newGraph) {
+        initialView.view = newGraph.graphIndex;
 
         if (initialView.view && this.initialView && !_.isEqual(initialView.view, this.initialView)) {
           initialView.redirectedFrom = this.initialView;
@@ -340,6 +339,29 @@ class Vizceral extends EventEmitter {
 
     return initialView;
     // TODO: else, set a timeout for waiting...?
+  }
+
+  getGraph (graphName, parentGraph) {
+    // If the graph already exists, return it.
+    if (!parentGraph) {
+      if (this.graphs[graphName]) {
+        return this.graphs[graphName];
+      }
+    } else if (parentGraph.graphs[graphName]) {
+      return parentGraph.graphs[graphName];
+    }
+
+    // If parentGraph is root, create a new graph based on this.trafficData
+    const graphData = !parentGraph ? this.trafficData : parentGraph.nodes[graphName];
+    // If the node exists in the graph, create the graph.
+    if (graphData) {
+      // Create the graph and return it
+      const graph = this.createGraph(graphData, this, parentGraph, graphWidth, graphHeight);
+      this.updateGraph(graph);
+      return graph;
+    }
+
+    return undefined;
   }
 
   /**
@@ -359,7 +381,7 @@ class Vizceral extends EventEmitter {
   setView (viewArray = [], objectNameToHighlight) {
     let redirectedFrom;
     // If nothing has been selected yet, it's the initial node
-    if (!this.currentView) {
+    if (!this.currentGraph) {
       this.initialView = viewArray;
       this.initialObjectToHighlight = objectNameToHighlight;
       const initialView = this.checkInitialView();
@@ -369,29 +391,11 @@ class Vizceral extends EventEmitter {
       redirectedFrom = initialView.redirectedFrom;
     }
 
-    let newGraph = this.graphs[this.rootGraphName];
-    let sliceEnd = 0;
-    // recursively check for the existence of viewArray, popping one off the end each time until global
-    if (viewArray && viewArray.length > 0) {
-      viewArray.every((nodeName, index) => {
-        const nextLevelNode = newGraph.getNode(nodeName);
-        if (nextLevelNode) {
-          const newGraphCandidate = newGraph.graphs[nextLevelNode.name];
-          if (newGraphCandidate) {
-            newGraph = newGraphCandidate;
-            sliceEnd = index + 1;
-            return true;
-          }
-          Console.warn(`Attempted to select a graph that was not found; ${viewArray.join()}`);
-        }
-        return false;
-      });
-    }
+    const newGraph = this.getNearestValidGraph(viewArray);
 
     // If the view changed, set it.
-    const newView = viewArray.slice(0, sliceEnd);
-    if (!_.isEqual(newView, this.currentView)) {
-      const difference = this.currentView ? (newView.length - this.currentView.length) : 0;
+    if (!this.currentGraph || !_.isEqual(newGraph.graphIndex, this.currentGraph.graphIndex)) {
+      const difference = this.currentGraph ? (newGraph.graphIndex.length - this.currentGraph.graphIndex.length) : 0;
       if (difference === -1) {
         this.zoomOutOfNode();
       } else if (difference === 1) {
@@ -400,7 +404,6 @@ class Vizceral extends EventEmitter {
         this.selectGraph(newGraph, redirectedFrom);
       }
 
-      this.currentView = newView;
       this.calculateMouseOver();
     }
 
@@ -435,7 +438,7 @@ class Vizceral extends EventEmitter {
   setModes (modes) {
     if (!_.isEqual(modes, this.modes)) {
       this.modes = modes;
-      this.updateModes(this.graphs[this.rootGraphName]);
+      this.updateModes(this.getGraph(this.rootGraphName));
     }
   }
 
@@ -443,7 +446,7 @@ class Vizceral extends EventEmitter {
     // Show labels
     if (options.showLabels !== this.options.showLabels) {
       this.options.showLabels = options.showLabels;
-      this.showLabels(this.graphs[this.rootGraphName]);
+      this.showLabels(this.getGraph(this.rootGraphName));
     }
   }
 
@@ -453,13 +456,10 @@ class Vizceral extends EventEmitter {
    */
   zoomOutViewLevel () {
     if (this.currentGraph) {
-      const currentViewLength = this.currentView ? this.currentView.length : 0;
-
-      if (this.currentGraph && this.currentGraph.highlightedObject) {
+      if (this.currentGraph.highlightedObject) {
         this.currentGraph.setHighlightedObject(undefined);
-      } else if (currentViewLength > 0) {
-        this.currentView = this.currentView.slice(0, -1);
-        this.setView(this.currentView);
+      } else if (this.currentGraph.graphIndex.length > 0) {
+        this.setView(this.currentGraph.graphIndex.slice(0, -1));
       }
     }
   }
@@ -470,7 +470,7 @@ class Vizceral extends EventEmitter {
    * @param {array} viewArray e.g. [ node1, node2 ]
    */
   getNode (viewArray) {
-    let currentGraph = this.graphs[this.rootGraphName];
+    let currentGraph = this.getGraph(this.rootGraphName);
     let node;
     _.every(viewArray, (nodeName, index) => {
       const nextNode = currentGraph.getNode(nodeName);
@@ -509,9 +509,10 @@ class Vizceral extends EventEmitter {
   setCurrentGraph (graph, redirectedFrom) {
     graph.setFilters(this.filters);
     this.currentGraph = graph;
+    this.updateGraph(this.currentGraph);
     this.currentGraph.setCurrent(true);
 
-    this.emit('viewChanged', { view: this.currentView, graph: this.currentGraph, redirectedFrom: redirectedFrom });
+    this.emit('viewChanged', { view: this.currentGraph.graphIndex, graph: this.currentGraph, redirectedFrom: redirectedFrom });
   }
 
   // Only necessary when global graph is present
@@ -591,7 +592,7 @@ class Vizceral extends EventEmitter {
   }
 
   zoomOutOfNode () {
-    if (this.currentGraph && this.currentGraph !== this.graphs[this.rootGraphName]) {
+    if (this.currentGraph && this.currentGraph !== this.getGraph(this.rootGraphName)) {
       const parentGraph = this.currentGraph.parentGraph;
       if (parentGraph) {
         const currentNodeInParent = parentGraph.getNode(this.currentGraph.name);
