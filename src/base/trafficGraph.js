@@ -252,7 +252,7 @@ class TrafficGraph extends EventEmitter {
   setIntersectedObject (object) {
     let changed = false;
     // De-intersect any objects
-    if (object === undefined) {
+    if (object === undefined && this.intersectedObject) {
       this.intersectedObject = undefined;
       changed = true;
     }

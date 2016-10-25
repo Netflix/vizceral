@@ -34,6 +34,10 @@ class GlobalConnection extends Connection {
   render () {
     this.view = new GlobalConnectionView(this);
   }
+
+  isInteractive () {
+    return false;
+  }
 }
 
 export default GlobalConnection;
