@@ -449,7 +449,7 @@ class Vizceral extends EventEmitter {
   zoomOutViewLevel () {
     if (this.currentGraph) {
       if (this.currentGraph.highlightedObject) {
-        this.currentGraph.setHighlightedObject(undefined);
+        this.currentGraph.highlightObject(undefined);
       } else if (this.currentGraph.graphIndex.length > 0) {
         this.setView(this.currentGraph.graphIndex.slice(0, -1));
       }
