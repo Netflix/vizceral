@@ -23,6 +23,7 @@ import TrafficGraph from '../base/trafficGraph';
 class FocusedTrafficGraph extends TrafficGraph {
   constructor (name, mainView, parentGraph, graphWidth, graphHeight) {
     super(name, mainView, parentGraph, graphWidth, graphHeight, FocusedNode, RegionConnection, false);
+    this.type = 'focused';
     this.linePrecision = 4;
   }
 
@@ -39,6 +40,11 @@ class FocusedTrafficGraph extends TrafficGraph {
     state.nodes.push(thisNode);
     state.nodes.forEach(node => delete node.renderer);
     state.maxVolume = state.maxVolume || _.get(this.parentGraph, ['volume', 'max'], 0);
+  }
+
+  setState (state, force) {
+    super.setState(state, force);
+    this.focusedNode = _.find(this.nodes, { focused: true });
   }
 
   setIntersectedObject () {

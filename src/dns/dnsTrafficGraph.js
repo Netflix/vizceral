@@ -76,6 +76,7 @@ function positionNodes (nodes, dimensions) {
 class DNSTrafficGraph extends TrafficGraph {
   constructor (name, mainView, graphWidth, graphHeight) {
     super(name, mainView, graphWidth, graphHeight, DnsNode, DnsConnection, true);
+    this.type = 'dns';
     this.linePrecision = 50;
     this.state = {
       nodes: [],

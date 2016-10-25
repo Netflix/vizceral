@@ -28,6 +28,7 @@ const Console = console; // Eliminate eslint warnings for non-debug console mess
 class TrafficGraph extends EventEmitter {
   constructor (name, mainView, parentGraph, graphWidth, graphHeight, NodeClass, ConnectionClass) {
     super();
+    this.type = 'default';
     this.name = name;
     this.mainView = mainView;
     this.parentGraph = parentGraph;

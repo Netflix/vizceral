@@ -526,9 +526,8 @@ class Vizceral extends EventEmitter {
     // clear any highlighting on current graph
     this.setHighlightedNode(undefined);
 
-    // Remove the current graph
-    this.currentGraph.setCurrent(false);
-    this.currentGraph = undefined;
+    // Set the current graph
+    this.setCurrentGraph(toGraph);
 
     const fromViewObject = fromGraph.view.container;
     const toViewObject = toGraph.view.container;
@@ -557,9 +556,6 @@ class Vizceral extends EventEmitter {
                 if (fromViewObject !== undefined) {
                   this.scene.remove(fromViewObject);
                 }
-
-                // Set the current graph
-                this.setCurrentGraph(toGraph);
               })
               .start();
   }
@@ -621,7 +617,7 @@ class Vizceral extends EventEmitter {
   // Needed for all graphs
   selectGraph (graph, redirectedFrom) {
     if (this.currentGraph !== undefined) {
-      this.scene.remove(this.currentGraph.getView().container);
+      this.scene.remove(this.currentGraph.view.container);
       this.currentGraph.setCurrent(false);
     }
     this.scene.add(graph.view.container);
