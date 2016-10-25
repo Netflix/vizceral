@@ -39,13 +39,6 @@ import RendererUtils from './rendererUtils';
 * @property {object} object The object that has been highlighted, or the highlighted object that has been updated.
 */
 /**
-* The `rendered` event is fired whenever a graph is rendered.
-*
-* @event rendered
-* @property {string} name the name of the graph that was rendered
-* @property (boolean} rendered true only if the graph has been rendered AND has position data
-*/
-/**
 * The `viewChanged` event is fired whenever the view changes
 *
 * @event viewChanged
@@ -166,7 +159,6 @@ class Vizceral extends EventEmitter {
   _attachGraphHandlers (graph) {
     graph.on('nodeContextSizeChanged', dimensions => this.emit('nodeContextSizeChanged', dimensions));
     graph.on('objectHighlighted', highlightedObject => this.emit('objectHighlighted', highlightedObject));
-    graph.on('rendered', renderInfo => this.emit('rendered', renderInfo));
     graph.on('setView', view => this.setView(view));
   }
 

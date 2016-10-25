@@ -14,14 +14,6 @@ Copyright 2016 Netflix, Inc.
     See the License for the specific language governing permissions and
     limitations under the License.
 
-# rendered
-
-The `rendered` event is fired whenever a graph is rendered.
-
-**Properties**
-
--   `name` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** the name of the graph that was rendered
-
 # viewChanged
 
 The `viewChanged` event is fired whenever the view changes

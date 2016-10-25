@@ -72,10 +72,6 @@ class TrafficGraph extends EventEmitter {
     this.loadedOnce = false;
   }
 
-  emitRendered () {
-    this.emit('rendered', { name: this.name, rendered: this.view.rendered && this.hasPositionData });
-  }
-
   /**
    * If the graph is the currently viewed graph, update the state of the view, apply the search
    * string, and make sure to highlight any node that is supposed to be highlighted. Emit that
@@ -88,8 +84,6 @@ class TrafficGraph extends EventEmitter {
       // Re-apply highlighting to the graph in case there are new nodes or connections
       if (this.searchString) { this.highlightMatchedNodes(this.searchString); }
       if (this.highlightedObject) { this.highlightObject(this.highlightedObject, true); }
-      // Update listeners that something was rendered or re-rendered.
-      this.emitRendered();
     }
   }
 
