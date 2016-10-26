@@ -679,6 +679,7 @@ class TrafficGraph extends EventEmitter {
   _relayout () {
     // no-op
   }
+
   getPhysicsOptions () {
     const o = this._particleSystem.getOptions();
     o.isEnabled = this._particleSystem_isEnabled;

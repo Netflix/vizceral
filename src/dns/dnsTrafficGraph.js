@@ -123,8 +123,8 @@ class DNSTrafficGraph extends TrafficGraph {
           maxVolume = Math.max(maxVolume, node.maxVolume || 0);
         });
       }
-<<<<<<< HEAD
-      this.state.maxVolume = maxVolume * 1.5;
+      maxVolume *= 1.5;
+      this.state.maxVolume = maxVolume;
     } catch (e) {
       Console.log(e);
     }
