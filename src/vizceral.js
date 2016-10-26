@@ -28,7 +28,7 @@ import RegionTrafficGraph from './region/regionTrafficGraph';
 import DnsTrafficGraph from './dns/dnsTrafficGraph';
 
 import RendererUtils from './rendererUtils';
-
+import MoveNodeInteraction from './moveNodeInteraction';
 
 /**
 * The `objectHighlighted` event is fired whenever an object is highlighted.
@@ -114,8 +114,11 @@ class Vizceral extends EventEmitter {
     this.scene.add(new THREE.AmbientLight(0xffffff));
 
     // Mouse/Touch interactivity
+
+    // true if the raycaster has been updated with the latest mouse position.
+    this.raycaster_mouseLocation_viewportSpace = new THREE.Vector2(-1, -1);
     this.raycaster = new THREE.Raycaster();
-    this.mouse = new THREE.Vector2(-1, -1);
+
     this.hammertime = new Hammer.Manager(this.renderer.domElement);
     this.hammertime.on('press', event => this.onDocumentMouseMove(event), false);
     this.renderer.domElement.addEventListener('mousemove', event => this.onDocumentMouseMove(event), false);
@@ -136,6 +139,8 @@ class Vizceral extends EventEmitter {
       region: RegionTrafficGraph,
       dns: DnsTrafficGraph
     };
+
+    this.moveNodeInteraction = new MoveNodeInteraction(this);
   }
 
 
@@ -284,7 +289,7 @@ class Vizceral extends EventEmitter {
   }
 
   calculateIntersectedObject (x, y) {
-    this.updateMousePosition(x, y);
+    this.validateRaycaster(x, y);
     this.disableHoverInteractions = false;
     this.calculateMouseOver(true);
     return this.currentGraph && this.currentGraph.getIntersectedObject();
@@ -524,6 +529,8 @@ class Vizceral extends EventEmitter {
 
   setCurrentGraph (graph) {
     graph.setFilters(this.filters);
+    let oldValue = this.currentGraph;
+    if (oldValue == null) oldValue = null;
     this.currentGraph = graph;
     this.currentGraph.setCurrent(true);
   }
@@ -644,9 +651,25 @@ class Vizceral extends EventEmitter {
     this.setCurrentGraph(graph);
   }
 
+  validateRaycaster (mouseLocVPSpaceX, mouseLocVPSpaceY) {
+    if (this.raycaster_mouseLocation_viewportSpace.x === mouseLocVPSpaceX &&
+      this.raycaster_mouseLocation_viewportSpace.y === mouseLocVPSpaceY) {
+      return;
+    }
+    const canvasDomElem = this.renderer.domElement;
+    const canvasBCRect = this.boundingRect;
+    const mouseLocCanvasSpaceX = mouseLocVPSpaceX - canvasBCRect.left;
+    const mouseLocCanvasSpaceY = mouseLocVPSpaceY - canvasBCRect.top;
+    const mouseLocNormScreenSpaceX = ((mouseLocCanvasSpaceX / canvasDomElem.width) * 2) - 1;
+    const mouseLocNormScreenSpaceY = -((mouseLocCanvasSpaceY / canvasDomElem.height) * 2) + 1;
+    const mouseLocNormScreenSpace = new THREE.Vector2(mouseLocNormScreenSpaceX, mouseLocNormScreenSpaceY);
+    this.raycaster.setFromCamera(mouseLocNormScreenSpace, this.camera);
+    this.raycaster_mouseLocation_viewportSpace.x = mouseLocVPSpaceX;
+    this.raycaster_mouseLocation_viewportSpace.y = mouseLocVPSpaceY;
+  }
+
   calculateMouseOver (immediate) {
     if (this.currentGraph) {
-      this.raycaster.setFromCamera(this.mouse, this.camera);
       this.raycaster.linePrecision = this.currentGraph.linePrecision || 1;
       const intersects = this.raycaster.intersectObjects(this.currentGraph.view.getInteractiveChildren());
       let userData = {};
@@ -694,15 +717,10 @@ class Vizceral extends EventEmitter {
     }
   }
 
-  updateMousePosition (x, y) {
-    this.mouse.x = (((x - this.boundingRect.left) / this.renderer.domElement.width) * 2) - 1;
-    this.mouse.y = -(((y - this.boundingRect.top) / this.renderer.domElement.height) * 2) + 1;
-  }
-
   onDocumentMouseMove (event) {
     event.preventDefault();
-    this.updateMousePosition(event.clientX, event.clientY);
     if (!this.disableHoverInteractions) {
+      this.validateRaycaster(event.clientX, event.clientY);
       this.calculateMouseOver();
     }
   }

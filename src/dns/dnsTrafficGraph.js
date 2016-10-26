@@ -82,16 +82,15 @@ class DNSTrafficGraph extends TrafficGraph {
       connections: []
     };
     this.contextDivs = {};
-
     this.dimensions = {
       width: graphWidth,
       height: graphHeight
     };
-
     this.hasPositionData = true;
   }
 
   setState (state) {
+    // This function cannot remove any nodes and leaks, but this is not our problem for now.
     try {
       _.each(state.nodes, node => {
         const existingNodeIndex = _.findIndex(this.state.nodes, { name: node.name });
@@ -104,6 +103,7 @@ class DNSTrafficGraph extends TrafficGraph {
 
       _.each(state.connections, newConnection => {
         const existingConnectionIndex = _.findIndex(this.state.connections, { source: newConnection.source, target: newConnection.target });
+
         if (existingConnectionIndex !== -1) {
           this.state.connections[existingConnectionIndex] = newConnection;
         } else {
@@ -124,11 +124,11 @@ class DNSTrafficGraph extends TrafficGraph {
           maxVolume = Math.max(maxVolume, node.maxVolume || 0);
         });
       }
-      this.state.maxVolume = maxVolume * 1.5;
+      maxVolume *= 1.5;
+      this.state.maxVolume = maxVolume;
     } catch (e) {
       Console.log(e);
     }
-
     positionNodes(this.state.nodes, this.dimensions);
     super.setState(this.state);
   }

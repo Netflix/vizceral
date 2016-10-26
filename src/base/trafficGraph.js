@@ -18,12 +18,32 @@
 import _ from 'lodash';
 import EventEmitter from 'events';
 import TWEEN from 'tween.js';
-
 import LayoutWorker from 'worker?inline!./layoutWorker'; // eslint-disable-line import/no-extraneous-dependencies
+import Bla from '../physics/bla';
 import Notices from '../notices';
 import TrafficGraphView from './trafficGraphView';
 
 const Console = console; // Eliminate eslint warnings for non-debug console messages
+
+const hasOwnPropF = Object.prototype.hasOwnProperty;
+
+function getPerformanceNow () {
+  const g = window;
+  if (g != null) {
+    const perf = g.performance;
+    if (perf != null) {
+      try {
+        const perfNow = perf.now();
+        if (typeof perfNow === 'number') {
+          return perfNow;
+        }
+      } catch (e) {
+        Console.debug('performance.now() seems unavailable :', e);
+      }
+    }
+  }
+  return null;
+}
 
 class TrafficGraph extends EventEmitter {
   constructor (name, mainView, graphWidth, graphHeight, NodeClass, ConnectionClass) {
@@ -41,6 +61,9 @@ class TrafficGraph extends EventEmitter {
 
     this.view = new TrafficGraphView(this);
 
+    this._particleSystem_isEnabled = false;
+    this._particleSystem = new Bla(this, graphWidth, graphHeight, this._particleSystem_isEnabled);
+
     this.layoutDimensions = {
       width: graphWidth - 400,
       height: graphHeight - 45
@@ -53,6 +76,7 @@ class TrafficGraph extends EventEmitter {
     this.layoutWorker = LayoutWorker();
     this.layoutWorker.onmessage = event => {
       Console.info(`Layout: Received updated layout for ${this.name} from the worker.`);
+      this.onAsyncLayoutCompleted();
       this._updateNodePositions(event.data);
       this.updateView();
     };
@@ -61,6 +85,9 @@ class TrafficGraph extends EventEmitter {
 
     this.hasPositionData = false;
     this.loadedOnce = false;
+  }
+
+  onAsyncLayoutCompleted () {
   }
 
   emitRendered () {
@@ -97,6 +124,20 @@ class TrafficGraph extends EventEmitter {
         _.each(this.connections, connection => connection.cleanup());
         _.each(this.nodes, node => node.cleanup());
       }
+      this._particleSystem.setLastUpdateTime(getPerformanceNow());
+      this.updateIsParticleSystemEnabled();
+    }
+  }
+
+  computeShouldParticleSystemBeEnabled () {
+    return this._particleSystem_isEnabled && !!this.current;
+  }
+
+  updateIsParticleSystemEnabled () {
+    if (this.computeShouldParticleSystemBeEnabled()) {
+      this._particleSystem.enable();
+    } else {
+      this._particleSystem.disable();
     }
   }
 
@@ -281,6 +322,8 @@ class TrafficGraph extends EventEmitter {
     _.each(this.nodes, node => {
       if (node.isVisible()) { node.getView().update(); }
     });
+
+    this._particleSystem.update(time);
   }
 
   isPopulated () {
@@ -426,6 +469,7 @@ class TrafficGraph extends EventEmitter {
       } else {
         this.cachedState = state;
       }
+      this._particleSystem.onTrafficGraphChanged();
     }
   }
 
@@ -636,6 +680,34 @@ class TrafficGraph extends EventEmitter {
   _relayout () {
     // no-op
   }
+
+  getPhysicsOptions () {
+    const o = this._particleSystem.getOptions();
+    o.isEnabled = this._particleSystem_isEnabled;
+    return o;
+  }
+
+  setPhysicsOptions (options) {
+    let flag = false;
+    if (hasOwnPropF.call(options, 'isEnabled')) {
+      let isEnabled = options.isEnabled;
+      options = _.clone(options);
+      delete options.isEnabled;
+      if (typeof isEnabled !== 'boolean') {
+        Console.warn('Got non-boolean value for PhysicsOptions.isEnabled, coercing to boolean:', isEnabled);
+        isEnabled = !!isEnabled;
+      }
+      flag = this._particleSystem_isEnabled !== isEnabled;
+      this._particleSystem_isEnabled = isEnabled;
+    }
+    Console.debug('TrafficGraph setPhysicsOptions: ', flag, options);
+    this._particleSystem.setOptions(options);
+    if (flag) {
+      this.updateIsParticleSystemEnabled();
+    }
+  }
+
+
 }
 
 export default TrafficGraph;

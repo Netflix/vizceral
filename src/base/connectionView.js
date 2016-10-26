@@ -23,8 +23,6 @@ import ConnectionNoticeView from './connectionNoticeView';
 import GlobalStyles from '../globalStyles';
 import Constants from './constants';
 
-
-
 // Preload textures
 const loader = new THREE.TextureLoader();
 
