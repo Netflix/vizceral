@@ -1,0 +1,25 @@
+{
+  "env": {
+    "browser": true
+  },
+  "extends": [
+    "airbnb-base"
+  ],
+  "rules": {
+    "indent": [
+      2,
+      2
+    ],
+    "new-cap": 0,
+    "comma-dangle": 0,
+    "func-names": 0,
+    "no-var": 1,
+    "object-shorthand": 0,
+    "space-before-function-paren": [1, "always"],
+    "no-param-reassign": 0,
+    "max-len": 0,
+    "import/no-unresolved": 0,
+    "no-underscore-dangle": ["error", { "allowAfterThis": true }]
+  },
+  "parser": "babel-eslint"
+}

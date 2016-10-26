@@ -1,0 +1,16 @@
+# Third Party Dependencies
+node_modules
+bower_components
+
+# IDE Config
+.idea
+
+# Generated files
+npm-debug.log
+/dist
+*.map
+.jshintignore
+.jshintrc
+
+# System files
+.DS_Store
