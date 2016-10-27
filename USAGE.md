@@ -14,14 +14,6 @@ Copyright 2016 Netflix, Inc.
     See the License for the specific language governing permissions and
     limitations under the License.
 
-# rendered
-
-The `rendered` event is fired whenever a graph is rendered.
-
-**Properties**
-
--   `name` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** the name of the graph that was rendered
-
 # viewChanged
 
 The `viewChanged` event is fired whenever the view changes
@@ -29,14 +21,6 @@ The `viewChanged` event is fired whenever the view changes
 **Properties**
 
 -   `view` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** The currently selected view (e.g. \[] for global, ['us-east-1'] for one node deep, ['us-east-1', 'api'] for two nodes deep)
-
-# nodeFocused
-
-The `nodeFocused` event is fired whenever a node gains focus or the currently focused node is updated
-
-**Properties**
-
--   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node object that has been focused, or the focused node that has been updated.
 
 # nodeContextSizeChanged
 
@@ -136,18 +120,17 @@ Returns **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refer
 
 Set the current view of the component to the passed in array. If the passed
 in array does not match an existing node at the passed in depth, the component will try
-each level up the array until it finds a match, defaulting to the global
+each level up the array until it finds a match, defaulting to the top level
 view.
 
 Ex:
-\[] - show the base global view
+\[] - show the base graph view
 ['us-east-1'] - show the graph view for 'us-east-1' if it exists
 ['us-east-1', 'api'] - show the view for the api node in the us-east-1 graph if it exists
 
 **Parameters**
 
--   `viewArray` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** the array containing the view to set.
--   `nodeArray`   (optional, default `[]`)
+-   `viewArray` **\[[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)](default \[])** the array containing the view to set.
 -   `objectNameToHighlight` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** a node or connection to set as highlighted in the current viewArray
 
 # setModes
@@ -169,7 +152,7 @@ Get a specific node object
 
 **Parameters**
 
--   `nodeArray` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** e.g. [ node1, node2 ]
+-   `viewArray` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** e.g. [ node1, node2 ]
 
 # setFilters
 

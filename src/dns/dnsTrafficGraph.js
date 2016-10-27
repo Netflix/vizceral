@@ -76,6 +76,7 @@ function positionNodes (nodes, dimensions) {
 class DNSTrafficGraph extends TrafficGraph {
   constructor (name, mainView, graphWidth, graphHeight) {
     super(name, mainView, graphWidth, graphHeight, DnsNode, DnsConnection, true);
+    this.type = 'dns';
     this.linePrecision = 50;
     this.state = {
       nodes: [],
@@ -91,7 +92,7 @@ class DNSTrafficGraph extends TrafficGraph {
     this.hasPositionData = true;
   }
 
-  setState (state) {
+  setState (state, force) {
     try {
       _.each(state.nodes, node => {
         const existingNodeIndex = _.findIndex(this.state.nodes, { name: node.name });
@@ -130,7 +131,15 @@ class DNSTrafficGraph extends TrafficGraph {
     }
 
     positionNodes(this.state.nodes, this.dimensions);
-    super.setState(this.state);
+    super.setState(this.state, force);
+  }
+
+  setFilters () {
+    // no-op
+  }
+
+  _relayout () {
+    // no-op
   }
 }
 

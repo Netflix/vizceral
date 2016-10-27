@@ -82,7 +82,7 @@ class GraphObject extends EventEmitter {
   }
 
   isVisible () {
-    return !this.hidden && !this.filtered;
+    return !this.filtered;
   }
 
   isClickable () {

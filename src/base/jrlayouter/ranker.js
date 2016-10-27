@@ -18,7 +18,6 @@
 import _ from 'lodash';
 
 const minimumLength = 1;
-const Console = console;
 
 function longestPathRanking (graph) {
   const visited = {};
@@ -55,13 +54,24 @@ function normalizeRanks (graph) {
   }
 }
 
+function forcePrimaryRankPromotions (graph, entryNodeName) {
+  let entryNodes = graph.entryNodes();
+  if (entryNodeName) {
+    if (entryNodes.includes(entryNodeName)) {
+      entryNodes = [entryNodeName];
+    }
+  }
+  for (let i = 0; i < entryNodes.length; i++) {
+    const entryNode = graph.getNode(entryNodes[i]);
+    entryNode.rank = 0;
+  }
+}
+
 function forceSecondaryRankPromotions (graph, entryNodeName) {
   let entryNodes = graph.entryNodes();
   if (entryNodeName) {
     if (entryNodes.includes(entryNodeName)) {
       entryNodes = [entryNodeName];
-    } else {
-      Console.warn(`Attempted to force secondary rank promotions for entry node, ${entryNodeName},  which does not exist. Using all entry nodes.`);
     }
   }
   for (let i = 0; i < entryNodes.length; i++) {
@@ -76,5 +86,6 @@ function forceSecondaryRankPromotions (graph, entryNodeName) {
 module.exports = {
   longestPathRanking: longestPathRanking,
   normalizeRanks: normalizeRanks,
+  forcePrimaryRankPromotions: forcePrimaryRankPromotions,
   forceSecondaryRankPromotions: forceSecondaryRankPromotions
 };

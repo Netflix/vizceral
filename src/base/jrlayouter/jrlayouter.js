@@ -110,7 +110,7 @@ const weightSort = function (a, b) {
       return nodePositions;
     }
 
-    jrlayouter.prototype.layout = function (nodes, edges, dimensions) {
+    jrlayouter.prototype.layout = function (nodes, edges, dimensions, entryNode) {
       const graph = new Graph(nodes, edges); // Build a simple graph object
       graph.removeSameEdges(); // Remove edges that have same source and target
       AcyclicFAS.remove(graph); // Remove acyclic links
@@ -121,7 +121,8 @@ const weightSort = function (a, b) {
       graph.restoreSameEdges(); // Replace edges that have same source and target
 
       Ranker.normalizeRanks(graph); // Normalize node ranks to be 0++
-      Ranker.forceSecondaryRankPromotions(graph, 'INTERNET'); // Force any leafs that are one level deep from specified entry node to not move all the way to the edge
+      Ranker.forcePrimaryRankPromotions(graph, entryNode); // Force all entry nodes to be first
+      Ranker.forceSecondaryRankPromotions(graph, entryNode); // Force any leafs that are one level deep from specified entry node to not move all the way to the edge
 
       const nodesSortedByDepth = sortNodesByDepth(graph);
       sortNodesWithinDepth(nodesSortedByDepth);

@@ -34,7 +34,7 @@ function updatePosition (node, nodeCount, nodeIndex, orbitSize) {
 
 function positionNodes (nodes, orbitSize) {
   let nodeIndex = 0;
-  const nodeCount = nodes.length - 1;
+  const nodeCount = Object.keys(nodes).length - 1;
 
   const sortedNodeNames = _.map(nodes, 'name');
   sortedNodeNames.sort();
@@ -43,7 +43,7 @@ function positionNodes (nodes, orbitSize) {
   const nodeMap = _.keyBy(nodes, 'name');
   _.each(sortedNodeNames, nodeName => {
     const node = nodeMap[nodeName];
-    if (nodeName !== 'INTERNET') {
+    if (!node.isEntryNode()) {
       nodeIndex++;
       updatePosition(node, nodeCount, nodeIndex, orbitSize);
     } else {
@@ -64,8 +64,9 @@ function positionNodes (nodes, orbitSize) {
 }
 
 class GlobalTrafficGraph extends TrafficGraph {
-  constructor (name, mainView, graphWidth, graphHeight) {
-    super(name, mainView, graphWidth, graphHeight, GlobalNode, GlobalConnection);
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight) {
+    super(name, mainView, parentGraph, graphWidth, graphHeight, GlobalNode, GlobalConnection);
+    this.type = 'global';
 
     this.orbitSize = Math.min(graphWidth, graphHeight);
     this.linePrecision = 50;
@@ -78,7 +79,7 @@ class GlobalTrafficGraph extends TrafficGraph {
     this.hasPositionData = true;
   }
 
-  setState (state) {
+  setState (state, force) {
     _.each(state.nodes, node => {
       const existingNodeIndex = _.findIndex(this.state.nodes, { name: node.name });
       if (existingNodeIndex !== -1) {
@@ -121,8 +122,18 @@ class GlobalTrafficGraph extends TrafficGraph {
     }
     this.state.maxVolume = maxVolume * 1.5;
 
-    positionNodes(this.state.nodes, this.orbitSize);
-    super.setState(this.state);
+    super.setState(this.state, force);
+    this.validateLayout();
+    positionNodes(this.nodes, this.orbitSize);
+    this._relayout();
+  }
+
+  setFilters () {
+    // no-op
+  }
+
+  _relayout () {
+    this.updateView();
   }
 
   handleIntersectedObjectClick () {
@@ -170,6 +181,10 @@ class GlobalTrafficGraph extends TrafficGraph {
       div.style.display = current ? 'block' : 'none';
     });
     this.updateLabelScreenDimensions(true);
+  }
+
+  highlightObject () {
+    // no-op
   }
 
   update (time) {

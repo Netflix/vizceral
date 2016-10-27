@@ -21,11 +21,12 @@ import * as THREE from 'three';
 import TWEEN from 'tween.js';
 import Hammer from 'hammerjs';
 
+import DnsTrafficGraph from './dns/dnsTrafficGraph';
+import FocusedTrafficGraph from './focused/focusedTrafficGraph';
 import GlobalDefinitions from './globalDefinitions';
 import GlobalStyles from './globalStyles';
 import GlobalTrafficGraph from './global/globalTrafficGraph';
 import RegionTrafficGraph from './region/regionTrafficGraph';
-import DnsTrafficGraph from './dns/dnsTrafficGraph';
 
 import RendererUtils from './rendererUtils';
 
@@ -38,23 +39,10 @@ import RendererUtils from './rendererUtils';
 * @property {object} object The object that has been highlighted, or the highlighted object that has been updated.
 */
 /**
-* The `rendered` event is fired whenever a graph is rendered.
-*
-* @event rendered
-* @property {string} name the name of the graph that was rendered
-* @property (boolean} rendered true only if the graph has been rendered AND has position data
-*/
-/**
 * The `viewChanged` event is fired whenever the view changes
 *
 * @event viewChanged
 * @property {array} view The currently selected view (e.g. [] for global, ['us-east-1'] for one node deep, ['us-east-1', 'api'] for two nodes deep)
-*/
-/**
-* The `nodeFocused` event is fired whenever a node gains focus or the currently focused node is updated
-*
-* @event nodeFocused
-* @property {object} node The node object that has been focused, or the focused node that has been updated.
 */
 /**
 * The `nodeContextSizeChanged` event is fired whenever the context panel size for node context size changes
@@ -134,6 +122,7 @@ class Vizceral extends EventEmitter {
     this.renderers = {
       global: GlobalTrafficGraph,
       region: RegionTrafficGraph,
+      focused: FocusedTrafficGraph,
       dns: DnsTrafficGraph
     };
   }
@@ -170,47 +159,49 @@ class Vizceral extends EventEmitter {
   _attachGraphHandlers (graph) {
     graph.on('nodeContextSizeChanged', dimensions => this.emit('nodeContextSizeChanged', dimensions));
     graph.on('objectHighlighted', highlightedObject => this.emit('objectHighlighted', highlightedObject));
-    graph.on('nodeFocused', node => this.emit('nodeFocused', node));
-    graph.on('rendered', renderInfo => this.emit('rendered', renderInfo));
     graph.on('setView', view => this.setView(view));
   }
 
-  createGraph (graphData, mainView, width, height) {
+  createGraph (graphData, mainView, parentGraph, width, height) {
     let graph;
-    if (this.renderers[graphData.renderer]) {
-      graph = new (this.renderers[graphData.renderer])(graphData.name, mainView, width, height);
-    } else {
-      Console.log(`Attempted to create a graph type that does not exist: ${graphData.renderer} Presently registered renderers are ${Object.keys(this.renderers)}`);
+    if (graphData && graphData.renderer) {
+      if (!graphData.name) {
+        Console.log('Attempted to create a new graph that does not have a name');
+      } else if (!this.renderers[graphData.renderer]) {
+        Console.log(`Attempted to create a graph type that does not exist: ${graphData.renderer} Presently registered renderers are ${Object.keys(this.renderers)}`);
+      } else {
+        const parent = parentGraph || this;
+        graph = parent.graphs[graphData.name];
+        if (!graph) {
+          graph = new (this.renderers[graphData.renderer])(graphData.name, mainView, parentGraph, width, height);
+          this._attachGraphHandlers(graph);
+          graph.setFilters(this.filters);
+          graph.showLabels(this.options.showLabels);
+          parent.graphs[graphData.name] = graph;
+        }
+      }
     }
     return graph;
   }
 
-  createAndUpdateGraphs (graphData, baseGraphObject) {
-    let graphCreated = false;
-    if (graphData && graphData.renderer && graphData.nodes && graphData.nodes.length > 0) {
-      if (!graphData.name) {
-        Console.log('Attempted to create a new graph that does not have a name');
-        return graphCreated;
-      }
-      // Create a graph
-      if (!baseGraphObject[graphData.name]) {
-        graphCreated = true;
-        baseGraphObject[graphData.name] = this.createGraph(graphData, this, graphWidth, graphHeight);
-        this._attachGraphHandlers(baseGraphObject[graphData.name]);
-        baseGraphObject[graphData.name].setFilters(this.filters);
-        baseGraphObject[graphData.name].showLabels(this.options.showLabels);
-      }
-
-      // Update the data
-      baseGraphObject[graphData.name].setState(graphData);
-
-      // create sub graphs
-      _.each(graphData.nodes, nodeData => {
-        const subGraphCreated = this.createAndUpdateGraphs(nodeData, baseGraphObject[graphData.name].graphs);
-        graphCreated = graphCreated || subGraphCreated;
+  updateGraph (graph) {
+    if (graph) {
+      let currentGraphData = this.trafficData;
+      let parentGraphData;
+      graph.graphIndex.every(graphLevel => {
+        parentGraphData = currentGraphData;
+        currentGraphData = _.find(currentGraphData.nodes, { name: graphLevel });
+        return currentGraphData;
       });
+
+      if (currentGraphData) {
+        graph.manipulateState(currentGraphData, parentGraphData);
+        graph.setState(currentGraphData);
+        if (graph.current) {
+          graph.validateLayout();
+        }
+      }
     }
-    return graphCreated;
   }
 
   /**
@@ -221,17 +212,15 @@ class Vizceral extends EventEmitter {
    */
   updateData (trafficData) {
     if (trafficData && trafficData.nodes) {
+      this.trafficData = trafficData;
       this.rootGraphName = trafficData.name;
-      const newGraphs = this.createAndUpdateGraphs(trafficData, this.graphs);
 
       // Now that the initial data is loaded, check if we can set the initial node
       if (this.initialView) {
         this.setView(this.initialView, this.initialObjectToHighlight);
       }
 
-      if (newGraphs) {
-        this.emit('graphsUpdated', this.graphs);
-      }
+      this.updateGraph(this.currentGraph);
     }
   }
 
@@ -300,6 +289,25 @@ class Vizceral extends EventEmitter {
     this.currentGraph.handleIntersectedObjectDoubleClick();
   }
 
+  getNearestValidGraph (viewArray) {
+    let newGraph = this.getGraph(this.rootGraphName);
+    if (newGraph) {
+      viewArray.every(nodeName => {
+        const nextLevelNode = newGraph.getNode(nodeName);
+        if (nextLevelNode) {
+          const newGraphCandidate = this.getGraph(nextLevelNode.name, newGraph);
+          if (newGraphCandidate) {
+            newGraph = newGraphCandidate;
+            return true;
+          }
+          Console.warn(`Attempted to select a graph that was not found; ${viewArray.join()}`);
+        }
+        return false;
+      });
+    }
+    return newGraph;
+  }
+
   checkInitialView () {
     const initialView = {
       view: undefined,
@@ -308,38 +316,12 @@ class Vizceral extends EventEmitter {
     };
 
     // If there is an initial node to set and there is not a current selected node
-    if (this.initialView && !this.currentView) {
-      const topLevelNode = this.initialView && this.initialView[0];
-      const nodeName = this.initialView && this.initialView[1];
+    if (this.initialView && !this.currentGraph && this.rootGraphName) {
+      // Are there graphs yet?
+      const newGraph = this.getNearestValidGraph(this.initialView);
+      if (newGraph) {
+        initialView.view = newGraph.graphIndex;
 
-      // Is the root graph loaded yet?
-      if (Object.keys(this.graphs).length > 0) {
-        // Is the set of top level nodes loaded yet?
-        if (Object.keys(this.graphs[this.rootGraphName].graphs).length > 0) {
-          // Does the specified node exist?
-          if (topLevelNode && this.graphs[this.rootGraphName].graphs[topLevelNode]) {
-            // If a node name was not passed in...
-            if (!nodeName) {
-              initialView.view = [topLevelNode];
-            } else if (this.graphs[this.rootGraphName].graphs[topLevelNode].isPopulated()) {
-              // Is there data loaded for the specified topLevelNode?
-              // TODO: Get multiple matches and set filters if there are multiple?
-              const node = this.graphs[this.rootGraphName].graphs[topLevelNode].getNode(nodeName);
-              // if a node was matched, navigate to the node
-              if (node) {
-                initialView.view = [topLevelNode, node.name];
-              } else {
-                // Navigate to the topLevelNode since the node was not found.
-                initialView.view = [topLevelNode];
-              }
-            }
-          } else {
-            initialView.view = [];
-          }
-        } else {
-          // Load the global view
-          initialView.view = [];
-        }
         if (initialView.view && this.initialView && !_.isEqual(initialView.view, this.initialView)) {
           initialView.redirectedFrom = this.initialView;
         }
@@ -351,97 +333,80 @@ class Vizceral extends EventEmitter {
     // TODO: else, set a timeout for waiting...?
   }
 
+  getGraph (graphName, parentGraph) {
+    // If the graph already exists, return it.
+    if (!parentGraph) {
+      if (this.graphs[graphName]) {
+        return this.graphs[graphName];
+      }
+    } else if (parentGraph.graphs[graphName]) {
+      return parentGraph.graphs[graphName];
+    }
+
+    // If parentGraph is root, create a new graph based on this.trafficData
+    const graphData = !parentGraph ? this.trafficData : parentGraph.nodes[graphName];
+    // If the node exists in the graph, create the graph.
+    if (graphData) {
+      // Create the graph and return it
+      const graph = this.createGraph(graphData, this, parentGraph, graphWidth, graphHeight);
+      this.updateGraph(graph);
+      return graph;
+    }
+
+    return undefined;
+  }
+
   /**
    * Set the current view of the component to the passed in array. If the passed
    * in array does not match an existing node at the passed in depth, the component will try
-   * each level up the array until it finds a match, defaulting to the global
+   * each level up the array until it finds a match, defaulting to the top level
    * view.
    *
    * Ex:
-   * [] - show the base global view
+   * [] - show the base graph view
    * ['us-east-1'] - show the graph view for 'us-east-1' if it exists
    * ['us-east-1', 'api'] - show the view for the api node in the us-east-1 graph if it exists
    *
    * @param {array} viewArray the array containing the view to set.
    * @param {string} objectNameToHighlight a node or connection to set as highlighted in the current viewArray
    */
-  setView (nodeArray = [], objectNameToHighlight) {
+  setView (viewArray = [], objectNameToHighlight) {
     let redirectedFrom;
     // If nothing has been selected yet, it's the initial node
-    if (!this.currentView) {
-      this.initialView = nodeArray;
+    if (!this.currentGraph) {
+      this.initialView = viewArray;
       this.initialObjectToHighlight = objectNameToHighlight;
       const initialView = this.checkInitialView();
       if (!initialView.view) { return; }
-      nodeArray = initialView.view;
+      viewArray = initialView.view;
       objectNameToHighlight = initialView.highlighted;
       redirectedFrom = initialView.redirectedFrom;
     }
 
-    let newTopLevelNode = nodeArray[0];
-    let newSecondLevelNode = nodeArray[1];
+    const newGraph = this.getNearestValidGraph(viewArray);
 
-    let viewChanged = false;
-    let topLevelNodeChanged = false;
-
-    // Check if it is a valid top level node. Also catch if no top level node...
-    const topLevelNodeGraph = this.graphs[this.rootGraphName].graphs[newTopLevelNode];
-    if (topLevelNodeGraph !== undefined) {
-      // Switch to the top level node view
-      if (!this.currentGraph || this.currentGraph.name !== newTopLevelNode) {
-        topLevelNodeChanged = true;
-        viewChanged = true;
-      }
-
-      // Check if second node exists (or sub-node name matches)
-      const newNode = topLevelNodeGraph.getNode(newSecondLevelNode);
-      newSecondLevelNode = newNode ? newNode.name : undefined;
-
-      if (topLevelNodeGraph.nodeName !== newSecondLevelNode) {
-        topLevelNodeGraph.setFocusedNode(newSecondLevelNode);
-        viewChanged = true;
-      }
-
-      // If passed in an object to highlight, try to highlight.
-      if (objectNameToHighlight) {
-        const objectToHighlight = topLevelNodeGraph.getGraphObject(objectNameToHighlight);
-        if (objectToHighlight) {
-          topLevelNodeGraph.highlightObject(objectToHighlight);
-        }
-      } else if (topLevelNodeGraph.highlightedObject) {
-        topLevelNodeGraph.highlightObject();
-      }
-
-      // If switching to the top level node view from the global view, animate in
-      if (this.currentGraph === this.graphs[this.rootGraphName]) {
-        this.zoomIntoNode(newTopLevelNode);
-        viewChanged = true;
-      } else if (topLevelNodeChanged) {
-        this.selectGraph(topLevelNodeGraph);
-      }
-    } else if (this.currentGraph !== this.graphs[this.rootGraphName]) {
-      // If no top level node was passed in, switch to the global view
-      newTopLevelNode = undefined;
-      newSecondLevelNode = undefined;
-      if (this.currentGraph && this.currentGraph !== this.graphs[this.rootGraphName]) {
+    // If the view changed, set it.
+    if (!this.currentGraph || !_.isEqual(newGraph.graphIndex, this.currentGraph.graphIndex)) {
+      const difference = this.currentGraph ? (newGraph.graphIndex.length - this.currentGraph.graphIndex.length) : 0;
+      if (difference === -1) {
         this.zoomOutOfNode();
+      } else if (difference === 1) {
+        this.zoomIntoNode(newGraph.name);
       } else {
-        this.selectGraph(this.graphs[this.rootGraphName]);
+        this.selectGraph(newGraph, redirectedFrom);
       }
-      viewChanged = true;
+
+      this.calculateMouseOver();
     }
 
-    if (viewChanged) {
-      const currentView = [];
-      if (newTopLevelNode) {
-        currentView.push(newTopLevelNode);
-        if (newSecondLevelNode) {
-          currentView.push(newSecondLevelNode);
-        }
+    // If passed in an object to highlight, try to highlight.
+    if (objectNameToHighlight) {
+      const objectToHighlight = newGraph.getGraphObject(objectNameToHighlight);
+      if (objectToHighlight) {
+        newGraph.highlightObject(objectToHighlight);
       }
-      this.currentView = currentView;
-      this.calculateMouseOver();
-      this.emit('viewChanged', { view: this.currentView, graph: this.currentGraph, redirectedFrom: redirectedFrom });
+    } else if (newGraph.highlightedObject) {
+      newGraph.highlightObject();
     }
   }
 
@@ -465,7 +430,7 @@ class Vizceral extends EventEmitter {
   setModes (modes) {
     if (!_.isEqual(modes, this.modes)) {
       this.modes = modes;
-      this.updateModes(this.graphs[this.rootGraphName]);
+      this.updateModes(this.getGraph(this.rootGraphName));
     }
   }
 
@@ -473,7 +438,7 @@ class Vizceral extends EventEmitter {
     // Show labels
     if (options.showLabels !== this.options.showLabels) {
       this.options.showLabels = options.showLabels;
-      this.showLabels(this.graphs[this.rootGraphName]);
+      this.showLabels(this.getGraph(this.rootGraphName));
     }
   }
 
@@ -483,13 +448,10 @@ class Vizceral extends EventEmitter {
    */
   zoomOutViewLevel () {
     if (this.currentGraph) {
-      const currentViewLength = this.currentView ? this.currentView.length : 0;
-
-      if (this.currentGraph && this.currentGraph.highlightedObject) {
+      if (this.currentGraph.highlightedObject) {
         this.currentGraph.highlightObject(undefined);
-      } else if (currentViewLength > 0) {
-        this.currentView = this.currentView.slice(0, -1);
-        this.setView(this.currentView);
+      } else if (this.currentGraph.graphIndex.length > 0) {
+        this.setView(this.currentGraph.graphIndex.slice(0, -1));
       }
     }
   }
@@ -497,13 +459,27 @@ class Vizceral extends EventEmitter {
   /**
    * Get a specific node object
    *
-   * @param {array} nodeArray e.g. [ node1, node2 ]
+   * @param {array} viewArray e.g. [ node1, node2 ]
    */
-  getNode (nodeArray) {
-    if (nodeArray && nodeArray.length === 2 && this.graphs[nodeArray[0]]) {
-      return this.graphs[nodeArray[0]].getNode(nodeArray[1]);
-    }
-    return undefined;
+  getNode (viewArray) {
+    let currentGraph = this.getGraph(this.rootGraphName);
+    let node;
+    _.every(viewArray, (nodeName, index) => {
+      const nextNode = currentGraph.getNode(nodeName);
+      if (nextNode) {
+        if (index === viewArray.length - 1) {
+          node = nextNode;
+          return false;
+        }
+        const nextGraph = currentGraph.graphs[nextNode];
+        if (nextGraph) {
+          currentGraph = nextGraph;
+          return true;
+        }
+      }
+      return false;
+    });
+    return node;
   }
 
   /**
@@ -522,10 +498,13 @@ class Vizceral extends EventEmitter {
     Object.assign(this.renderers, renderers);
   }
 
-  setCurrentGraph (graph) {
+  setCurrentGraph (graph, redirectedFrom) {
     graph.setFilters(this.filters);
     this.currentGraph = graph;
+    this.updateGraph(this.currentGraph);
     this.currentGraph.setCurrent(true);
+
+    this.emit('viewChanged', { view: this.currentGraph.graphIndex, graph: this.currentGraph, redirectedFrom: redirectedFrom });
   }
 
   // Only necessary when global graph is present
@@ -539,9 +518,8 @@ class Vizceral extends EventEmitter {
     // clear any highlighting on current graph
     this.setHighlightedNode(undefined);
 
-    // Remove the current graph
-    this.currentGraph.setCurrent(false);
-    this.currentGraph = undefined;
+    // Set the current graph
+    this.setCurrentGraph(toGraph);
 
     const fromViewObject = fromGraph.view.container;
     const toViewObject = toGraph.view.container;
@@ -570,78 +548,72 @@ class Vizceral extends EventEmitter {
                 if (fromViewObject !== undefined) {
                   this.scene.remove(fromViewObject);
                 }
-
-                // Set the current graph
-                this.setCurrentGraph(toGraph);
               })
               .start();
   }
 
   zoomIntoNode (nodeName) {
-    const entryPosition = this.graphs[this.rootGraphName].nodes[nodeName].position;
-    if (this.currentGraph && this.currentGraph === this.graphs[this.rootGraphName]) {
-      const fromGraph = this.graphs[this.rootGraphName];
-      const toGraph = this.graphs[this.rootGraphName].graphs[nodeName];
-
-      const parametersFrom = {
-        exitingX: fromGraph.view.container.position.x,
-        exitingY: fromGraph.view.container.position.y,
-        exitingScale: fromGraph.view.container.scale.x,
-        enteringX: entryPosition.x,
-        enteringY: entryPosition.y,
-        enteringScale: 0
-      };
-      const parametersTo = {
-        exitingX: 0 - (entryPosition.x * 10),
-        exitingY: 0 - (entryPosition.y * 10),
-        enteringX: 0,
-        enteringY: 0,
-        exitingScale: 10,
-        enteringScale: 1
-      };
-      this.zoomBetweenGraphs(fromGraph, toGraph, parametersFrom, parametersTo);
+    if (this.currentGraph) {
+      const nodeToZoomInto = this.currentGraph.nodes[nodeName];
+      const toGraph = this.currentGraph.graphs[nodeName];
+      if (nodeToZoomInto && toGraph) {
+        const entryPosition = nodeToZoomInto.position;
+        const parametersFrom = {
+          exitingX: this.currentGraph.view.container.position.x,
+          exitingY: this.currentGraph.view.container.position.y,
+          exitingScale: this.currentGraph.view.container.scale.x,
+          enteringX: entryPosition.x,
+          enteringY: entryPosition.y,
+          enteringScale: 0
+        };
+        const parametersTo = {
+          exitingX: 0 - (entryPosition.x * 10),
+          exitingY: 0 - (entryPosition.y * 10),
+          enteringX: 0,
+          enteringY: 0,
+          exitingScale: 10,
+          enteringScale: 1
+        };
+        this.zoomBetweenGraphs(this.currentGraph, toGraph, parametersFrom, parametersTo);
+      }
     }
   }
 
   zoomOutOfNode () {
-    if (this.currentGraph && this.currentGraph !== this.graphs[this.rootGraphName]) {
-      const currentNode = this.graphs[this.rootGraphName].getNode(this.currentGraph.name);
-      const entryPosition = this.graphs[this.rootGraphName].nodes[this.currentGraph.name].position;
+    if (this.currentGraph && this.currentGraph !== this.getGraph(this.rootGraphName)) {
+      const parentGraph = this.currentGraph.parentGraph;
+      if (parentGraph) {
+        const currentNodeInParent = parentGraph.getNode(this.currentGraph.name);
 
-      const toGraph = this.graphs[this.rootGraphName];
-      const fromGraph = this.graphs[this.rootGraphName].graphs[this.currentGraph.name];
-
-      // clear any node that may have been zoomed in
-      fromGraph.setFocusedNode(undefined);
-
-      const parametersFrom = {
-        enteringX: 0 - (entryPosition.x * 10),
-        enteringY: 0 - (entryPosition.y * 10),
-        enteringScale: 10,
-        exitingX: fromGraph.view.container.position.x,
-        exitingY: fromGraph.view.container.position.y,
-        exitingScale: fromGraph.view.container.scale.x
-      };
-      const parametersTo = {
-        enteringX: 0,
-        enteringY: 0,
-        exitingX: currentNode.position.x,
-        exitingY: currentNode.position.y,
-        enteringScale: 1,
-        exitingScale: 0
-      };
-      this.zoomBetweenGraphs(fromGraph, toGraph, parametersFrom, parametersTo);
+        const parametersFrom = {
+          enteringX: 0 - (currentNodeInParent.position.x * 10),
+          enteringY: 0 - (currentNodeInParent.position.y * 10),
+          enteringScale: 10,
+          exitingX: this.currentGraph.view.container.position.x,
+          exitingY: this.currentGraph.view.container.position.y,
+          exitingScale: this.currentGraph.view.container.scale.x
+        };
+        const parametersTo = {
+          enteringX: 0,
+          enteringY: 0,
+          exitingX: currentNodeInParent.position.x,
+          exitingY: currentNodeInParent.position.y,
+          enteringScale: 1,
+          exitingScale: 0
+        };
+        this.zoomBetweenGraphs(this.currentGraph, parentGraph, parametersFrom, parametersTo);
+      }
     }
   }
 
   // Needed for all graphs
-  selectGraph (graph) {
+  selectGraph (graph, redirectedFrom) {
     if (this.currentGraph !== undefined) {
       this.scene.remove(this.currentGraph.view.container);
       this.currentGraph.setCurrent(false);
     }
     this.scene.add(graph.view.container);
-    this.setCurrentGraph(graph);
+    this.setCurrentGraph(graph, redirectedFrom);
   }
 
   calculateMouseOver (immediate) {
@@ -669,7 +641,7 @@ class Vizceral extends EventEmitter {
         this.objectToSwitch = userData.object;
         if (this.currentGraph.intersectedObject) {
           // If an object was previously moused over, clear the context
-          this.currentGraph.intersectedObject.setContext(undefined);
+          this.currentGraph.setContext(undefined);
         }
 
         // if waiting for a hover effect on something else, clear it before moving on
@@ -688,8 +660,8 @@ class Vizceral extends EventEmitter {
         }
       }
 
-      if (userData.object && userData.object.context !== userData.context) {
-        userData.object.setContext(userData.context);
+      if (this.currentGraph && this.currentGraph.context !== userData.context) {
+        this.currentGraph.setContext(userData.context);
       }
     }
   }

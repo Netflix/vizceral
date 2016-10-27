@@ -45,7 +45,7 @@ self.layout = function (options) {
     nodePositions = self.layoutCache[key];
   } else {
     // run the layout
-    nodePositions = self.jrlayouter.layout(graph.nodes, graph.edges, dimensions);
+    nodePositions = self.jrlayouter.layout(graph.nodes, graph.edges, dimensions, options.entryNode);
 
     // adjust the layout since our coordinates are center origin
     const halfWidth = dimensions.width / 2;
@@ -62,6 +62,7 @@ self.layout = function (options) {
   }
 
   self.postMessage(nodePositions);
+  self.close();
 };
 
 self.addEventListener('message', event => {
