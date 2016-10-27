@@ -35,7 +35,7 @@ class GlobalDefinitions {
             },
             arc: {}
           },
-          region: {
+          focused: {
             top: { header: 'RPS', data: 'data.volume', format: '0,0' },
             donut: {
               data: 'data.classPercents'
