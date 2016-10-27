@@ -23,6 +23,7 @@ import GlobalStyles from '../globalStyles';
 import Constants from './constants';
 
 
+
 // Preload textures
 const loader = new THREE.TextureLoader();
 
@@ -30,7 +31,7 @@ const loader = new THREE.TextureLoader();
 const particle = require('url!./particleD.png'); // eslint-disable-line import/no-extraneous-dependencies
 
 let particleTexture;
-loader.load(particle, (texture) => { particleTexture = texture; });
+loader.load(particle, texture => { particleTexture = texture; });
 
 const trafficFragmentShader = `
 uniform vec3 color;
@@ -85,7 +86,6 @@ const baseShaderMaterial = new THREE.ShaderMaterial({
 function normalDistribution () {
   return (((Math.random() + Math.random() + Math.random() + Math.random() + Math.random() + Math.random()) - 3) / 3) + 0.5;
 }
-
 
 function generateParticleSystem (size, customWidth, connectionWidth, connectionDepth) {
   const vertices = new Float32Array(size * 3);
@@ -143,6 +143,59 @@ function copyParticleSystemState (newPs, oldPs) {
   copyArray(colorAttr.array, oldPs.geometry.getAttribute('customColor').array);
   colorAttr.needsUpdate = true;
 }
+
+
+//given two points on a line and an x coordinate between them, compute the corresponding Y.
+// https://en.wikipedia.org/wiki/Linear_interpolation
+function interpolateY(x, x0, y0, x1, y1) {
+  return (y0 + ((x - x0) * (y1 - y0)/(x1 - x0))) || 0; //avoid NaN
+}
+
+function mapVolume(volume, rateMap){
+    let i;
+
+    for(i = 0; i < rateMap.length && rateMap[i + 1] && volume > rateMap[i + 1][0]; i++){
+    }
+
+    if(i == rateMap.length - 1){ //if somehow we have run past
+      console.log("ran past", volume, rateMap[i])
+      return volume * rateMap[i][1] / rateMap[i][0];
+    }
+
+    return interpolateY(volume, rateMap[i][0], rateMap[i][1], rateMap[i+1][0], rateMap[i+1][1]);
+}
+
+function mapVolumesToReleasesPerTick(volumes, rateMap){
+  let result = [];
+  for (const volumeName in volumes) { // eslint-disable-line no-restricted-syntax
+    if (volumes.hasOwnProperty(volumeName)) { //eslint-disable-line no-prototype-builtins
+      let volume = volumes[volumeName];
+      if(volume <= 0 || !volume){
+        continue;
+      }
+
+      let rpt = mapVolume(volume, rateMap);
+      result.push({
+        name: volumeName,
+        volume: volume,
+        releasesPerTick: mapVolume(volumes[volumeName], rateMap),
+        releasesPerSecond: rptToRPS(rpt),
+        secondsPerRelease: rptToSPR(rpt)
+      });
+    }
+  }
+
+  return result;
+}
+
+function rptToRPS(rpt){
+  return rpt * 60;
+}
+
+function rptToSPR(rpt){
+  return 1 / rptToRPS(rpt);
+}
+
 
 class ConnectionView extends BaseView {
   constructor (connection, maxParticles, customWidth) {
@@ -202,11 +255,25 @@ class ConnectionView extends BaseView {
     // Add the connection notice
     this.noticeView = new ConnectionNoticeView(this);
     this.validateNotices();
+
+
+    this.updateVolume();
   }
 
   setParticleLevels () {
     this.maxParticleReleasedPerTick = 19;
-    this.minAvgTicksBetweenRelease = 100;
+
+    //maps the releationship of metric values to how many dots should be released per tick. use < 1 dots per release for fewer than 60 dots per second.
+    // [[0, 0], [this.object.volumeGreatest, this.maxParticleReleasedPerTick]] is a straight linear releationship. not great for the left side of the normal distribution -- dots will fire too rarely.
+    //  must be in ascending order.
+    //  we dont want to a log because we really just want to boost the low end for our needs.
+    let linearRatio = this.maxParticleReleasedPerTick / this.object.volumeGreatest;
+    function secondsPerReleaseToReleasesPerTick(seconds){
+      let releasesPerSecond = 1 / seconds;
+      return releasesPerSecond / 60;
+    }
+    window.rateMap = [[0,0], [Number.MIN_VALUE, secondsPerReleaseToReleasesPerTick(6)], [10, linearRatio * 10], [this.object.volumeGreatest , this.maxParticleReleasedPerTick]];
+    this.rateMap = window.rateMap;
   }
 
   growParticles (bumpSize) {
@@ -324,6 +391,7 @@ class ConnectionView extends BaseView {
   }
 
   updateVolume () {
+    this.releasesPerTick = mapVolumesToReleasesPerTick(this.object.volume, this.rateMap);
   }
 
   launchParticles (numberOfParticles, key, startX) {
@@ -360,27 +428,19 @@ class ConnectionView extends BaseView {
     // We need the highest RPS connection to make this volume relative against
     if (!this.object.volumeGreatest) { return; }
 
-    const particlesPerRps = this.maxParticleReleasedPerTick / this.object.volumeGreatest;
-
     // for each volume, calculate the amount of particles to release:
-    for (const volumeName in this.object.volume) { // eslint-disable-line no-restricted-syntax
-      if (this.object.volume.hasOwnProperty(volumeName)) { //eslint-disable-line no-prototype-builtins
-        const volume = this.object.volume[volumeName];
+    for (let i = 0; i < this.releasesPerTick.length; i++) {
+      const releaseInfo = this.releasesPerTick[i];
 
-        if (volume) { // zero is zero, NaN is ignored.
-          const particlesToRelease = Math.max(particlesPerRps * volume, 1.0 / this.minAvgTicksBetweenRelease);
+      let wholeParticles = Math.floor(releaseInfo.releasesPerTick);
+      // if we should only release 0.1 particles per release, pick a random number and if it is below that amount, release a particle.
+      //  so, the average particles per release should even out.
+      if (Math.random() < (releaseInfo.releasesPerTick - wholeParticles)) {
+        wholeParticles += 1;
+      }
 
-          let wholeParticles = Math.floor(particlesToRelease);
-          // if we should only release 0.1 particles per release, pick a random number and if it is below that amount, release a particle.
-          //  so, the average particles per release should even out.
-          if (Math.random() < (particlesToRelease - wholeParticles)) {
-            wholeParticles += 1;
-          }
-
-          if (wholeParticles > 0) {
-            this.launchParticles(wholeParticles, volumeName);
-          }
-        }
+      if (wholeParticles > 0) {
+        this.launchParticles(wholeParticles, releaseInfo.name);
       }
     }
 
