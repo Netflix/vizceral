@@ -641,7 +641,7 @@ class Vizceral extends EventEmitter {
         this.objectToSwitch = userData.object;
         if (this.currentGraph.intersectedObject) {
           // If an object was previously moused over, clear the context
-          this.currentGraph.intersectedObject.setContext(undefined);
+          this.currentGraph.setContext(undefined);
         }
 
         // if waiting for a hover effect on something else, clear it before moving on
@@ -660,8 +660,8 @@ class Vizceral extends EventEmitter {
         }
       }
 
-      if (userData.object && userData.object.context !== userData.context) {
-        userData.object.setContext(userData.context);
+      if (this.currentGraph && this.currentGraph.context !== userData.context) {
+        this.currentGraph.setContext(userData.context);
       }
     }
   }
