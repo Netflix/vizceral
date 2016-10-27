@@ -67,8 +67,6 @@ class DnsConnectionView extends ConnectionView {
 
     this.updatePosition();
     this.updateVolume();
-
-    this.drawAnnotations();
   }
 
   cleanup () {
@@ -92,13 +90,17 @@ class DnsConnectionView extends ConnectionView {
   }
 
   drawAnnotations () {
-    if (!this.object.annotations || this.object.annotations.length === 0) {
+    if (!this.object.annotations || this.object.annotations.length === 0 || !this.startPosition) {
       return;
     }
 
     const dx = this.startPosition.x - this.endPosition.x;
     const dy = this.startPosition.y - this.endPosition.y;
     const width = Math.floor(Math.sqrt(dx * dx + dy * dy));
+
+    if (width === 0) {
+      return;
+    }
 
     const bump = 40;
     const headerFontSize = bump * 0.75;
@@ -207,6 +209,16 @@ class DnsConnectionView extends ConnectionView {
     });
 
     this.annotationTexture.needsUpdate = true;
+  }
+
+  updatePosition (depthOnly) {
+    super.updatePosition(depthOnly);
+    this.drawAnnotations();
+  }
+
+  updateVolume () {
+    super.updateVolume();
+    this.drawAnnotations();
   }
 }
 
