@@ -15,7 +15,6 @@
  *     limitations under the License.
  *
  */
-import { knuthShuffle as shuffle } from 'knuth-shuffle';
 import * as THREE from 'three';
 
 import BaseView from './baseView';
@@ -33,20 +32,6 @@ const particle = require('url!./particleD.png'); // eslint-disable-line import/n
 
 let particleTexture;
 loader.load(particle, texture => { particleTexture = texture; });
-
-
-let totalParticles = 0;
-let particlesInFlight = 0;
-
-let reportObj = {};
-
-
-function report(){
-  console.log(`total ${totalParticles} particles, ${particlesInFlight} in flight`);
-  console.log(reportObj);
-  setTimeout(report, 1000);
-};
-report();
 
 const trafficFragmentShader = `
 uniform vec3 color;
@@ -102,61 +87,62 @@ function normalDistribution () {
   return (((Math.random() + Math.random() + Math.random() + Math.random() + Math.random() + Math.random()) - 3) / 3) + 0.5;
 }
 
-function interpolateValue (val, aMin, aMax, bMin, bMax) {
-  const mappedValue = ((val - aMin) / (aMax - aMin)) * (bMax - bMin);
-  return bMin + (mappedValue || 0);
-}
 
-function generateParticleSystem(size, customWidth, connectionWidth, connectionDepth){
-    const vertices = new Float32Array(size * 3);
-    const customColors = new Float32Array(size * 3);
-    const customOpacities = new Float32Array(size);
-    const sizes = new Float32Array(size);
-    const velocities = new Float32Array(size * 3); // Don't want to to be doing math in the update loop
+function generateParticleSystem (size, customWidth, connectionWidth, connectionDepth) {
+  const vertices = new Float32Array(size * 3);
+  const customColors = new Float32Array(size * 3);
+  const customOpacities = new Float32Array(size);
+  const sizes = new Float32Array(size);
+  const velocities = new Float32Array(size * 3); // Don't want to to be doing math in the update loop
 
-    for (let i = 0; i < size; i++) {
+  for (let i = 0; i < size; i++) {
       // Position
-      vertices[i * 3] = 0;
-      vertices[(i * 3) + 1] = customWidth ? connectionWidth - (normalDistribution() * connectionWidth * 2) : 1;
-      vertices[(i * 3) + 2] = customWidth ? connectionDepth - (normalDistribution() * connectionDepth * 2) : -2;
+    vertices[i * 3] = 0;
+    vertices[(i * 3) + 1] = customWidth ? connectionWidth - (normalDistribution() * connectionWidth * 2) : 1;
+    vertices[(i * 3) + 2] = customWidth ? connectionDepth - (normalDistribution() * connectionDepth * 2) : -2;
 
       // Custom colors
-      customColors[i] = GlobalStyles.threeStyles.colorTraffic.normal.r;
-      customColors[i + 1] = GlobalStyles.threeStyles.colorTraffic.normal.g;
-      customColors[i + 2] = GlobalStyles.threeStyles.colorTraffic.normal.b;
+    customColors[i] = GlobalStyles.threeStyles.colorTraffic.normal.r;
+    customColors[i + 1] = GlobalStyles.threeStyles.colorTraffic.normal.g;
+    customColors[i + 2] = GlobalStyles.threeStyles.colorTraffic.normal.b;
 
-      customOpacities[i] = 0;
-      sizes[i] = 6;
-      velocities[i * 3] = 3 + (Math.random() * 2);
-    }
+    customOpacities[i] = 0;
+    sizes[i] = 6;
+    velocities[i * 3] = 3 + (Math.random() * 2);
+  }
 
-    const geometry = new THREE.BufferGeometry();
-    geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    geometry.addAttribute('customColor', new THREE.BufferAttribute(customColors, 3));
-    geometry.addAttribute('customOpacity', new THREE.BufferAttribute(customOpacities, 1));
-    geometry.addAttribute('size', new THREE.BufferAttribute(sizes, 1));
+  const geometry = new THREE.BufferGeometry();
+  geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
+  geometry.addAttribute('customColor', new THREE.BufferAttribute(customColors, 3));
+  geometry.addAttribute('customOpacity', new THREE.BufferAttribute(customOpacities, 1));
+  geometry.addAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
-    return {
-      geometry: geometry,
-      velocities: velocities
-    }
+  return {
+    geometry: geometry,
+    velocities: velocities
+  };
 }
 
 
-function copyArray(destination, source){
-  for(let i = 0; i < source.length && i < destination.length; i++){
+function copyArray (destination, source) {
+  for (let i = 0; i < source.length && i < destination.length; i++) {
     destination[i] = source[i];
   }
 }
 
-function copyParticleSystemState(oldPs, newPs){
-  let positionAttr = newPs.geometry.getAttribute('position');
-  copyArray(positionAttr, oldPs.geometry.getAttribute('position'))
+function copyParticleSystemState (newPs, oldPs) {
+  const positionAttr = newPs.geometry.getAttribute('position');
+  copyArray(positionAttr.array, oldPs.geometry.getAttribute('position').array);
   positionAttr.needsUpdate = true;
 
-  let opacityAttr = newPs.geometry.getAttribute('customOpacity');
-  copyArray(opacityAttr, oldPs.geometry.getAttribute('customOpacity'))
+  const opacityAttr = newPs.geometry.getAttribute('customOpacity');
+  copyArray(opacityAttr.array, oldPs.geometry.getAttribute('customOpacity').array);
   opacityAttr.needsUpdate = true;
+
+
+  const colorAttr = newPs.geometry.getAttribute('customColor');
+  copyArray(colorAttr.array, oldPs.geometry.getAttribute('customColor').array);
+  colorAttr.needsUpdate = true;
 }
 
 class ConnectionView extends BaseView {
@@ -169,9 +155,7 @@ class ConnectionView extends BaseView {
     this.centerVector = new THREE.Vector3(0, 0, 0);
     this.length = 0;
 
-    this.particlesInFlight = 0;
-    this.particleSize = this.maxParticles;
-
+    this.particleSystemSize = this.maxParticleReleasedPerTick;
 
     this.uniforms = {
       amplitude: { type: 'f', value: 1.0 },
@@ -187,21 +171,19 @@ class ConnectionView extends BaseView {
     this.connectionWidth = Math.min(this.object.source.getView().radius, this.object.target.getView().radius) * 0.45;
     this.connectionDepth = Math.min(connection.source.getView().getDepth(), (connection.target.getView().getDepth()) / 2) - 2;
 
+    this.lastParticleIndex = this.particleSystemSize - 1;
+    this.freeIndexes = [];
 
-    this.lastParticleIndex = 0;
-    this.particleLaunchDelay = Infinity;
-
-    totalParticles += this.maxParticles;
-
-
-    let ps = generateParticleSystem(this.maxParticles, this.customWidth, this.connectionWidth, this.connectionDepth);
+    const ps = generateParticleSystem(this.particleSystemSize, this.customWidth, this.connectionWidth, this.connectionDepth);
+    for (let i = 0; i < this.particleSystemSize; i++) {
+      this.freeIndexes[i] = i;
+    }
 
     this.velocity = ps.velocities;
     this.particles = new THREE.Points(ps.geometry, this.shaderMaterial);
     this.positionAttr = this.particles.geometry.getAttribute('position');
     this.opacityAttr = this.particles.geometry.getAttribute('customOpacity');
     this.container.add(this.particles);
-
 
 
     // TODO: Use a THREE.Line and THREE.LineBasicMaterial with linewidth for the interactive object...
@@ -223,9 +205,58 @@ class ConnectionView extends BaseView {
   }
 
   setParticleLevels () {
-    this.minParticlesPerRelease = 0.002; //TODO: set this to a good number!!!
+    this.maxParticleReleasedPerTick = 19;
+    this.minAvgTicksBetweenRelease = 100;
   }
 
+  growParticles (bumpSize) {
+    const newSize = bumpSize + this.particleSystemSize;
+
+    for (let i = this.particleSystemSize; i < newSize; i++) {
+      this.freeParticleIndex(i);
+    }
+
+    this.particleSystemSize = newSize;
+
+    const ps = generateParticleSystem(this.particleSystemSize, this.customWidth, this.connectionWidth, this.connectionDepth);
+    const newParticles = new THREE.Points(ps.geometry, this.shaderMaterial);
+
+    copyParticleSystemState(newParticles, this.particles);
+
+    copyArray(ps.velocities, this.velocity);
+    this.velocity = ps.velocities;
+
+    // out with the old...
+    this.container.remove(this.particles);
+    const oldParticles = this.particles;
+    setTimeout(() => {
+      oldParticles.geometry.dispose();
+    }, 1); // do it async to avoid deleting geometry that might have been updated in this tick.
+
+    this.particles = newParticles;
+    this.positionAttr = this.particles.geometry.getAttribute('position');
+    this.opacityAttr = this.particles.geometry.getAttribute('customOpacity');
+    this.container.add(this.particles);
+
+    this.updatePosition();
+
+    return this.nextFreeParticleIndex();
+  }
+
+  freeParticleIndex (i) {
+    this.lastParticleIndex = Math.max(this.lastParticleIndex + 1, 0);
+    this.freeIndexes[this.lastParticleIndex] = i;
+  }
+
+  nextFreeParticleIndex (totalAsk) {
+    if (this.lastParticleIndex < 0) {
+      return this.growParticles(2 * totalAsk);
+    }
+
+    const indx = this.freeIndexes[this.lastParticleIndex];
+    --this.lastParticleIndex;
+    return indx;
+  }
 
   setOpacity (opacity) {
     super.setOpacity(opacity);
@@ -298,62 +329,51 @@ class ConnectionView extends BaseView {
     numberOfParticles = numberOfParticles || 1;
     startX = startX || 0;
 
-    particlesInFlight += numberOfParticles;
-
-    this.particlesInFlight += numberOfParticles;
-    if(this.particlesInFlight > this.particleSize){
-
-    }
-
     for (i = 0; i < numberOfParticles; i++) {
       rand = Math.random();
+
+      const nextFreeParticleIndex = this.nextFreeParticleIndex(numberOfParticles);
+
       // Get/set the x position for the last particle index
-      this.positionAttr.setX(this.lastParticleIndex, startX + rand);
+      this.positionAttr.setX(nextFreeParticleIndex, startX + rand);
       this.positionAttr.needsUpdate = true;
 
-      this.opacityAttr.array[this.lastParticleIndex] = 1.0;
+      this.opacityAttr.array[nextFreeParticleIndex] = 1.0;
       this.opacityAttr.needsUpdate = true;
 
-      let color = GlobalStyles.getColorTrafficThree(key);
-      this.setParticleColor(this.lastParticleIndex, color);
-
-      this.lastParticleIndex++;
-      if (this.lastParticleIndex === this.maxParticles) {
-        this.lastParticleIndex = 0;
-      }
+      const color = GlobalStyles.getColorTrafficThree(key);
+      this.setParticleColor(nextFreeParticleIndex, color);
     }
   }
 
-  update (currentTime) {
+  update () {
     let vx;
     let i;
+    let j;
 
     // We need the highest RPS connection to make this volume relative against
     if (!this.object.volumeGreatest) { return; }
 
-    const maxParticleReleasedPerTick = 19;
-    let particlesPerRps = maxParticleReleasedPerTick / this.object.volumeGreatest;
+    const particlesPerRps = this.maxParticleReleasedPerTick / this.object.volumeGreatest;
 
-    //for each volume, calculate the amount of particles to release:
-    for(let volumeName in this.object.volume){
-      if(this.object.volume.hasOwnProperty(volumeName)){
-        let volume = this.object.volume[volumeName];
+    // for each volume, calculate the amount of particles to release:
+    for (const volumeName in this.object.volume) { // eslint-disable-line no-restricted-syntax
+      if (this.object.volume.hasOwnProperty(volumeName)) { //eslint-disable-line no-prototype-builtins
+        const volume = this.object.volume[volumeName];
 
-        if(!volume){ //zero is zero, NaN is ignored.
-          continue;
-        }
+        if (volume) { // zero is zero, NaN is ignored.
+          const particlesToRelease = Math.max(particlesPerRps * volume, 1.0 / this.minAvgTicksBetweenRelease);
 
-        const particlesToRelease =  Math.max(particlesPerRps * volume, this.minParticlesPerRelease);
+          let wholeParticles = Math.floor(particlesToRelease);
+          // if we should only release 0.1 particles per release, pick a random number and if it is below that amount, release a particle.
+          //  so, the average particles per release should even out.
+          if (Math.random() < (particlesToRelease - wholeParticles)) {
+            wholeParticles += 1;
+          }
 
-        let wholeParticles = Math.floor(particlesToRelease);
-        //if we should only release 0.1 particles per release, pick a random number and if it is below that amount, release a particle.
-        //  so, the average particles per release should even out.
-        if(Math.random() < (particlesToRelease - wholeParticles)){
-          wholeParticles += 1;
-        }
-
-        if(wholeParticles > 0){
-          this.launchParticles(wholeParticles, volumeName);  
+          if (wholeParticles > 0) {
+            this.launchParticles(wholeParticles, volumeName);
+          }
         }
       }
     }
@@ -364,13 +384,13 @@ class ConnectionView extends BaseView {
     //       attack the issue with THREE...
 
     // Update the position of all particles in flight
-    for (i = 0; i < this.positionAttr.array.length; i += 3) {
+    for (i = 0, j = 0; i < this.positionAttr.array.length; i += 3, j += 1) {
       vx = this.positionAttr.array[i];
 
       if (vx !== 0) {
         vx += this.velocity[i];
         if (vx >= this.length) {
-          particlesInFlight -= 1;
+          this.freeParticleIndex(j);
           vx = 0;
         }
       }
@@ -388,9 +408,8 @@ class ConnectionView extends BaseView {
     colorAttr.setXYZ(index, color.r, color.g, color.b);
     colorAttr.needsUpdate = true;
 
-    const opacity = this.particles.geometry.getAttribute('customOpacity');
-    opacity.setX(index, color.a);
-    opacity.needsUpdate = true;
+    this.opacityAttr.array[index] = color.a;
+    this.opacityAttr.needsUpdate = true;
   }
 
   setParticleSize (index, size) {
@@ -402,7 +421,7 @@ class ConnectionView extends BaseView {
   }
 
   cleanup () {
-    this.geometry.dispose();
+    this.particles.geometry.dispose();
     this.shaderMaterial.dispose();
     this.interactiveLineGeometry.dispose();
     this.interactiveLineMaterial.dispose();

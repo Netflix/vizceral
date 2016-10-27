@@ -65,6 +65,11 @@ class RegionConnectionView extends ConnectionView {
     this.connectionLineGeometry.dispose();
     this.connectionLineMaterial.dispose();
   }
+
+  setParticleLevels(){
+    super.setParticleLevels();
+    this.minAvgTicksBetweenRelease = 120;
+  }
 }
 
 export default RegionConnectionView;
