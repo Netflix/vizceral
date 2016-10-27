@@ -30,7 +30,7 @@ const loader = new THREE.TextureLoader();
 const particle = require('url!./particleD.png'); // eslint-disable-line import/no-extraneous-dependencies
 
 let particleTexture;
-loader.load(particle, texture => { particleTexture = texture; });
+loader.load(particle, (texture) => { particleTexture = texture; });
 
 const trafficFragmentShader = `
 uniform vec3 color;
@@ -144,36 +144,33 @@ function copyParticleSystemState (newPs, oldPs) {
 }
 
 
-//given two points on a line and an x coordinate between them, compute the corresponding Y.
+// given two points on a line and an x coordinate between them, compute the corresponding Y.
 // https://en.wikipedia.org/wiki/Linear_interpolation
-function interpolateY(x, x0, y0, x1, y1) {
-  return (y0 + ((x - x0) * (y1 - y0)/(x1 - x0))) || 0; //avoid NaN
+function interpolateY (x, x0, y0, x1, y1) {
+  return (y0 + (((x - x0) * (y1 - y0)) / (x1 - x0))) || 0; // avoid NaN
 }
 
-function mapVolume(volume, rateMap){
-    let i;
+function mapVolume (volume, rateMap) {
+  let i;
 
-    for(i = 0; i < rateMap.length && rateMap[i + 1] && volume > rateMap[i + 1][0]; i++){
-    }
+  if (i === rateMap.length - 1) { // if somehow we have run past
+    console.log('ran past', volume, rateMap[i]);
+    return (volume * rateMap[i][1]) / rateMap[i][0];
+  }
 
-    if(i == rateMap.length - 1){ //if somehow we have run past
-      console.log("ran past", volume, rateMap[i])
-      return volume * rateMap[i][1] / rateMap[i][0];
-    }
-
-    return interpolateY(volume, rateMap[i][0], rateMap[i][1], rateMap[i+1][0], rateMap[i+1][1]);
+  return interpolateY(volume, rateMap[i][0], rateMap[i][1], rateMap[i + 1][0], rateMap[i + 1][1]);
 }
 
-function mapVolumesToReleasesPerTick(volumes, rateMap){
-  let result = [];
+function mapVolumesToReleasesPerTick (volumes, rateMap) {
+  const result = [];
   for (const volumeName in volumes) { // eslint-disable-line no-restricted-syntax
-    if (volumes.hasOwnProperty(volumeName)) { //eslint-disable-line no-prototype-builtins
-      let volume = volumes[volumeName];
-      if(volume <= 0 || !volume){
-        continue;
+    if (volumes.hasOwnProperty(volumeName)) { // eslint-disable-line no-prototype-builtins
+      const volume = volumes[volumeName];
+      if (volume <= 0 || !volume) {
+        continue; // eslint-disable-line no-continue
       }
 
-      let rpt = mapVolume(volume, rateMap);
+      const rpt = mapVolume(volume, rateMap);
       result.push({
         name: volumeName,
         volume: volume,
@@ -187,11 +184,11 @@ function mapVolumesToReleasesPerTick(volumes, rateMap){
   return result;
 }
 
-function rptToRPS(rpt){
+function rptToRPS (rpt) {
   return rpt * 60;
 }
 
-function rptToSPR(rpt){
+function rptToSPR (rpt) {
   return 1 / rptToRPS(rpt);
 }
 
@@ -262,16 +259,16 @@ class ConnectionView extends BaseView {
   setParticleLevels () {
     this.maxParticleReleasedPerTick = 19;
 
-    //maps the releationship of metric values to how many dots should be released per tick. use < 1 dots per release for fewer than 60 dots per second.
+    // maps the releationship of metric values to how many dots should be released per tick. use < 1 dots per release for fewer than 60 dots per second.
     // [[0, 0], [this.object.volumeGreatest, this.maxParticleReleasedPerTick]] is a straight linear releationship. not great for the left side of the normal distribution -- dots will fire too rarely.
     //  must be in ascending order.
     //  we dont want to a log because we really just want to boost the low end for our needs.
-    let linearRatio = this.maxParticleReleasedPerTick / this.object.volumeGreatest;
-    function secondsPerReleaseToReleasesPerTick(seconds){
-      let releasesPerSecond = 1 / seconds;
+    const linearRatio = this.maxParticleReleasedPerTick / this.object.volumeGreatest;
+    function secondsPerReleaseToReleasesPerTick (seconds) {
+      const releasesPerSecond = 1 / seconds;
       return releasesPerSecond / 60;
     }
-    window.rateMap = [[0,0], [Number.MIN_VALUE, secondsPerReleaseToReleasesPerTick(6)], [10, linearRatio * 10], [this.object.volumeGreatest , this.maxParticleReleasedPerTick]];
+    window.rateMap = [[0, 0], [Number.MIN_VALUE, secondsPerReleaseToReleasesPerTick(6)], [10, linearRatio * 10], [this.object.volumeGreatest, this.maxParticleReleasedPerTick]];
     this.rateMap = window.rateMap;
   }
 
@@ -428,7 +425,7 @@ class ConnectionView extends BaseView {
     if (!this.object.volumeGreatest) { return; }
 
     // for each volume, calculate the amount of particles to release:
-    for (let i = 0; i < this.releasesPerTick.length; i++) {
+    for (i = 0; i < this.releasesPerTick.length; i++) {
       const releaseInfo = this.releasesPerTick[i];
 
       let wholeParticles = Math.floor(releaseInfo.releasesPerTick);
