@@ -34,6 +34,20 @@ const particle = require('url!./particleD.png'); // eslint-disable-line import/n
 let particleTexture;
 loader.load(particle, texture => { particleTexture = texture; });
 
+
+let totalParticles = 0;
+let particlesInFlight = 0;
+
+let reportObj = {};
+
+
+function report(){
+  console.log(`total ${totalParticles} particles, ${particlesInFlight} in flight`);
+  console.log(reportObj);
+  setTimeout(report, 1000);
+};
+report();
+
 const trafficFragmentShader = `
 uniform vec3 color;
 uniform sampler2D texture;
@@ -93,43 +107,14 @@ function interpolateValue (val, aMin, aMax, bMin, bMax) {
   return bMin + (mappedValue || 0);
 }
 
+function generateParticleSystem(size, customWidth, connectionWidth, connectionDepth){
+    const vertices = new Float32Array(size * 3);
+    const customColors = new Float32Array(size * 3);
+    const customOpacities = new Float32Array(size);
+    const sizes = new Float32Array(size);
+    const velocities = new Float32Array(size * 3); // Don't want to to be doing math in the update loop
 
-class ConnectionView extends BaseView {
-  constructor (connection, maxParticles, customWidth) {
-    super(connection);
-    this.setParticleLevels();
-    this.maxParticles = maxParticles;
-    this.dimmedLevel = 0.05;
-
-    this.centerVector = new THREE.Vector3(0, 0, 0);
-    this.length = 0;
-
-    this.uniforms = {
-      amplitude: { type: 'f', value: 1.0 },
-      color: { type: 'c', value: new THREE.Color(0xFFFFFF) },
-      opacity: { type: 'f', value: 1.0 },
-      texture: { type: 't', value: particleTexture, transparent: true }
-    };
-
-    this.shaderMaterial = baseShaderMaterial.clone();
-    this.shaderMaterial.uniforms = this.uniforms;
-
-    const connectionWidth = Math.min(this.object.source.getView().radius, this.object.target.getView().radius) * 0.45;
-    const connectionDepth = Math.min(connection.source.getView().getDepth(), (connection.target.getView().getDepth()) / 2) - 2;
-
-    this.geometry = new THREE.BufferGeometry();
-
-    this.lastParticleLaunchTime = 0;
-    this.lastParticleIndex = 0;
-    this.particleLaunchDelay = Infinity;
-
-    const vertices = new Float32Array(this.maxParticles * 3);
-    const customColors = new Float32Array(this.maxParticles * 3);
-    const customOpacities = new Float32Array(this.maxParticles);
-    const sizes = new Float32Array(this.maxParticles);
-    this.velocity = new Float32Array(this.maxParticles * 3); // Don't want to to be doing math in the update loop
-
-    for (let i = 0; i < this.maxParticles; i++) {
+    for (let i = 0; i < size; i++) {
       // Position
       vertices[i * 3] = 0;
       vertices[(i * 3) + 1] = customWidth ? connectionWidth - (normalDistribution() * connectionWidth * 2) : 1;
@@ -142,19 +127,82 @@ class ConnectionView extends BaseView {
 
       customOpacities[i] = 0;
       sizes[i] = 6;
-      this.velocity[i * 3] = 3 + (Math.random() * 2);
+      velocities[i * 3] = 3 + (Math.random() * 2);
     }
 
-    this.geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    this.geometry.addAttribute('customColor', new THREE.BufferAttribute(customColors, 3));
-    this.geometry.addAttribute('customOpacity', new THREE.BufferAttribute(customOpacities, 1));
-    this.geometry.addAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    const geometry = new THREE.BufferGeometry();
+    geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.addAttribute('customColor', new THREE.BufferAttribute(customColors, 3));
+    geometry.addAttribute('customOpacity', new THREE.BufferAttribute(customOpacities, 1));
+    geometry.addAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
-    this.particles = new THREE.Points(this.geometry, this.shaderMaterial);
+    return {
+      geometry: geometry,
+      velocities: velocities
+    }
+}
+
+
+function copyArray(destination, source){
+  for(let i = 0; i < source.length && i < destination.length; i++){
+    destination[i] = source[i];
+  }
+}
+
+function copyParticleSystemState(oldPs, newPs){
+  let positionAttr = newPs.geometry.getAttribute('position');
+  copyArray(positionAttr, oldPs.geometry.getAttribute('position'))
+  positionAttr.needsUpdate = true;
+
+  let opacityAttr = newPs.geometry.getAttribute('customOpacity');
+  copyArray(opacityAttr, oldPs.geometry.getAttribute('customOpacity'))
+  opacityAttr.needsUpdate = true;
+}
+
+class ConnectionView extends BaseView {
+  constructor (connection, maxParticles, customWidth) {
+    super(connection);
+    this.setParticleLevels();
+    this.maxParticles = maxParticles;
+    this.dimmedLevel = 0.05;
+
+    this.centerVector = new THREE.Vector3(0, 0, 0);
+    this.length = 0;
+
+    this.particlesInFlight = 0;
+    this.particleSize = this.maxParticles;
+
+
+    this.uniforms = {
+      amplitude: { type: 'f', value: 1.0 },
+      color: { type: 'c', value: new THREE.Color(0xFFFFFF) },
+      opacity: { type: 'f', value: 1.0 },
+      texture: { type: 't', value: particleTexture, transparent: true }
+    };
+
+    this.shaderMaterial = baseShaderMaterial.clone();
+    this.shaderMaterial.uniforms = this.uniforms;
+
+    this.customWidth = customWidth;
+    this.connectionWidth = Math.min(this.object.source.getView().radius, this.object.target.getView().radius) * 0.45;
+    this.connectionDepth = Math.min(connection.source.getView().getDepth(), (connection.target.getView().getDepth()) / 2) - 2;
+
+
+    this.lastParticleIndex = 0;
+    this.particleLaunchDelay = Infinity;
+
+    totalParticles += this.maxParticles;
+
+
+    let ps = generateParticleSystem(this.maxParticles, this.customWidth, this.connectionWidth, this.connectionDepth);
+
+    this.velocity = ps.velocities;
+    this.particles = new THREE.Points(ps.geometry, this.shaderMaterial);
     this.positionAttr = this.particles.geometry.getAttribute('position');
     this.opacityAttr = this.particles.geometry.getAttribute('customOpacity');
-
     this.container.add(this.particles);
+
+
 
     // TODO: Use a THREE.Line and THREE.LineBasicMaterial with linewidth for the interactive object...
     // Line used to support interactivity
@@ -175,30 +223,9 @@ class ConnectionView extends BaseView {
   }
 
   setParticleLevels () {
-    // Since the update function gets called every 16ms (best case), any delay lower
-    // than 16 is effectively the same as setting it to 16.  This is needed for the
-    // inflection point at which to switch to use multipliers per update loop.
-    this.minParticleDelay = 16;
-
-    // This is a reasonable value that will show __just__ enough particles that the
-    // connection is not visibly devoid of particles if there is some traffic on the
-    // connection
-    this.maxParticleDelay = 1500;
-
-    // After some testing, anything much higher makes particles not reach their
-    // destination. We could try increasing the max dots too, if we feel this
-    // isn't dense enough
-    this.maxParticleMultiplier = 4;
-
-    // The percent of total traffic at which a multiplier needs to start being used
-    // because just launching one particle every cycle isn't dense enough
-    this.particleInflectionPercent = 0.05;
-
-
-    // A property defining the number of elements for this.particleMultiplierArray array.
-    // Is used for array creation and index calculation
-    this.numParticleMultiplier = 100;
+    this.minParticlesPerRelease = 0.002; //TODO: set this to a good number!!!
   }
+
 
   setOpacity (opacity) {
     super.setOpacity(opacity);
@@ -263,64 +290,19 @@ class ConnectionView extends BaseView {
   }
 
   updateVolume () {
-    // We need the highest RPS connection to make this volume relative against
-    if (!this.object.volumeGreatest) { return; }
-
-    // Set particle launch delay as an inverse proportion of RPS, with 0.1 being the shortest possible delay
-    const percentageOfParticles = Math.min(this.object.getVolumeTotal() / this.object.volumeGreatest, 1);
-
-    this.particleMultiplier = 1;
-    const maxThreshold = 1000 / this.maxParticleDelay;
-    if (!percentageOfParticles) {
-      this.particleLaunchDelay = Infinity;
-    } else if (this.object.getVolumeTotal() < maxThreshold) {
-      this.particleLaunchDelay = interpolateValue(this.object.getVolumeTotal(), 0, maxThreshold, 20000, this.maxParticleDelay);
-    } else if (percentageOfParticles < this.particleInflectionPercent) {
-      this.particleLaunchDelay = interpolateValue(percentageOfParticles, 0, this.particleInflectionPercent, this.maxParticleDelay, 16);
-    } else {
-      this.particleLaunchDelay = this.minParticleDelay;
-      this.particleMultiplier = interpolateValue(percentageOfParticles, this.particleInflectionPercent, 1, 1, this.maxParticleMultiplier);
-    }
-    // console.log(`${this.object.getName()} - delay: ${this.particleLaunchDelay}, multiplier: ${this.particleMultiplier}`);
-
-    // Set the appropriate multiplier values for the percentage of particles
-    // required.  Fractional multipliers have to use a randomized array of 0/1
-    // that iterates each update loop to launch the particles.
-    this.particleMultiplierArray = Array(this.numParticleMultiplier).fill(0);
-    const particleMultiplierFraction = Math.floor((this.particleMultiplier % 1) * this.numParticleMultiplier);
-    if (particleMultiplierFraction !== 0) {
-      this.particleMultiplierArray = shuffle(this.particleMultiplierArray.fill(1, 0, particleMultiplierFraction));
-      this.particleMultiplier = Math.floor(this.particleMultiplier);
-    }
-    this.particleMultiplierArrayCounter = 0;
-
-    // Show an approximation of the data at initial load so it does not look
-    // like the traffic just started flowing when the app is launched
-    if (!this.hasData) {
-      this.hasData = true;
-      // FIXME: Since we update position every 'tick', we have to pretend here.
-      //        Once we switch to an actual velocity based change, we don't need
-      //        to fudge numbers
-      const msFudge = 15; // move it this.velocity every msFudge
-      const delta = Math.max(Math.ceil(this.particleLaunchDelay / msFudge), 1) * this.velocity[0];
-      let numberOfParticleLaunches = (this.maxParticles * percentageOfParticles) / this.particleMultiplier;
-      if (this.length) {
-        numberOfParticleLaunches = Math.min(this.length / delta, numberOfParticleLaunches);
-      }
-      for (let i = 0; i < numberOfParticleLaunches; i++) {
-        this.launchParticles(0, this.particleMultiplier, delta * (i + 1));
-      }
-    }
   }
 
-  launchParticles (currentTime, numberOfParticles, startX) {
+  launchParticles (numberOfParticles, key, startX) {
     let rand; // eslint-disable-line prefer-const
     let i;
     numberOfParticles = numberOfParticles || 1;
     startX = startX || 0;
 
-    if (this.particleMultiplierArray[this.particleMultiplierArrayCounter]) {
-      numberOfParticles++;
+    particlesInFlight += numberOfParticles;
+
+    this.particlesInFlight += numberOfParticles;
+    if(this.particlesInFlight > this.particleSize){
+
     }
 
     for (i = 0; i < numberOfParticles; i++) {
@@ -332,37 +314,48 @@ class ConnectionView extends BaseView {
       this.opacityAttr.array[this.lastParticleIndex] = 1.0;
       this.opacityAttr.needsUpdate = true;
 
-      let color = GlobalStyles.threeStyles.colorTraffic.normal;
-
-      let accumulator = 0;
-      for (const index in this.object.volumePercentKeysSorted) { // eslint-disable-line no-restricted-syntax, guard-for-in
-        const key = this.object.volumePercentKeysSorted[index];
-        if (this.object.volumePercent[key] + accumulator > rand) {
-          color = GlobalStyles.getColorTrafficThree(key);
-          break;
-        }
-
-        accumulator += this.object.volumePercent[key];
-      }
+      let color = GlobalStyles.getColorTrafficThree(key);
       this.setParticleColor(this.lastParticleIndex, color);
 
-      this.lastParticleLaunchTime = currentTime;
       this.lastParticleIndex++;
       if (this.lastParticleIndex === this.maxParticles) {
         this.lastParticleIndex = 0;
       }
     }
-
-    // start at 0 if the max value is reached
-    this.particleMultiplierArrayCounter = (this.particleMultiplierArrayCounter + 1) % this.numParticleMultiplier;
   }
 
   update (currentTime) {
     let vx;
     let i;
-    if (currentTime - this.lastParticleLaunchTime > this.particleLaunchDelay) {
-      // start a new particle
-      this.launchParticles(currentTime, this.particleMultiplier);
+
+    // We need the highest RPS connection to make this volume relative against
+    if (!this.object.volumeGreatest) { return; }
+
+    const maxParticleReleasedPerTick = 19;
+    let particlesPerRps = maxParticleReleasedPerTick / this.object.volumeGreatest;
+
+    //for each volume, calculate the amount of particles to release:
+    for(let volumeName in this.object.volume){
+      if(this.object.volume.hasOwnProperty(volumeName)){
+        let volume = this.object.volume[volumeName];
+
+        if(!volume){ //zero is zero, NaN is ignored.
+          continue;
+        }
+
+        const particlesToRelease =  Math.max(particlesPerRps * volume, this.minParticlesPerRelease);
+
+        let wholeParticles = Math.floor(particlesToRelease);
+        //if we should only release 0.1 particles per release, pick a random number and if it is below that amount, release a particle.
+        //  so, the average particles per release should even out.
+        if(Math.random() < (particlesToRelease - wholeParticles)){
+          wholeParticles += 1;
+        }
+
+        if(wholeParticles > 0){
+          this.launchParticles(wholeParticles, volumeName);  
+        }
+      }
     }
 
     // TODO: Support a deltaX based on last time updated.  We tried this, and
@@ -377,6 +370,7 @@ class ConnectionView extends BaseView {
       if (vx !== 0) {
         vx += this.velocity[i];
         if (vx >= this.length) {
+          particlesInFlight -= 1;
           vx = 0;
         }
       }
@@ -393,6 +387,10 @@ class ConnectionView extends BaseView {
     const colorAttr = this.particles.geometry.getAttribute('customColor');
     colorAttr.setXYZ(index, color.r, color.g, color.b);
     colorAttr.needsUpdate = true;
+
+    const opacity = this.particles.geometry.getAttribute('customOpacity');
+    opacity.setX(index, color.a);
+    opacity.needsUpdate = true;
   }
 
   setParticleSize (index, size) {
