@@ -23,7 +23,6 @@ import GlobalStyles from '../globalStyles';
 import Constants from './constants';
 
 
-
 // Preload textures
 const loader = new THREE.TextureLoader();
 
@@ -317,7 +316,7 @@ class ConnectionView extends BaseView {
 
   nextFreeParticleIndex (totalAsk) {
     if (this.lastParticleIndex < 0) {
-      if(this.particleSystemSize >= this.maxParticles){
+      if (this.particleSystemSize >= this.maxParticles) {
         return -1;
       }
       return this.growParticles(2 * totalAsk);
@@ -404,8 +403,8 @@ class ConnectionView extends BaseView {
       rand = Math.random();
 
       const nextFreeParticleIndex = this.nextFreeParticleIndex(numberOfParticles);
-      if(nextFreeParticleIndex === -1){
-        return; //gotta wait my turn!
+      if (nextFreeParticleIndex === -1) {
+        return; // gotta wait my turn!
       }
 
       // Get/set the x position for the last particle index
