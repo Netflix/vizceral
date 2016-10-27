@@ -20,6 +20,8 @@ import RegionConnection from './regionConnection';
 import RegionNode from './regionNode';
 import TrafficGraph from '../base/trafficGraph';
 
+const Console = console;
+
 class RegionTrafficGraph extends TrafficGraph {
   constructor (name, mainView, graphWidth, graphHeight) {
     super(name, mainView, graphWidth, graphHeight, RegionNode, RegionConnection, false);
@@ -54,7 +56,7 @@ class RegionTrafficGraph extends TrafficGraph {
       }
 
       this.updateVisibleInfo();
-      this._updateFilteredElements();
+      this._relayout();
     }
   }
 
@@ -119,7 +121,81 @@ class RegionTrafficGraph extends TrafficGraph {
     });
 
     if (this.isPopulated() && filtersChanged) {
-      this._updateFilteredElements();
+      this._relayout();
+    }
+  }
+
+  _relayout () {
+    // Update filters
+    const graph = { nodes: [], edges: [] };
+
+    let totalNodes = 0;
+    let visibleNodes = 0;
+
+    // Go through all the filters and separate the node and connection filters
+    const filters = { connection: [], node: [] };
+    _.each(this.filters, filter => {
+      if (filter.type === 'connection') {
+        filters.connection.push(filter);
+      } else if (filter.type === 'node') {
+        filters.node.push(filter);
+      }
+    });
+
+    // If we are focused on a node, hide nodes that aren't related and force related nodes TO be shown.
+    const defaultHidden = this.nodeName !== undefined;
+    _.each(this.connections, connection => { connection.hidden = defaultHidden; });
+    _.each(this.nodes, node => {
+      node.hidden = defaultHidden;
+      delete node.forceLabel;
+    });
+    if (defaultHidden) {
+      this.nodes[this.nodeName].hidden = false;
+
+      // Show all the incoming connections and the source nodes
+      _.each(this.nodes[this.nodeName].incomingConnections, connection => {
+        connection.hidden = false;
+        connection.source.hidden = false;
+        connection.source.forceLabel = true;
+      });
+
+      // Show all the outgoing connections and the target nodes
+      _.each(this.nodes[this.nodeName].outgoingConnections, connection => {
+        connection.hidden = false;
+        connection.target.hidden = false;
+        connection.target.forceLabel = true;
+      });
+    }
+
+    _.each(this.nodes, n => { n.filtered = false; });
+    _.each(this.connections, c => { c.filtered = false; });
+    this._updateConnectionFilters(filters);
+    this._updateNodeFilters(filters);
+
+    const subsetOfDefaultVisibleNodes = _.every(this.nodes, n => !n.isVisible() || (n.isVisible() && !n.defaultFiltered));
+    const subsetOfDefaultVisibleConnections = _.every(this.connections, c => !c.isVisible() || (c.isVisible() && !c.defaultFiltered));
+    const useInLayout = o => ((!this.nodeName && subsetOfDefaultVisibleNodes && subsetOfDefaultVisibleConnections) ? !o.defaultFiltered : o.isVisible());
+
+    // build the layout graph
+    _.each(this.connections, connection => {
+      graph.edges.push({ visible: useInLayout(connection), source: connection.source.getName(), target: connection.target.getName() });
+    });
+    _.each(this.nodes, node => {
+      graph.nodes.push({ name: node.getName(), visible: useInLayout(node), position: node.position, weight: node.depth });
+      if (node.connected) {
+        if (!node.hidden) { totalNodes++; }
+        if (node.isVisible()) { visibleNodes++; }
+      }
+    });
+
+    this.nodeCounts.total = totalNodes;
+    this.nodeCounts.visible = visibleNodes;
+
+    if (Object.keys(graph.nodes).length > 0 && Object.keys(graph.edges).length > 0) {
+      Console.info(`Layout: Updating the layout for ${this.name} with the worker...`);
+      this.layoutWorker.postMessage({ graph: graph, dimensions: this.layoutDimensions });
+    } else {
+      Console.warn(`Layout: Attempted to update the layout for ${this.name} but there are zero nodes and/or zero connections.`);
     }
   }
 }

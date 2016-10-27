@@ -52,7 +52,7 @@ class NodeNameView extends BaseView {
   constructor (nodeView, fixedWidth) {
     super(nodeView.object);
     this.fixedWidth = fixedWidth;
-    this.nodeName = nodeView.object.graphRenderer === 'global' ? nodeView.object.getName().toUpperCase() : nodeView.object.getName().toLowerCase();
+    this.nodeName = nodeView.object.graphRenderer === 'global' ? nodeView.object.getDisplayName() : nodeView.object.getDisplayName();
     this.nodeView = nodeView;
 
     // How far away from the node we want the label to begin

@@ -16,10 +16,20 @@
  *
  */
 import _ from 'lodash';
-import * as THREE from 'three';
 import chroma from 'chroma-js';
 
 const Console = console;
+
+function getRGBA (color) {
+  const chromaColor = chroma(color);
+  const rgb = chromaColor.rgb();
+  return {
+    r: rgb[0] / 255,
+    g: rgb[1] / 255,
+    b: rgb[2] / 255,
+    a: chromaColor.alpha()
+  };
+}
 
 class GlobalStyles {
   constructor () {
@@ -48,29 +58,29 @@ class GlobalStyles {
     this.updateComputedStyles();
   }
 
-  getColorTraffic (key) {
-    const color = this.styles.colorTraffic[key];
+  getColorTraffic (key, highlighted) {
+    const color = !highlighted ? this.styles.colorTraffic[key] : this.styles.colorTrafficHighlighted[key];
     if (!color) {
       Console.warn(`Attempted to get a color for key '${key}', but does not exist. Returned color for key 'normal' instead`);
-      return this.styles.colorTraffic.normal;
+      return !highlighted ? this.styles.colorTraffic.normal : this.styles.colorTrafficHighlighted.normal;
     }
     return color;
   }
 
-  getColorTrafficThree (key, highlighted) {
-    const color = highlighted ? this.threeStyles.colorTrafficHighlighted[key] : this.threeStyles.colorTraffic[key];
+  getColorTrafficRGBA (key, highlighted) {
+    const color = highlighted ? this.rgba.colorTrafficHighlighted[key] : this.rgba.colorTraffic[key];
     if (!color) {
-      Console.warn(`Attempted to get a computed three.js color for key '${key}', but does not exist. Returned three.js color for key 'normal' instead`);
-      return highlighted ? this.threeStyles.colorTrafficHighlighted.normal : this.threeStyles.colorTraffic.normal;
+      Console.warn(`Attempted to get a computed color for key '${key}', but does not exist. Returned color for key 'normal' instead`);
+      return highlighted ? this.rgba.colorTrafficHighlighted.normal : this.rgba.colorTraffic.normal;
     }
     return color;
   }
 
-  getColorSeverityThree (key) {
+  getColorSeverityRGBA (key) {
     return [
-      this.threeStyles.colorTraffic.normal,
-      this.threeStyles.colorTraffic.warning,
-      this.threeStyles.colorTraffic.danger
+      this.rgba.colorTraffic.normal,
+      this.rgba.colorTraffic.warning,
+      this.rgba.colorTraffic.danger
     ][key];
   }
 
@@ -85,16 +95,17 @@ class GlobalStyles {
       return acc;
     }, {});
 
-    this.threeStyles = {
-      colorConnectionLine: new THREE.Color(this.styles.colorConnectionLine),
-      colorDonutInternalColor: new THREE.Color(this.styles.colorDonutInternalColor),
-      colorPageBackground: new THREE.Color(this.styles.colorPageBackground),
+    this.rgba = {
+      colorArcBackground: getRGBA(this.styles.colorArcBackground),
+      colorConnectionLine: getRGBA(this.styles.colorConnectionLine),
+      colorDonutInternalColor: getRGBA(this.styles.colorDonutInternalColor),
+      colorPageBackground: getRGBA(this.styles.colorPageBackground),
       colorTraffic: _.reduce(this.styles.colorTraffic, (acc, value, key) => {
-        acc[key] = new THREE.Color(value);
+        acc[key] = getRGBA(value);
         return acc;
       }, {}),
       colorTrafficHighlighted: _.reduce(this.styles.colorTrafficHighlighted, (acc, value, key) => {
-        acc[key] = new THREE.Color(value);
+        acc[key] = getRGBA(value);
         return acc;
       }, {}),
     };

@@ -102,9 +102,9 @@ function generateParticleSystem (size, customWidth, connectionWidth, connectionD
     vertices[(i * 3) + 2] = customWidth ? connectionDepth - (normalDistribution() * connectionDepth * 2) : -2;
 
       // Custom colors
-    customColors[i] = GlobalStyles.threeStyles.colorTraffic.normal.r;
-    customColors[i + 1] = GlobalStyles.threeStyles.colorTraffic.normal.g;
-    customColors[i + 2] = GlobalStyles.threeStyles.colorTraffic.normal.b;
+    customColors[i] = GlobalStyles.rgba.colorTraffic.normal.r;
+    customColors[i + 1] = GlobalStyles.rgba.colorTraffic.normal.g;
+    customColors[i + 2] = GlobalStyles.rgba.colorTraffic.normal.b;
 
     customOpacities[i] = 0;
     sizes[i] = 6;
@@ -341,7 +341,7 @@ class ConnectionView extends BaseView {
       this.opacityAttr.array[nextFreeParticleIndex] = 1.0;
       this.opacityAttr.needsUpdate = true;
 
-      const color = GlobalStyles.getColorTrafficThree(key);
+      const color = GlobalStyles.getColorTrafficRGBA(key);
       this.setParticleColor(nextFreeParticleIndex, color);
     }
   }

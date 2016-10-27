@@ -161,7 +161,7 @@ class Vizceral extends EventEmitter {
   /**
    * Update the global definitions
    *
-   * @param {Object} An object map of definitions. See the format and defaults in (DATAFORMATS.md)
+   * @param {Object} An object map of definitions. See the format and defaults in (https://github.com/Netflix/Vizceral/wiki/Configuration#definitions-for-data-to-display)
    */
   updateDefinitions (definitions) {
     GlobalDefinitions.updateDefinitions(definitions);
@@ -217,7 +217,7 @@ class Vizceral extends EventEmitter {
    * Set the new set of traffic data to render. This is expected to be called
    * with the complete set of traffic data anytime there is an update.
    *
-   * @param {object} data The traffic data that matches the format in DATAFORMATS.md
+   * @param {object} data The traffic data that matches the format in (https://github.com/Netflix/Vizceral/wiki/How-to-Use#graph-data-format)
    */
   updateData (trafficData) {
     if (trafficData && trafficData.nodes) {
@@ -486,7 +486,7 @@ class Vizceral extends EventEmitter {
       const currentViewLength = this.currentView ? this.currentView.length : 0;
 
       if (this.currentGraph && this.currentGraph.highlightedObject) {
-        this.setHighlightedObject(undefined);
+        this.currentGraph.highlightObject(undefined);
       } else if (currentViewLength > 0) {
         this.currentView = this.currentView.slice(0, -1);
         this.setView(this.currentView);
@@ -509,7 +509,7 @@ class Vizceral extends EventEmitter {
   /**
    * Set the set of filters to apply along with their current values.
    *
-   * @param {object} filters The filters that match the format in DATAFORMATS.md
+   * @param {object} filters The filters that match the format in (https://github.com/Netflix/Vizceral/wiki/Configuration#filters)
    */
   setFilters (filters) {
     this.filters = filters;

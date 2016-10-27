@@ -48,8 +48,10 @@ class DetailedNodeView extends NodeView {
   constructor (service) {
     super(service);
 
-    this.donutMaterial = new THREE.MeshBasicMaterial({ color: GlobalStyles.styles.colorPageBackground, transparent: true });
-    this.innerBorderMaterial = new THREE.MeshBasicMaterial({ color: GlobalStyles.styles.colorPageBackground, transparent: true });
+    this.borderColor = GlobalStyles.rgba.colorPageBackground;
+    this.borderColorThree = new THREE.Color(this.borderColor.r, this.borderColor.g, this.borderColor.b);
+    this.donutMaterial = new THREE.MeshBasicMaterial({ color: this.borderColorThree, transparent: true, opacity: this.borderColor.a });
+    this.innerBorderMaterial = new THREE.MeshBasicMaterial({ color: this.borderColorThree, transparent: true, opacity: this.borderColor.a });
     this.donutGraphSegments = [];
     this.arcMeterSegments = [];
 
@@ -86,7 +88,7 @@ class DetailedNodeView extends NodeView {
     const hasArcMeter = this.detailed.arc && this.detailed.arc.data;
     if (hasArcMeter) {
       // arc background
-      const { mesh } = this.addArcSlice(0, 1, GlobalStyles.styles.colorArcBackground, true);
+      const { mesh } = this.addArcSlice(0, 1, GlobalStyles.rgba.colorArcBackground, true);
       this.meshes.arcBackground = mesh;
       this.addInteractiveChild(mesh, 'arc');
     }
@@ -101,7 +103,7 @@ class DetailedNodeView extends NodeView {
     this.textMaterial = new THREE.MeshBasicMaterial({ map: this.textTexture, side: THREE.DoubleSide, transparent: true });
     const text = new THREE.Mesh(new THREE.PlaneBufferGeometry(this.textCanvas.width, this.textCanvas.height), this.textMaterial);
     this.container.add(text);
-    this.addInteractiveChild(text);
+    this.addInteractiveChild(text, 'donut');
     text.position.set(0, 0, this.depth + 1);
   }
 
@@ -130,6 +132,12 @@ class DetailedNodeView extends NodeView {
         // get the named top/bottom
         topData = this.detailed[this.object.context].top;
         bottomData = this.detailed[this.object.context].bottom;
+      }
+
+      // If the context that was selected has nothing to draw, draw default
+      if (!topData && !bottomData) {
+        topData = this.detailed.top;
+        bottomData = this.detailed.bottom;
       }
 
       // Draw the top header to the canvas
@@ -196,13 +204,14 @@ class DetailedNodeView extends NodeView {
    * @param {number} percent The percent of the donut to fill with this new donut slice
    * @param {string} color A string representation of the color to make this slice
    */
-  addNewDonutSlice (startAngle, percent, color) {
+  addDonutSlice (startAngle, percent, color) {
     const size = Math.PI * 2 * percent;
     const slice = new THREE.RingGeometry(this.innerRadius, this.radius, 30, 8, startAngle, size);
-    const mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true });
+    const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(color.r, color.g, color.b), side: THREE.DoubleSide, transparent: true, opacity: color.a });
     const mesh = new THREE.Mesh(slice, mat);
     mesh.position.set(0, 0, this.depth + 2);
     mesh.rotation.y = Math.PI;
+    mesh.userData.defaultOpacity = color.a;
 
     this.donutGraphSegments.push(mesh);
     this.container.add(mesh);
@@ -250,7 +259,7 @@ class DetailedNodeView extends NodeView {
         _.each(donutIndices, (index) => {
           if (donutData[index.key] !== undefined) {
             const colorKey = index.class || index.key;
-            startAngle = this.addNewDonutSlice(startAngle, donutData[index.key], GlobalStyles.getColorTraffic(colorKey));
+            startAngle = this.addDonutSlice(startAngle, donutData[index.key], GlobalStyles.getColorTrafficRGBA(colorKey));
           }
         });
       } else {
@@ -259,7 +268,7 @@ class DetailedNodeView extends NodeView {
         // add donut slices
         _.each(donutData, (classPercent, key) => {
           const colorKey = _.get(this.detailed, ['donut', 'classes', key], key);
-          startAngle = this.addNewDonutSlice(startAngle, classPercent, GlobalStyles.getColorTraffic(colorKey));
+          startAngle = this.addDonutSlice(startAngle, classPercent, GlobalStyles.getColorTrafficRGBA(colorKey));
         });
       }
     }
@@ -276,11 +285,12 @@ class DetailedNodeView extends NodeView {
   addArcSlice (startAngle, percent, color, permanent) {
     const size = Math.PI * percent;
     const slice = new THREE.RingGeometry(this.innerRadius - arcMeterWidth, this.innerRadius - 1, 30, 8, startAngle, size);
-    const mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true });
+    const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(color.r, color.g, color.b), side: THREE.DoubleSide, transparent: true, opacity: color.a });
     const mesh = new THREE.Mesh(slice, mat);
     mesh.position.set(0, 0, this.depth + 5);
     mesh.rotation.y = Math.PI;
     mesh.userData.context = 'arc';
+    mesh.userData.defaultOpacity = color.a;
 
     if (!permanent) { this.arcMeterSegments.push(mesh); }
     this.container.add(mesh);
@@ -302,18 +312,18 @@ class DetailedNodeView extends NodeView {
         _.each(arcData.values, value => {
           const percent = value.value / arcData.total;
           const colorKey = value.class || value.name;
-          const { angle } = this.addArcSlice(startAngle, percent, GlobalStyles.getColorTraffic(colorKey), false);
+          const { angle } = this.addArcSlice(startAngle, percent, GlobalStyles.getColorTrafficRGBA(colorKey), false);
           startAngle = angle;
         });
 
         // mark
         let line = _.get(arcData, this.detailed.arc.lineIndex, undefined);
         if (line) {
-          let lineColor = GlobalStyles.styles.colorDonutInternalColor;
+          let lineColor = GlobalStyles.rgba.colorDonutInternalColor;
           // figure out color of line
           if (line >= 1) {
             line = 1;
-            lineColor = GlobalStyles.styles.colorTraffic.normal;
+            lineColor = GlobalStyles.rgba.colorTraffic.normal;
           }
           // line
           const linePosition = (Math.PI * line) - 0.01;
@@ -330,7 +340,9 @@ class DetailedNodeView extends NodeView {
           triangleShape.lineTo(startingX + triangleWidth, trianglePointRadius - triangleSize);
           triangleShape.lineTo(startingX, trianglePointRadius);
           const triangleGeometry = new THREE.ShapeGeometry(triangleShape);
-          const triangleMaterial = new THREE.MeshBasicMaterial({ color: GlobalStyles.styles.colorTraffic.normal, side: THREE.DoubleSide, transparent: true });
+          const triangleColorRGBA = GlobalStyles.rgba.colorTraffic.normal;
+          const triangleColor = new THREE.Color(triangleColorRGBA.r, triangleColorRGBA.g, triangleColorRGBA.b);
+          const triangleMaterial = new THREE.MeshBasicMaterial({ color: triangleColor, side: THREE.DoubleSide, transparent: true, opacity: triangleColorRGBA.a });
 
           const triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial);
           triangleMesh.position.set(0, 0, this.depth + 3);
@@ -344,16 +356,17 @@ class DetailedNodeView extends NodeView {
 
   setOpacity (opacity) {
     super.setOpacity(opacity);
-    this.donutMaterial.opacity = opacity;
-    this.innerCircleMaterial.opacity = opacity;
+    const borderOpacity = opacity * this.borderColor.a;
+    this.donutMaterial.opacity = borderOpacity;
+    this.innerCircleMaterial.opacity = borderOpacity;
     this.textMaterial.opacity = opacity;
 
     _.each(this.donutGraphSegments, segment => {
-      segment.material.opacity = opacity;
+      segment.material.opacity = opacity * segment.userData.defaultOpacity;
     });
 
     _.each(this.arcMeterSegments, segment => {
-      segment.material.opacity = opacity;
+      segment.material.opacity = opacity * segment.userData.defaultOpacity;
     });
   }
 
