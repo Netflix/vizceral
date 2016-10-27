@@ -68,7 +68,7 @@ class RegionConnectionView extends ConnectionView {
     this.connectionLineMaterial.dispose();
   }
 
-  setParticleLevels(){
+  setParticleLevels () {
     super.setParticleLevels();
     this.minAvgTicksBetweenRelease = 120;
   }

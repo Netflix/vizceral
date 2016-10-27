@@ -23,7 +23,6 @@ import GlobalStyles from '../globalStyles';
 import Constants from './constants';
 
 
-
 // Preload textures
 const loader = new THREE.TextureLoader();
 
@@ -251,7 +250,7 @@ class ConnectionView extends BaseView {
 
   nextFreeParticleIndex (totalAsk) {
     if (this.lastParticleIndex < 0) {
-      if(this.particleSystemSize >= this.maxParticles){
+      if (this.particleSystemSize >= this.maxParticles) {
         return -1;
       }
       return this.growParticles(2 * totalAsk);
@@ -337,8 +336,8 @@ class ConnectionView extends BaseView {
       rand = Math.random();
 
       const nextFreeParticleIndex = this.nextFreeParticleIndex(numberOfParticles);
-      if(nextFreeParticleIndex === -1){
-        return; //gotta wait my turn!
+      if (nextFreeParticleIndex === -1) {
+        return; // gotta wait my turn!
       }
 
       // Get/set the x position for the last particle index
@@ -365,7 +364,7 @@ class ConnectionView extends BaseView {
 
     // for each volume, calculate the amount of particles to release:
     for (const volumeName in this.object.volume) { // eslint-disable-line no-restricted-syntax
-      if (this.object.volume.hasOwnProperty(volumeName)) { //eslint-disable-line no-prototype-builtins
+      if (this.object.volume.hasOwnProperty(volumeName)) { // eslint-disable-line no-prototype-builtins
         const volume = this.object.volume[volumeName];
 
         if (volume) { // zero is zero, NaN is ignored.
