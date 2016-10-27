@@ -23,7 +23,6 @@ import GlobalStyles from '../globalStyles';
 import Constants from './constants';
 
 
-
 // Preload textures
 const loader = new THREE.TextureLoader();
 
@@ -31,7 +30,7 @@ const loader = new THREE.TextureLoader();
 const particle = require('url!./particleD.png'); // eslint-disable-line import/no-extraneous-dependencies
 
 let particleTexture;
-loader.load(particle, texture => { particleTexture = texture; });
+loader.load(particle, (texture) => { particleTexture = texture; });
 
 const trafficFragmentShader = `
 uniform vec3 color;

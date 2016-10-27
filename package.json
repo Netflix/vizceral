@@ -1,6 +1,6 @@
 {
   "name": "vizceral",
-  "version": "3.0.9",
+  "version": "4.0.1",
   "description": "Intuitive animated traffic graph using webgl. If a graph of nodes and edges with data about traffic volume is provided, it will render a traffic graph animating the connection volume between nodes.",
   "main": "dist/vizceral.js",
   "repository": {
@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "npm run watch",
     "doc": "documentation build ./src/vizceral.js --shallow -f md > USAGE.md",
-    "lint": "eslint src",
+    "lint": "eslint src --fix",
     "build": "npm run doc && npm run build:js",
     "build:js": "webpack --bail && webpack --bail -p",
     "watch": "webpack --watch -d",
@@ -18,24 +18,24 @@
     "validate": "npm ls"
   },
   "devDependencies": {
-    "babel-core": "^6.9.0",
-    "babel-eslint": "^6.0.4",
+    "babel-core": "^6.18.0",
+    "babel-eslint": "^7.0.0",
     "babel-loader": "^6.2.4",
-    "babel-preset-es2015": "^6.9.0",
-    "css-loader": "^0.23.1",
+    "babel-preset-es2015": "^6.18.0",
+    "css-loader": "^0.25.0",
     "documentation": "^4.0.0-beta2",
-    "eslint": "^3.0.1",
-    "eslint-config-airbnb-base": "^5.0.1",
-    "eslint-plugin-import": "^1.10.2",
+    "eslint": "^3.8.1",
+    "eslint-config-airbnb-base": "^9.0.0",
+    "eslint-plugin-import": "^2.0.1",
     "file-loader": "^0.9.0",
     "precommit-hook": "^3.0.0",
     "raw-loader": "^0.5.1",
     "release-script": "^1.0.2",
     "style-loader": "^0.13.1",
     "url-loader": "^0.5.7",
-    "webpack": "^1.13.0",
+    "webpack": "^1.13.3",
     "worker-loader": "^0.7.0",
-    "yargs": "^4.8.1"
+    "yargs": "^6.3.0"
   },
   "dependencies": {
     "chroma-js": "^1.1.1",
@@ -43,7 +43,7 @@
     "knuth-shuffle": "^1.0.1",
     "lodash": "^4.12.0",
     "numeral": "^1.5.3",
-    "three": "^0.80.0",
+    "three": "^0.82.0",
     "tween.js": "16.3.4"
   },
   "keywords": [

@@ -16,35 +16,26 @@
  *
  */
 import Node from '../base/node';
-import NodeViewDetailed from '../base/nodeViewDetailed';
+import NodeViewStandard from '../base/nodeViewStandard';
+import FocusedNodeView from './focusedNodeView';
 
-class GlobalNode extends Node {
+class FocusedNode extends Node {
   constructor (node) {
-    super(node, 'global');
-    this.refreshLoaded();
+    super(node, 'focused');
+    this.loaded = true;
   }
 
   isInteractive () {
-    return !this.isEntryNode();
-  }
-
-  refreshLoaded () {
-    this.loaded = this.isEntryNode() || (this.nodes && this.nodes.length > 0);
-  }
-
-  invalidateIncomingVolume () {
-    super.invalidateIncomingVolume();
-    this.refreshLoaded();
-  }
-
-  invalidateOutgoingVolume () {
-    super.invalidateOutgoingVolume();
-    this.refreshLoaded();
+    return !this.focused;
   }
 
   render () {
-    this.view = new NodeViewDetailed(this);
+    if (this.focused) {
+      this.view = new FocusedNodeView(this);
+    } else {
+      this.view = new NodeViewStandard(this);
+    }
   }
 }
 
-export default GlobalNode;
+export default FocusedNode;

@@ -22,8 +22,8 @@ import numeral from 'numeral';
 
 import GlobalDefinitions from '../globalDefinitions';
 import GlobalStyles from '../globalStyles';
-import NodeView from './nodeView';
-import NodeNameView from './nodeNameView';
+import NodeView from '../base/nodeView';
+import NodeNameView from '../base/nodeNameView';
 
 const Console = console;
 
@@ -44,7 +44,7 @@ function generateDisplayValue (value, format) {
 
 const zAxis = new THREE.Vector3(0, 0, 1);
 
-class DetailedNodeView extends NodeView {
+class FocusedNodeView extends NodeView {
   constructor (service) {
     super(service);
 
@@ -423,4 +423,4 @@ class DetailedNodeView extends NodeView {
   }
 }
 
-export default DetailedNodeView;
+export default FocusedNodeView;

@@ -34,16 +34,16 @@ function updatePosition (node, nodeCount, nodeIndex, orbitSize) {
 
 function positionNodes (nodes, orbitSize) {
   let nodeIndex = 0;
-  const nodeCount = nodes.length - 1;
+  const nodeCount = Object.keys(nodes).length - 1;
 
   const sortedNodeNames = _.map(nodes, 'name');
   sortedNodeNames.sort();
 
   // Layout the nodes with the entry node in the middle
   const nodeMap = _.keyBy(nodes, 'name');
-  _.each(sortedNodeNames, nodeName => {
+  _.each(sortedNodeNames, (nodeName) => {
     const node = nodeMap[nodeName];
-    if (nodeName !== 'INTERNET') {
+    if (!node.isEntryNode()) {
       nodeIndex++;
       updatePosition(node, nodeCount, nodeIndex, orbitSize);
     } else {
@@ -58,14 +58,15 @@ function positionNodes (nodes, orbitSize) {
   // Center the nodes vertically on the canvas
   const yPositions = _.map(nodes, n => n.position.y);
   const yOffset = Math.abs(Math.abs(_.max(yPositions)) - Math.abs(_.min(yPositions))) / 2;
-  _.each(nodes, n => {
+  _.each(nodes, (n) => {
     n.position.y += yOffset;
   });
 }
 
 class GlobalTrafficGraph extends TrafficGraph {
-  constructor (name, mainView, graphWidth, graphHeight) {
-    super(name, mainView, graphWidth, graphHeight, GlobalNode, GlobalConnection);
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight) {
+    super(name, mainView, parentGraph, graphWidth, graphHeight, GlobalNode, GlobalConnection);
+    this.type = 'global';
 
     this.orbitSize = Math.min(graphWidth, graphHeight);
     this.linePrecision = 50;
@@ -78,8 +79,8 @@ class GlobalTrafficGraph extends TrafficGraph {
     this.hasPositionData = true;
   }
 
-  setState (state) {
-    _.each(state.nodes, node => {
+  setState (state, force) {
+    _.each(state.nodes, (node) => {
       const existingNodeIndex = _.findIndex(this.state.nodes, { name: node.name });
       if (existingNodeIndex !== -1) {
         this.state.nodes[existingNodeIndex] = node;
@@ -97,7 +98,7 @@ class GlobalTrafficGraph extends TrafficGraph {
       }
     });
 
-    _.each(state.connections, newConnection => {
+    _.each(state.connections, (newConnection) => {
       const existingConnectionIndex = _.findIndex(this.state.connections, { source: newConnection.source, target: newConnection.target });
       if (existingConnectionIndex !== -1) {
         this.state.connections[existingConnectionIndex] = newConnection;
@@ -115,14 +116,24 @@ class GlobalTrafficGraph extends TrafficGraph {
     // more visually dense.
     let maxVolume = state.maxVolume || 0;
     if (!maxVolume) {
-      _.each(this.state.nodes, node => {
+      _.each(this.state.nodes, (node) => {
         maxVolume = Math.max(maxVolume, node.maxVolume || 0);
       });
     }
     this.state.maxVolume = maxVolume * 1.5;
 
-    positionNodes(this.state.nodes, this.orbitSize);
-    super.setState(this.state);
+    super.setState(this.state, force);
+    this.validateLayout();
+    positionNodes(this.nodes, this.orbitSize);
+    this._relayout();
+  }
+
+  setFilters () {
+    // no-op
+  }
+
+  _relayout () {
+    this.updateView();
   }
 
   handleIntersectedObjectClick () {
@@ -166,10 +177,14 @@ class GlobalTrafficGraph extends TrafficGraph {
 
   setCurrent (current) {
     super.setCurrent(current);
-    _.each(this.contextDivs, div => {
+    _.each(this.contextDivs, (div) => {
       div.style.display = current ? 'block' : 'none';
     });
     this.updateLabelScreenDimensions(true);
+  }
+
+  highlightObject () {
+    // no-op
   }
 
   update (time) {

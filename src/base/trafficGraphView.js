@@ -66,12 +66,12 @@ class TrafficGraphView extends BaseView {
   getInteractiveChildren () {
     if (this.interactiveChildren === undefined) {
       this.interactiveChildren = [];
-      _.each(this.trafficGraph.nodes, node => {
+      _.each(this.trafficGraph.nodes, (node) => {
         if (node.isVisible()) {
           this.interactiveChildren = this.interactiveChildren.concat(node.getView().getInteractiveChildren());
         }
       });
-      _.each(this.trafficGraph.connections, connection => {
+      _.each(this.trafficGraph.connections, (connection) => {
         if (connection.isVisible()) {
           this.interactiveChildren = this.interactiveChildren.concat(connection.getView().getInteractiveChildren());
         }
@@ -97,7 +97,7 @@ class TrafficGraphView extends BaseView {
       top: 0
     };
 
-    _.each(this.trafficGraph.nodes, nodeB => {
+    _.each(this.trafficGraph.nodes, (nodeB) => {
       if (node.getName() !== nodeB.getName() && nodeB.isVisible()) {
         const nodeArea = overlappingArea(labelBox, _.get(nodeB, 'boundingBox', emptyBoundingBox));
         const labelArea = overlappingArea(labelBox, _.get(nodeB, 'view.nameView.boundingBox', emptyBoundingBox));
@@ -114,7 +114,7 @@ class TrafficGraphView extends BaseView {
     let otherAreas = { nodes: 0, labels: 0 };
 
     // Do two passed at placing the labels in case some flipping caused better locations to be opened up
-    _.times(2, _.each(this.trafficGraph.nodes, node => {
+    _.times(2, _.each(this.trafficGraph.nodes, (node) => {
       if (node.view && node.view.nameView) {
         defaultAreas = { nodes: 0, labels: 0 };
         otherAreas = { nodes: 0, labels: 0 };
@@ -141,7 +141,7 @@ class TrafficGraphView extends BaseView {
     }));
 
     // n passes have completed, now apply the position
-    _.each(this.trafficGraph.nodes, node => {
+    _.each(this.trafficGraph.nodes, (node) => {
       if (node.view) {
         node.view.applyLabelPosition();
       }

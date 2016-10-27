@@ -19,7 +19,10 @@
     "no-param-reassign": 0,
     "max-len": 0,
     "import/no-unresolved": 0,
-    "no-underscore-dangle": ["error", { "allowAfterThis": true }]
+    "import/no-webpack-loader-syntax": 0,
+    "no-underscore-dangle": ["error", { "allowAfterThis": true }],
+    "no-plusplus": 0,
+    "class-methods-use-this": 0
   },
   "parser": "babel-eslint"
 }

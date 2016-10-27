@@ -154,6 +154,10 @@ class NodeView extends BaseView {
     }
   }
 
+  updateText () {
+    // No text update function for the default view
+  }
+
   resetDefaultLabelPosition () {
     if (this.object.position) {
       this.labelPositionLeft = this.object.position.x < 1;
