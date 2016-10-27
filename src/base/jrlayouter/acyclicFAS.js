@@ -28,7 +28,7 @@ function dfsFas (graph) {
     }
     visited[node.name] = true;
     stack[node.name] = true;
-    _.each(graph.outgoingEdges(node.name), edge => {
+    _.each(graph.outgoingEdges(node.name), (edge) => {
       if (_.has(stack, edge.target)) {
         fas.push(edge);
       } else {
@@ -44,13 +44,13 @@ function dfsFas (graph) {
 
 function remove (graph) {
   const fas = dfsFas(graph);
-  _.each(fas, edge => {
+  _.each(fas, (edge) => {
     graph.reverseEdge(edge);
   });
 }
 
 function restore (graph) {
-  _.each(graph.edges, edge => {
+  _.each(graph.edges, (edge) => {
     if (edge.reversed) {
       graph.reverseEdge(edge);
     }

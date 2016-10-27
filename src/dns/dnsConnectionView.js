@@ -78,7 +78,7 @@ class DnsConnectionView extends ConnectionView {
       this.annotationTexture,
       this.annotationGeometry,
       this.annotationMesh
-    ], x => { try { x.dispose(); } catch (e) { Console.log(e); } });
+    ], (x) => { try { x.dispose(); } catch (e) { Console.log(e); } });
   }
 
   setParticleLevels () {

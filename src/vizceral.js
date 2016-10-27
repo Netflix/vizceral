@@ -188,7 +188,7 @@ class Vizceral extends EventEmitter {
     if (graph) {
       let currentGraphData = this.trafficData;
       let parentGraphData;
-      graph.graphIndex.every(graphLevel => {
+      graph.graphIndex.every((graphLevel) => {
         parentGraphData = currentGraphData;
         currentGraphData = _.find(currentGraphData.nodes, { name: graphLevel });
         return currentGraphData;
@@ -292,7 +292,7 @@ class Vizceral extends EventEmitter {
   getNearestValidGraph (viewArray) {
     let newGraph = this.getGraph(this.rootGraphName);
     if (newGraph) {
-      viewArray.every(nodeName => {
+      viewArray.every((nodeName) => {
         const nextLevelNode = newGraph.getNode(nodeName);
         if (nextLevelNode) {
           const newGraphCandidate = this.getGraph(nextLevelNode.name, newGraph);
@@ -412,14 +412,14 @@ class Vizceral extends EventEmitter {
 
   showLabels (graph) {
     graph.showLabels(this.options.showLabels);
-    _.each(graph.graphs, subGraph => {
+    _.each(graph.graphs, (subGraph) => {
       this.showLabels(subGraph);
     });
   }
 
   updateModes (graph) {
     graph.setModes(this.modes);
-    _.each(graph.graphs, subGraph => {
+    _.each(graph.graphs, (subGraph) => {
       this.updateModes(subGraph);
     });
   }

@@ -309,7 +309,7 @@ class DetailedNodeView extends NodeView {
       const arcData = _.get(this.object, this.detailed.arc.data, undefined);
       if (arcData) {
         // arc slices
-        _.each(arcData.values, value => {
+        _.each(arcData.values, (value) => {
           const percent = value.value / arcData.total;
           const colorKey = value.class || value.name;
           const { angle } = this.addArcSlice(startAngle, percent, GlobalStyles.getColorTrafficRGBA(colorKey), false);
@@ -361,11 +361,11 @@ class DetailedNodeView extends NodeView {
     this.innerCircleMaterial.opacity = borderOpacity;
     this.textMaterial.opacity = opacity;
 
-    _.each(this.donutGraphSegments, segment => {
+    _.each(this.donutGraphSegments, (segment) => {
       segment.material.opacity = opacity * segment.userData.defaultOpacity;
     });
 
-    _.each(this.arcMeterSegments, segment => {
+    _.each(this.arcMeterSegments, (segment) => {
       segment.material.opacity = opacity * segment.userData.defaultOpacity;
     });
   }

@@ -50,7 +50,7 @@ class Notices {
     const noticeListElement = document.createElement('ul');
 
     // Add new notices to the notice box
-    _.each(notices, notice => {
+    _.each(notices, (notice) => {
       let noticeString = notice.title;
       if (notice.link) {
         noticeString = `<a href="${notice.link}" target="_blank">${noticeString}</a>`;

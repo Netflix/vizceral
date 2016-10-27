@@ -33,7 +33,7 @@ function positionNodes (nodes, dimensions) {
   });
 
   const ranks = _.map(Object.keys(nodesByIndex).sort(),
-    (idx) => _.sortBy(nodesByIndex[idx], (node) => {
+    idx => _.sortBy(nodesByIndex[idx], (node) => {
       try {
         return node.metadata.layout.rank;
       } catch (e) {
@@ -51,7 +51,7 @@ function positionNodes (nodes, dimensions) {
   let rankIndex = 1;
   const yCenter = (ranks.length + 1) / 2.0;
 
-  _.each(ranks, rank => {
+  _.each(ranks, (rank) => {
     const y = -1 * rankHeight * (rankIndex - yCenter);
 
     const fileWidth = availableWidth / rank.length;
@@ -59,7 +59,7 @@ function positionNodes (nodes, dimensions) {
 
     const xCenter = (rank.length + 1) / 2.0;
 
-    _.each(rank, node => {
+    _.each(rank, (node) => {
       node.size = nodeSize;
       node.loaded = true;
       node.position = {
@@ -94,7 +94,7 @@ class DNSTrafficGraph extends TrafficGraph {
 
   setState (state, force) {
     try {
-      _.each(state.nodes, node => {
+      _.each(state.nodes, (node) => {
         const existingNodeIndex = _.findIndex(this.state.nodes, { name: node.name });
         if (existingNodeIndex !== -1) {
           this.state.nodes[existingNodeIndex] = node;
@@ -103,7 +103,7 @@ class DNSTrafficGraph extends TrafficGraph {
         }
       });
 
-      _.each(state.connections, newConnection => {
+      _.each(state.connections, (newConnection) => {
         const existingConnectionIndex = _.findIndex(this.state.connections, { source: newConnection.source, target: newConnection.target });
         if (existingConnectionIndex !== -1) {
           this.state.connections[existingConnectionIndex] = newConnection;
@@ -121,7 +121,7 @@ class DNSTrafficGraph extends TrafficGraph {
       // more visually dense.
       let maxVolume = state.maxVolume || 0;
       if (!maxVolume) {
-        _.each(this.state.nodes, node => {
+        _.each(this.state.nodes, (node) => {
           maxVolume = Math.max(maxVolume, node.maxVolume || 0);
         });
       }

@@ -19,7 +19,7 @@ import _ from 'lodash';
 import EventEmitter from 'events';
 import TWEEN from 'tween.js';
 
-import LayoutWorker from 'worker?inline!./layoutWorker'; // eslint-disable-line import/no-extraneous-dependencies
+import LayoutWorker from 'worker?inline!./layoutWorker'; // eslint-disable-line import/no-extraneous-dependencies, import/extensions
 import Notices from '../notices';
 import TrafficGraphView from './trafficGraphView';
 
@@ -118,7 +118,7 @@ class TrafficGraph extends EventEmitter {
     if (this.nodes[nodeName]) { return this.nodes[nodeName]; }
 
     // Then check by exact matching sub node name
-    const nodes = _.filter(this.nodes, node => {
+    const nodes = _.filter(this.nodes, (node) => {
       if (node.nodes) {
         return _.includes(node.nodes.map(n => n.name), nodeName);
       }
@@ -179,7 +179,7 @@ class TrafficGraph extends EventEmitter {
       matches.visible = 0;
 
       let targetString;
-      const nodes = _.filter(this.nodes, node => {
+      const nodes = _.filter(this.nodes, (node) => {
         targetString = node.getName();
         if (node.nodes) {
           targetString += `::${node.nodes.map(n => n.name).join('::')}`;
@@ -194,7 +194,7 @@ class TrafficGraph extends EventEmitter {
         return match;
       });
 
-      _.each(nodes, node => {
+      _.each(nodes, (node) => {
         dimNodes[node.getName()] = false;
       });
     }
@@ -217,11 +217,11 @@ class TrafficGraph extends EventEmitter {
       this.highlightedObject = objectToHighlight;
       this.highlightConnectedNodes(objectToHighlight);
       const nodeName = objectToHighlight ? objectToHighlight instanceof this.NodeClass && objectToHighlight.getName() : undefined;
-      _.each(this.nodes, node => {
+      _.each(this.nodes, (node) => {
         node.getView().setHighlight(nodeName === node.getName());
       });
       const connectionName = objectToHighlight ? objectToHighlight instanceof this.ConnectionClass && objectToHighlight.getName() : undefined;
-      _.each(this.connections, connection => {
+      _.each(this.connections, (connection) => {
         connection.getView().setHighlight(connectionName === connection.getName());
       });
 
@@ -285,10 +285,10 @@ class TrafficGraph extends EventEmitter {
   }
 
   update (time) {
-    _.each(this.connections, connection => {
+    _.each(this.connections, (connection) => {
       if (connection.isVisible()) { connection.getView().update(time); }
     });
-    _.each(this.nodes, node => {
+    _.each(this.nodes, (node) => {
       if (node.isVisible()) { node.getView().update(); }
     });
   }
@@ -359,12 +359,12 @@ class TrafficGraph extends EventEmitter {
         });
 
         // Set all conenctions as false until the connection is found or created
-        _.each(this.connections, connection => {
+        _.each(this.connections, (connection) => {
           connection.valid = false;
         });
 
         // Update all the existing connections and create new ones
-        _.each(state.connections, stateConnection => {
+        _.each(state.connections, (stateConnection) => {
           let connection = this.getConnection(`${stateConnection.source}--${stateConnection.target}`);
           if (connection) {
             connection.update(stateConnection);
@@ -395,7 +395,7 @@ class TrafficGraph extends EventEmitter {
         // Remove all connections that aren't valid anymore and update the
         // greatest volume of the existing connections
         const connectionsToRemove = [];
-        _.each(this.connections, connection => {
+        _.each(this.connections, (connection) => {
           if (!connection.valid) {
             connectionsToRemove.push(connection);
           } else {
@@ -408,7 +408,7 @@ class TrafficGraph extends EventEmitter {
         }
 
         const nodesToRemoveSecondPass = [];
-        _.each(this.nodes, node => {
+        _.each(this.nodes, (node) => {
           if (!stateNodeMap[node.name] && !node.hold) {
             // Remove all the nodes that are not in new state
             nodesToRemoveSecondPass.push(node);
@@ -516,7 +516,7 @@ class TrafficGraph extends EventEmitter {
       dimNodes[selectedObject.getName()] = false;
 
       // Highlight incoming connections
-      _.each(selectedObject.incomingConnections, incomingConnection => {
+      _.each(selectedObject.incomingConnections, (incomingConnection) => {
         if (!incomingConnection.filtered) {
           dimNodes[incomingConnection.source.getName()] = false;
           dimConnections[incomingConnection.getName()] = false;
@@ -524,7 +524,7 @@ class TrafficGraph extends EventEmitter {
       });
 
       // Highlight outgoing connections
-      _.each(selectedObject.outgoingConnections, outgoingConnection => {
+      _.each(selectedObject.outgoingConnections, (outgoingConnection) => {
         if (!outgoingConnection.filtered) {
           dimNodes[outgoingConnection.target.getName()] = false;
           dimConnections[outgoingConnection.getName()] = false;
@@ -559,7 +559,7 @@ class TrafficGraph extends EventEmitter {
 
   setFilters (filters) {
     let filtersChanged = false;
-    _.each(filters, filter => {
+    _.each(filters, (filter) => {
       if (!this.filters[filter.name]) {
         this.filters[filter.name] = filter;
         filtersChanged = true;
@@ -593,7 +593,7 @@ class TrafficGraph extends EventEmitter {
    */
   _updateConnectionFilters (filters) {
     let changed = false;
-    _.each(this.connections, connection => {
+    _.each(this.connections, (connection) => {
       connection.defaultFiltered = !_.every(filters.connection, filter => filter.passes(connection, filter.defaultValue));
       const filtered = (!connection.source.isVisible() && !connection.target.isVisible()) || !_.every(filters.connection, filter => filter.passes(connection, filter.value));
       if (connection.filtered !== filtered) {
@@ -618,7 +618,7 @@ class TrafficGraph extends EventEmitter {
    */
   _updateNodeFilters (filters) {
     let changed = false;
-    _.each(this.nodes, node => {
+    _.each(this.nodes, (node) => {
       node.defaultFiltered = !node.hasDefaultVisibleConnections() || !_.every(filters.node, filter => filter.passes(node, filter.defaultValue));
       const filtered = !node.focused && (!node.hasVisibleConnections() || !_.every(filters.node, filter => filter.passes(node, filter.value)));
       if (node.filtered !== filtered) {
@@ -626,8 +626,8 @@ class TrafficGraph extends EventEmitter {
         changed = true;
       }
       if (!node.isVisible()) {
-        _.each(node.incomingConnections, c => { c.filtered = true; });
-        _.each(node.outgoingConnections, c => { c.filtered = true; });
+        _.each(node.incomingConnections, (c) => { c.filtered = true; });
+        _.each(node.outgoingConnections, (c) => { c.filtered = true; });
       }
     });
     if (changed) { this._updateConnectionFilters(filters); }
@@ -659,7 +659,7 @@ class TrafficGraph extends EventEmitter {
               .easing(TWEEN.Easing.Cubic.In)
               .onUpdate(function () {
                 const inverse = 1 - this.percent;
-                _.each(dimChanged, v => {
+                _.each(dimChanged, (v) => {
                   v.setDimPercent(v.dimmed ? this.percent : inverse);
                 });
               })
@@ -675,7 +675,7 @@ class TrafficGraph extends EventEmitter {
 
     // Go through all the filters and separate the node and connection filters
     const filters = { connection: [], node: [] };
-    _.each(this.filters, filter => {
+    _.each(this.filters, (filter) => {
       if (filter.type === 'connection') {
         filters.connection.push(filter);
       } else if (filter.type === 'node') {
@@ -683,12 +683,12 @@ class TrafficGraph extends EventEmitter {
       }
     });
 
-    _.each(this.nodes, node => {
+    _.each(this.nodes, (node) => {
       delete node.forceLabel;
     });
 
-    _.each(this.nodes, n => { n.filtered = false; });
-    _.each(this.connections, c => { c.filtered = false; });
+    _.each(this.nodes, (n) => { n.filtered = false; });
+    _.each(this.connections, (c) => { c.filtered = false; });
     this._updateConnectionFilters(filters);
     this._updateNodeFilters(filters);
 
@@ -697,10 +697,10 @@ class TrafficGraph extends EventEmitter {
     const useInLayout = o => ((subsetOfDefaultVisibleNodes && subsetOfDefaultVisibleConnections) ? !o.defaultFiltered : o.isVisible());
 
     // build the layout graph
-    _.each(this.connections, connection => {
+    _.each(this.connections, (connection) => {
       graph.edges.push({ visible: useInLayout(connection), source: connection.source.getName(), target: connection.target.getName() });
     });
-    _.each(this.nodes, node => {
+    _.each(this.nodes, (node) => {
       graph.nodes.push({ name: node.getName(), visible: useInLayout(node), position: node.position, weight: node.depth });
       if (node.connected) {
         totalNodes++;
@@ -713,7 +713,7 @@ class TrafficGraph extends EventEmitter {
 
     if (Object.keys(graph.nodes).length > 0 && Object.keys(graph.edges).length > 0) {
       const layoutWorker = LayoutWorker();
-      const layoutWorkerComplete = event => {
+      const layoutWorkerComplete = (event) => {
         Console.info(`Layout: Received updated layout for ${this.name} from the worker.`);
         this._updateNodePositions(event.data);
         this.updateView();

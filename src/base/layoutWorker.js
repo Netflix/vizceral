@@ -65,6 +65,6 @@ self.layout = function (options) {
   self.close();
 };
 
-self.addEventListener('message', event => {
+self.addEventListener('message', (event) => {
   self.layout(event.data);
 });
