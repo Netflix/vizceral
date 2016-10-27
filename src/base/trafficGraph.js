@@ -249,6 +249,10 @@ class TrafficGraph extends EventEmitter {
     if (this.view) { this.view.invalidateInteractiveChildren(); }
   }
 
+  setContext (context) {
+    _.each(this.nodes, node => node.setContext(context));
+  }
+
   setIntersectedObject (object) {
     let changed = false;
     // De-intersect any objects
