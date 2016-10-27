@@ -150,6 +150,7 @@ class ConnectionView extends BaseView {
     super(connection);
     this.setParticleLevels();
     this.maxParticles = maxParticles;
+
     this.dimmedLevel = 0.05;
 
     this.centerVector = new THREE.Vector3(0, 0, 0);
