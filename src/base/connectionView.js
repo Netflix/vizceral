@@ -154,7 +154,6 @@ function mapVolume (volume, rateMap) {
   let i;
 
   if (i === rateMap.length - 1) { // if somehow we have run past
-    console.log('ran past', volume, rateMap[i]);
     return (volume * rateMap[i][1]) / rateMap[i][0];
   }
 
@@ -263,13 +262,25 @@ class ConnectionView extends BaseView {
     // [[0, 0], [this.object.volumeGreatest, this.maxParticleReleasedPerTick]] is a straight linear releationship. not great for the left side of the normal distribution -- dots will fire too rarely.
     //  must be in ascending order.
     //  we dont want to a log because we really just want to boost the low end for our needs.
+
     const linearRatio = this.maxParticleReleasedPerTick / this.object.volumeGreatest;
+
+    const maxVolume = this.object.volumeGreatest;
+    const maxReleasesPerTick = this.maxParticleReleasedPerTick;
+
     function secondsPerReleaseToReleasesPerTick (seconds) {
       const releasesPerSecond = 1 / seconds;
       return releasesPerSecond / 60;
     }
-    window.rateMap = [[0, 0], [Number.MIN_VALUE, secondsPerReleaseToReleasesPerTick(6)], [10, linearRatio * 10], [this.object.volumeGreatest, this.maxParticleReleasedPerTick]];
-    this.rateMap = window.rateMap;
+
+    this.rateMap = [
+      [0, 0],
+      [Number.MIN_VALUE, secondsPerReleaseToReleasesPerTick(10)],
+      [1, secondsPerReleaseToReleasesPerTick(7)],
+      [10, secondsPerReleaseToReleasesPerTick(5)],
+      [100, linearRatio * 100],
+      [maxVolume, maxReleasesPerTick]
+    ];
   }
 
   growParticles (bumpSize) {
