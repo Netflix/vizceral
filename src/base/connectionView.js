@@ -153,6 +153,9 @@ function interpolateY (x, x0, y0, x1, y1) {
 function mapVolume (volume, rateMap) {
   let i;
 
+  for (i = 0; i < rateMap.length && rateMap[i + 1] && volume > rateMap[i + 1][0]; i++) { // eslint-disable-line no-empty
+  }
+
   if (i === rateMap.length - 1) { // if somehow we have run past
     return (volume * rateMap[i][1]) / rateMap[i][0];
   }
@@ -257,30 +260,6 @@ class ConnectionView extends BaseView {
 
   setParticleLevels () {
     this.maxParticleReleasedPerTick = 19;
-
-    // maps the releationship of metric values to how many dots should be released per tick. use < 1 dots per release for fewer than 60 dots per second.
-    // [[0, 0], [this.object.volumeGreatest, this.maxParticleReleasedPerTick]] is a straight linear releationship. not great for the left side of the normal distribution -- dots will fire too rarely.
-    //  must be in ascending order.
-    //  we dont want to a log because we really just want to boost the low end for our needs.
-
-    const linearRatio = this.maxParticleReleasedPerTick / this.object.volumeGreatest;
-
-    const maxVolume = this.object.volumeGreatest;
-    const maxReleasesPerTick = this.maxParticleReleasedPerTick;
-
-    function secondsPerReleaseToReleasesPerTick (seconds) {
-      const releasesPerSecond = 1 / seconds;
-      return releasesPerSecond / 60;
-    }
-
-    this.rateMap = [
-      [0, 0],
-      [Number.MIN_VALUE, secondsPerReleaseToReleasesPerTick(10)],
-      [1, secondsPerReleaseToReleasesPerTick(7)],
-      [10, secondsPerReleaseToReleasesPerTick(5)],
-      [100, linearRatio * 100],
-      [maxVolume, maxReleasesPerTick]
-    ];
   }
 
   growParticles (bumpSize) {
@@ -398,6 +377,30 @@ class ConnectionView extends BaseView {
   }
 
   updateVolume () {
+    // maps the releationship of metric values to how many dots should be released per tick. use < 1 dots per release for fewer than 60 dots per second.
+    // [[0, 0], [this.object.volumeGreatest, this.maxParticleReleasedPerTick]] is a straight linear releationship. not great for the left side of the normal distribution -- dots will fire too rarely.
+    //  must be in ascending order.
+    //  we dont want to a log because we really just want to boost the low end for our needs.
+    const linearRatio = this.maxParticleReleasedPerTick / this.object.volumeGreatest;
+
+    const maxVolume = this.object.volumeGreatest;
+    const maxReleasesPerTick = this.maxParticleReleasedPerTick;
+
+    function secondsPerReleaseToReleasesPerTick (seconds) {
+      const releasesPerSecond = 1 / seconds;
+      return releasesPerSecond / 60;
+    }
+
+    this.rateMap = [
+      [0, 0],
+      [Number.MIN_VALUE, secondsPerReleaseToReleasesPerTick(10)],
+      [1, secondsPerReleaseToReleasesPerTick(7)],
+      [10, secondsPerReleaseToReleasesPerTick(5)],
+      [100, linearRatio * 100],
+      [maxVolume, maxReleasesPerTick]
+    ];
+
+
     this.releasesPerTick = mapVolumesToReleasesPerTick(this.object.volume, this.rateMap);
   }
 
