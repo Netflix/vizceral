@@ -109,21 +109,25 @@ class DnsConnectionView extends ConnectionView {
     // make sure we are tall enough for all the annotations.
     const height = this.object.annotations.length * bump * 4;
 
-    const annotationCanvas = this.createCanvas(width, height);
-    this.annotationTexture = new THREE.Texture(annotationCanvas);
-    this.annotationTexture.minFilter = THREE.LinearFilter;
-    this.annotationMaterial = new THREE.MeshBasicMaterial({ map: this.annotationTexture, side: THREE.DoubleSide, transparent: true });
-    this.annotationGeometry = new THREE.PlaneBufferGeometry(annotationCanvas.width, annotationCanvas.height);
-    this.annotationMesh = new THREE.Mesh(this.annotationGeometry, this.annotationMaterial);
-    this.container.add(this.annotationMesh);
+    if (!this.annotationCanvas) {
+      this.annotationCanvas = this.createCanvas(width, height);
+      this.annotationTexture = new THREE.Texture(this.annotationCanvas);
+      this.annotationTexture.minFilter = THREE.LinearFilter;
+      this.annotationMaterial = new THREE.MeshBasicMaterial({ map: this.annotationTexture, side: THREE.DoubleSide, transparent: true });
+      this.annotationGeometry = new THREE.PlaneBufferGeometry(this.annotationCanvas.width, this.annotationCanvas.height);
+      this.annotationMesh = new THREE.Mesh(this.annotationGeometry, this.annotationMaterial);
+      this.container.add(this.annotationMesh);
 
-    // initially the connection canvas is flat at 0,0 in screen space, so we need to move it and rotate
-    this.annotationMesh.position.set((this.startPosition.x + this.endPosition.x) / 2, (this.startPosition.y + this.endPosition.y) / 2, 0);
-    this.annotationMesh.rotateZ(Math.atan2((this.endPosition.y - this.startPosition.y), (this.endPosition.x - this.startPosition.x)));
+      // TODO: If the connection ever moves, the annotation will have to be moved too.  This had to go here so we wouldn't just rotate it every time.
+      // initially the connection canvas is flat at 0,0 in screen space, so we need to move it and rotate
+      this.annotationMesh.position.set((this.startPosition.x + this.endPosition.x) / 2, (this.startPosition.y + this.endPosition.y) / 2, 0);
+      this.annotationMesh.rotateZ(Math.atan2((this.endPosition.y - this.startPosition.y), (this.endPosition.x - this.startPosition.x)));
+    }
 
 
-    const ctx = annotationCanvas.getContext('2d');
-    ctx.clearRect(0, 0, annotationCanvas.width, annotationCanvas.height);
+
+    const ctx = this.annotationCanvas.getContext('2d');
+    ctx.clearRect(0, 0, this.annotationCanvas.width, this.annotationCanvas.height);
     ctx.fillStyle = 'rgba(255,255,255,0.125)';
 
     function drawText (text, style, i) {
