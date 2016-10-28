@@ -15,7 +15,6 @@
  *     limitations under the License.
  *
  */
-import { knuthShuffle as shuffle } from 'knuth-shuffle';
 import * as THREE from 'three';
 
 import BaseView from './baseView';
@@ -87,9 +86,112 @@ function normalDistribution () {
   return (((Math.random() + Math.random() + Math.random() + Math.random() + Math.random() + Math.random()) - 3) / 3) + 0.5;
 }
 
-function interpolateValue (val, aMin, aMax, bMin, bMax) {
-  const mappedValue = ((val - aMin) / (aMax - aMin)) * (bMax - bMin);
-  return bMin + (mappedValue || 0);
+function generateParticleSystem (size, customWidth, connectionWidth, connectionDepth) {
+  const vertices = new Float32Array(size * 3);
+  const customColors = new Float32Array(size * 3);
+  const customOpacities = new Float32Array(size);
+  const sizes = new Float32Array(size);
+  const velocities = new Float32Array(size * 3); // Don't want to to be doing math in the update loop
+
+  for (let i = 0; i < size; i++) {
+      // Position
+    vertices[i * 3] = 0;
+    vertices[(i * 3) + 1] = customWidth ? connectionWidth - (normalDistribution() * connectionWidth * 2) : 1;
+    vertices[(i * 3) + 2] = customWidth ? connectionDepth - (normalDistribution() * connectionDepth * 2) : -2;
+
+      // Custom colors
+    customColors[i] = GlobalStyles.rgba.colorTraffic.normal.r;
+    customColors[i + 1] = GlobalStyles.rgba.colorTraffic.normal.g;
+    customColors[i + 2] = GlobalStyles.rgba.colorTraffic.normal.b;
+
+    customOpacities[i] = 0;
+    sizes[i] = 6;
+    velocities[i * 3] = 3 + (Math.random() * 2);
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
+  geometry.addAttribute('customColor', new THREE.BufferAttribute(customColors, 3));
+  geometry.addAttribute('customOpacity', new THREE.BufferAttribute(customOpacities, 1));
+  geometry.addAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+  return {
+    geometry: geometry,
+    velocities: velocities
+  };
+}
+
+
+function copyArray (destination, source) {
+  for (let i = 0; i < source.length && i < destination.length; i++) {
+    destination[i] = source[i];
+  }
+}
+
+function copyParticleSystemState (newPs, oldPs) {
+  const positionAttr = newPs.geometry.getAttribute('position');
+  copyArray(positionAttr.array, oldPs.geometry.getAttribute('position').array);
+  positionAttr.needsUpdate = true;
+
+  const opacityAttr = newPs.geometry.getAttribute('customOpacity');
+  copyArray(opacityAttr.array, oldPs.geometry.getAttribute('customOpacity').array);
+  opacityAttr.needsUpdate = true;
+
+
+  const colorAttr = newPs.geometry.getAttribute('customColor');
+  copyArray(colorAttr.array, oldPs.geometry.getAttribute('customColor').array);
+  colorAttr.needsUpdate = true;
+}
+
+
+// given two points on a line and an x coordinate between them, compute the corresponding Y.
+// https://en.wikipedia.org/wiki/Linear_interpolation
+function interpolateY (x, x0, y0, x1, y1) {
+  return (y0 + (((x - x0) * (y1 - y0)) / (x1 - x0))) || 0; // avoid NaN
+}
+
+function mapVolume (volume, rateMap) {
+  let i;
+
+  for (i = 0; i < rateMap.length && rateMap[i + 1] && volume > rateMap[i + 1][0]; i++) { // eslint-disable-line no-empty
+  }
+
+  if (i === rateMap.length - 1) { // if somehow we have run past
+    return (volume * rateMap[i][1]) / rateMap[i][0];
+  }
+
+  return interpolateY(volume, rateMap[i][0], rateMap[i][1], rateMap[i + 1][0], rateMap[i + 1][1]);
+}
+
+function mapVolumesToReleasesPerTick (volumes, rateMap) {
+  const result = [];
+  for (const volumeName in volumes) { // eslint-disable-line no-restricted-syntax
+    if (volumes.hasOwnProperty(volumeName)) { // eslint-disable-line no-prototype-builtins
+      const volume = volumes[volumeName];
+      if (volume <= 0 || !volume) {
+        continue; // eslint-disable-line no-continue
+      }
+
+      const rpt = mapVolume(volume, rateMap);
+      result.push({
+        name: volumeName,
+        volume: volume,
+        releasesPerTick: mapVolume(volumes[volumeName], rateMap),
+        releasesPerSecond: rptToRPS(rpt),
+        secondsPerRelease: rptToSPR(rpt)
+      });
+    }
+  }
+
+  return result;
+}
+
+function rptToRPS (rpt) {
+  return rpt * 60;
+}
+
+function rptToSPR (rpt) {
+  return 1 / rptToRPS(rpt);
 }
 
 
@@ -98,10 +200,13 @@ class ConnectionView extends BaseView {
     super(connection);
     this.setParticleLevels();
     this.maxParticles = maxParticles;
+
     this.dimmedLevel = 0.05;
 
     this.centerVector = new THREE.Vector3(0, 0, 0);
     this.length = 0;
+
+    this.particleSystemSize = this.maxParticleReleasedPerTick;
 
     this.uniforms = {
       amplitude: { type: 'f', value: 1.0 },
@@ -113,47 +218,24 @@ class ConnectionView extends BaseView {
     this.shaderMaterial = baseShaderMaterial.clone();
     this.shaderMaterial.uniforms = this.uniforms;
 
-    const connectionWidth = Math.min(this.object.source.getView().radius, this.object.target.getView().radius) * 0.45;
-    const connectionDepth = Math.min(connection.source.getView().getDepth(), (connection.target.getView().getDepth()) / 2) - 2;
+    this.customWidth = customWidth;
+    this.connectionWidth = Math.min(this.object.source.getView().radius, this.object.target.getView().radius) * 0.45;
+    this.connectionDepth = Math.min(connection.source.getView().getDepth(), (connection.target.getView().getDepth()) / 2) - 2;
 
-    this.geometry = new THREE.BufferGeometry();
+    this.lastParticleIndex = this.particleSystemSize - 1;
+    this.freeIndexes = [];
 
-    this.lastParticleLaunchTime = 0;
-    this.lastParticleIndex = 0;
-    this.particleLaunchDelay = Infinity;
-
-    const vertices = new Float32Array(this.maxParticles * 3);
-    const customColors = new Float32Array(this.maxParticles * 3);
-    const customOpacities = new Float32Array(this.maxParticles);
-    const sizes = new Float32Array(this.maxParticles);
-    this.velocity = new Float32Array(this.maxParticles * 3); // Don't want to to be doing math in the update loop
-
-    for (let i = 0; i < this.maxParticles; i++) {
-      // Position
-      vertices[i * 3] = 0;
-      vertices[(i * 3) + 1] = customWidth ? connectionWidth - (normalDistribution() * connectionWidth * 2) : 1;
-      vertices[(i * 3) + 2] = customWidth ? connectionDepth - (normalDistribution() * connectionDepth * 2) : -2;
-
-      // Custom colors
-      customColors[i] = GlobalStyles.rgba.colorTraffic.normal.r;
-      customColors[i + 1] = GlobalStyles.rgba.colorTraffic.normal.g;
-      customColors[i + 2] = GlobalStyles.rgba.colorTraffic.normal.b;
-
-      customOpacities[i] = 0;
-      sizes[i] = 6;
-      this.velocity[i * 3] = 3 + (Math.random() * 2);
+    const ps = generateParticleSystem(this.particleSystemSize, this.customWidth, this.connectionWidth, this.connectionDepth);
+    for (let i = 0; i < this.particleSystemSize; i++) {
+      this.freeIndexes[i] = i;
     }
 
-    this.geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    this.geometry.addAttribute('customColor', new THREE.BufferAttribute(customColors, 3));
-    this.geometry.addAttribute('customOpacity', new THREE.BufferAttribute(customOpacities, 1));
-    this.geometry.addAttribute('size', new THREE.BufferAttribute(sizes, 1));
-
-    this.particles = new THREE.Points(this.geometry, this.shaderMaterial);
+    this.velocity = ps.velocities;
+    this.particles = new THREE.Points(ps.geometry, this.shaderMaterial);
     this.positionAttr = this.particles.geometry.getAttribute('position');
     this.opacityAttr = this.particles.geometry.getAttribute('customOpacity');
-
     this.container.add(this.particles);
+
 
     // TODO: Use a THREE.Line and THREE.LineBasicMaterial with linewidth for the interactive object...
     // Line used to support interactivity
@@ -171,32 +253,65 @@ class ConnectionView extends BaseView {
     // Add the connection notice
     this.noticeView = new ConnectionNoticeView(this);
     this.validateNotices();
+
+
+    this.updateVolume();
   }
 
   setParticleLevels () {
-    // Since the update function gets called every 16ms (best case), any delay lower
-    // than 16 is effectively the same as setting it to 16.  This is needed for the
-    // inflection point at which to switch to use multipliers per update loop.
-    this.minParticleDelay = 16;
+    this.maxParticleReleasedPerTick = 19;
+  }
 
-    // This is a reasonable value that will show __just__ enough particles that the
-    // connection is not visibly devoid of particles if there is some traffic on the
-    // connection
-    this.maxParticleDelay = 1500;
+  growParticles (bumpSize) {
+    const newSize = bumpSize + this.particleSystemSize;
 
-    // After some testing, anything much higher makes particles not reach their
-    // destination. We could try increasing the max dots too, if we feel this
-    // isn't dense enough
-    this.maxParticleMultiplier = 4;
+    for (let i = this.particleSystemSize; i < newSize; i++) {
+      this.freeParticleIndex(i);
+    }
 
-    // The percent of total traffic at which a multiplier needs to start being used
-    // because just launching one particle every cycle isn't dense enough
-    this.particleInflectionPercent = 0.05;
+    this.particleSystemSize = newSize;
 
+    const ps = generateParticleSystem(this.particleSystemSize, this.customWidth, this.connectionWidth, this.connectionDepth);
+    const newParticles = new THREE.Points(ps.geometry, this.shaderMaterial);
 
-    // A property defining the number of elements for this.particleMultiplierArray array.
-    // Is used for array creation and index calculation
-    this.numParticleMultiplier = 100;
+    copyParticleSystemState(newParticles, this.particles);
+
+    copyArray(ps.velocities, this.velocity);
+    this.velocity = ps.velocities;
+
+    // out with the old...
+    this.container.remove(this.particles);
+    const oldParticles = this.particles;
+    setTimeout(() => {
+      oldParticles.geometry.dispose();
+    }, 1); // do it async to avoid deleting geometry that might have been updated in this tick.
+
+    this.particles = newParticles;
+    this.positionAttr = this.particles.geometry.getAttribute('position');
+    this.opacityAttr = this.particles.geometry.getAttribute('customOpacity');
+    this.container.add(this.particles);
+
+    this.updatePosition();
+
+    return this.nextFreeParticleIndex();
+  }
+
+  freeParticleIndex (i) {
+    this.lastParticleIndex = Math.max(this.lastParticleIndex + 1, 0);
+    this.freeIndexes[this.lastParticleIndex] = i;
+  }
+
+  nextFreeParticleIndex (totalAsk) {
+    if (this.lastParticleIndex < 0) {
+      if (this.particleSystemSize >= this.maxParticles) {
+        return -1;
+      }
+      return this.growParticles(2 * totalAsk);
+    }
+
+    const indx = this.freeIndexes[this.lastParticleIndex];
+    --this.lastParticleIndex;
+    return indx;
   }
 
   setOpacity (opacity) {
@@ -262,106 +377,81 @@ class ConnectionView extends BaseView {
   }
 
   updateVolume () {
-    // We need the highest RPS connection to make this volume relative against
-    if (!this.object.volumeGreatest) { return; }
+    // maps the releationship of metric values to how many dots should be released per tick. use < 1 dots per release for fewer than 60 dots per second.
+    // [[0, 0], [this.object.volumeGreatest, this.maxParticleReleasedPerTick]] is a straight linear releationship. not great for the left side of the normal distribution -- dots will fire too rarely.
+    //  must be in ascending order.
+    //  we dont want to a log because we really just want to boost the low end for our needs.
+    const linearRatio = this.maxParticleReleasedPerTick / this.object.volumeGreatest;
 
-    // Set particle launch delay as an inverse proportion of RPS, with 0.1 being the shortest possible delay
-    const percentageOfParticles = Math.min(this.object.getVolumeTotal() / this.object.volumeGreatest, 1);
+    const maxVolume = this.object.volumeGreatest;
+    const maxReleasesPerTick = this.maxParticleReleasedPerTick;
 
-    this.particleMultiplier = 1;
-    const maxThreshold = 1000 / this.maxParticleDelay;
-    if (!percentageOfParticles) {
-      this.particleLaunchDelay = Infinity;
-    } else if (this.object.getVolumeTotal() < maxThreshold) {
-      this.particleLaunchDelay = interpolateValue(this.object.getVolumeTotal(), 0, maxThreshold, 20000, this.maxParticleDelay);
-    } else if (percentageOfParticles < this.particleInflectionPercent) {
-      this.particleLaunchDelay = interpolateValue(percentageOfParticles, 0, this.particleInflectionPercent, this.maxParticleDelay, 16);
-    } else {
-      this.particleLaunchDelay = this.minParticleDelay;
-      this.particleMultiplier = interpolateValue(percentageOfParticles, this.particleInflectionPercent, 1, 1, this.maxParticleMultiplier);
+    function secondsPerReleaseToReleasesPerTick (seconds) {
+      const releasesPerSecond = 1 / seconds;
+      return releasesPerSecond / 60;
     }
-    // console.log(`${this.object.getName()} - delay: ${this.particleLaunchDelay}, multiplier: ${this.particleMultiplier}`);
 
-    // Set the appropriate multiplier values for the percentage of particles
-    // required.  Fractional multipliers have to use a randomized array of 0/1
-    // that iterates each update loop to launch the particles.
-    this.particleMultiplierArray = Array(this.numParticleMultiplier).fill(0);
-    const particleMultiplierFraction = Math.floor((this.particleMultiplier % 1) * this.numParticleMultiplier);
-    if (particleMultiplierFraction !== 0) {
-      this.particleMultiplierArray = shuffle(this.particleMultiplierArray.fill(1, 0, particleMultiplierFraction));
-      this.particleMultiplier = Math.floor(this.particleMultiplier);
-    }
-    this.particleMultiplierArrayCounter = 0;
+    this.rateMap = [
+      [0, 0],
+      [Number.MIN_VALUE, secondsPerReleaseToReleasesPerTick(10)],
+      [1, secondsPerReleaseToReleasesPerTick(7)],
+      [10, secondsPerReleaseToReleasesPerTick(5)],
+      [100, linearRatio * 100],
+      [maxVolume, maxReleasesPerTick]
+    ];
 
-    // Show an approximation of the data at initial load so it does not look
-    // like the traffic just started flowing when the app is launched
-    if (!this.hasData) {
-      this.hasData = true;
-      // FIXME: Since we update position every 'tick', we have to pretend here.
-      //        Once we switch to an actual velocity based change, we don't need
-      //        to fudge numbers
-      const msFudge = 15; // move it this.velocity every msFudge
-      const delta = Math.max(Math.ceil(this.particleLaunchDelay / msFudge), 1) * this.velocity[0];
-      let numberOfParticleLaunches = (this.maxParticles * percentageOfParticles) / this.particleMultiplier;
-      if (this.length) {
-        numberOfParticleLaunches = Math.min(this.length / delta, numberOfParticleLaunches);
-      }
-      for (let i = 0; i < numberOfParticleLaunches; i++) {
-        this.launchParticles(0, this.particleMultiplier, delta * (i + 1));
-      }
-    }
+
+    this.releasesPerTick = mapVolumesToReleasesPerTick(this.object.volume, this.rateMap);
   }
 
-  launchParticles (currentTime, numberOfParticles, startX) {
+  launchParticles (numberOfParticles, key, startX) {
     let rand; // eslint-disable-line prefer-const
     let i;
     numberOfParticles = numberOfParticles || 1;
     startX = startX || 0;
 
-    if (this.particleMultiplierArray[this.particleMultiplierArrayCounter]) {
-      numberOfParticles++;
-    }
-
     for (i = 0; i < numberOfParticles; i++) {
       rand = Math.random();
+
+      const nextFreeParticleIndex = this.nextFreeParticleIndex(numberOfParticles);
+      if (nextFreeParticleIndex === -1) {
+        return; // gotta wait my turn!
+      }
+
       // Get/set the x position for the last particle index
-      this.positionAttr.setX(this.lastParticleIndex, startX + rand);
+      this.positionAttr.setX(nextFreeParticleIndex, startX + rand);
       this.positionAttr.needsUpdate = true;
 
-      this.opacityAttr.array[this.lastParticleIndex] = 1.0;
+      this.opacityAttr.array[nextFreeParticleIndex] = 1.0;
       this.opacityAttr.needsUpdate = true;
 
-      let color = GlobalStyles.rgba.colorTraffic.normal;
-
-      let accumulator = 0;
-      for (const index in this.object.volumePercentKeysSorted) { // eslint-disable-line no-restricted-syntax, guard-for-in
-        const key = this.object.volumePercentKeysSorted[index];
-        if (this.object.volumePercent[key] + accumulator > rand) {
-          color = GlobalStyles.getColorTrafficRGBA(key);
-          break;
-        }
-
-        accumulator += this.object.volumePercent[key];
-      }
-      this.setParticleColor(this.lastParticleIndex, color);
-
-      this.lastParticleLaunchTime = currentTime;
-      this.lastParticleIndex++;
-      if (this.lastParticleIndex === this.maxParticles) {
-        this.lastParticleIndex = 0;
-      }
+      const color = GlobalStyles.getColorTrafficRGBA(key);
+      this.setParticleColor(nextFreeParticleIndex, color);
     }
-
-    // start at 0 if the max value is reached
-    this.particleMultiplierArrayCounter = (this.particleMultiplierArrayCounter + 1) % this.numParticleMultiplier;
   }
 
-  update (currentTime) {
+  update () {
     let vx;
     let i;
-    if (currentTime - this.lastParticleLaunchTime > this.particleLaunchDelay) {
-      // start a new particle
-      this.launchParticles(currentTime, this.particleMultiplier);
+    let j;
+
+    // We need the highest RPS connection to make this volume relative against
+    if (!this.object.volumeGreatest) { return; }
+
+    // for each volume, calculate the amount of particles to release:
+    for (i = 0; i < this.releasesPerTick.length; i++) {
+      const releaseInfo = this.releasesPerTick[i];
+
+      let wholeParticles = Math.floor(releaseInfo.releasesPerTick);
+      // if we should only release 0.1 particles per release, pick a random number and if it is below that amount, release a particle.
+      //  so, the average particles per release should even out.
+      if (Math.random() < (releaseInfo.releasesPerTick - wholeParticles)) {
+        wholeParticles += 1;
+      }
+
+      if (wholeParticles > 0) {
+        this.launchParticles(wholeParticles, releaseInfo.name);
+      }
     }
 
     // TODO: Support a deltaX based on last time updated.  We tried this, and
@@ -370,12 +460,13 @@ class ConnectionView extends BaseView {
     //       attack the issue with THREE...
 
     // Update the position of all particles in flight
-    for (i = 0; i < this.positionAttr.array.length; i += 3) {
+    for (i = 0, j = 0; i < this.positionAttr.array.length; i += 3, j += 1) {
       vx = this.positionAttr.array[i];
 
       if (vx !== 0) {
         vx += this.velocity[i];
         if (vx >= this.length) {
+          this.freeParticleIndex(j);
           vx = 0;
         }
       }
@@ -406,7 +497,7 @@ class ConnectionView extends BaseView {
   }
 
   cleanup () {
-    this.geometry.dispose();
+    this.particles.geometry.dispose();
     this.shaderMaterial.dispose();
     this.interactiveLineGeometry.dispose();
     this.interactiveLineMaterial.dispose();
