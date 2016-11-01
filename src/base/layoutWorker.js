@@ -19,6 +19,8 @@
 /* eslint no-restricted-syntax: 0 */
 const JRLayouter = require('./jrlayouter/jrlayouter.js');
 
+const Console = console;
+
 self.jrlayouter = new JRLayouter();
 
 self.layoutCache = {};
@@ -27,51 +29,29 @@ self.layoutElements = {
   edges: {}
 };
 
-function hasOwnPropF(o, p) {
-  return Object.prototype.hasOwnProperty.call(o, p);
-}
-self.customLayoutFixed = function(nodes, edges, dimensions) {
-  var right = {};
-  var left = {};
-  var remaining = {};
-  for (var i = 0; i < nodes.length; i++) {
-    var node = nodes[i];
-    var nodeName = node.name;
-    remaining[nodeName] = 1;
-  }
-  var array = [
-    "jms/capAccountInquery",
-    "jms/cimSecurityItems",
-    "jms/cimOll",
-    "jms/cimLoanPaymentInq"
-  ];
-  for (var nodeName in remaining) {
-    if (!hasOwnPropF(remaining, nodeName)) {
-      continue;
+self.customLayoutRings = function (nodes, edges, dimensions) {
+  const baseLayout = self.jrlayouter.layout(nodes, edges, dimensions);
+
+  const angleBetweenNodes = (Math.PI * 2) / nodes.length;
+  const hw = dimensions.width * 0.5;
+  const hh = dimensions.height * 0.5;
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    const metadataLayout = node.metadata && node.metadata.layout;
+    let explicitPos;
+    if (metadataLayout) {
+      const posX = metadataLayout.positionX;
+      const posY = metadataLayout.positionY;
+      if (typeof posX === 'number' && isFinite(posX) && typeof posY === 'number' && isFinite(posY)) {
+        explicitPos = { x: posX, y: posY };
+      }
     }
-    if (0 <= nodeName.lastIndexOf("jdbc/", 0) ||
-        0 <= nodeName.lastIndexOf("jms/", 0)) {
-      right[nodeName] = 1;
-      delete remaining[nodeName];
-    }
-  }
-
-  console.log("RIGHT", right);
-  var baseLayout = self.jrlayouter.layout(nodes, edges, dimensions);
-  baseLayout['UAM']
-  return baseLayout;
-};
-
-self.customLayoutRings = function(nodes, edges, dimensions) {
-  var baseLayout = self.jrlayouter.layout(nodes, edges, dimensions);
-
-  var angleBetweenNodes = (Math.PI * 2) / nodes.length;
-  var hw = dimensions.width * 0.5;
-  var hh = dimensions.height * 0.5;
-  for (var i = 0; i < nodes.length; i++) {
-    var pos = baseLayout[nodes[i].name];
-    if (!pos) console.error("Invalid nodename: " + nodes[i].name);
-    else {
+    const pos = baseLayout[node.name];
+    if (!pos) Console.error('Invalid nodename: ', node.name);
+    else if (explicitPos) {
+      pos.x = explicitPos.x;
+      pos.y = explicitPos.y;
+    } else {
       pos.x = Math.cos(i * angleBetweenNodes) * hw;
       pos.y = Math.sin(i * angleBetweenNodes) * hh;
     }
@@ -91,40 +71,24 @@ self.layout = function (options) {
   if (key === '') {
     key = `nodes: ${graph.nodes.map(node => node.name).sort().toString()}`;
   }
-
   let nodePositions;
   if (self.layoutCache[key]) {
     nodePositions = self.layoutCache[key];
   } else {
-    if (1 === 1) {
-        // run the layout
-        nodePositions = self.customLayoutRings(graph.nodes, graph.edges, dimensions);
-        // adjust the layout since our coordinates are center origin
-        // const halfWidth = dimensions.width / 2;
-        // const halfHeight = dimensions.height / 2;
-        // let nodeName;
-        // for (nodeName in nodePositions) {
-        //   if ({}.hasOwnProperty.call(nodePositions, nodeName)) {
-        //     nodePositions[nodeName].x -= halfWidth;
-        //     nodePositions[nodeName].y -= halfHeight;
-        //   }
-        // }
-        //
-  } else {
-      // run the layout
-      nodePositions = self.jrlayouter.layout(graph.nodes, graph.edges, dimensions);
-      // adjust the layout since our coordinates are center origin
-      const halfWidth = dimensions.width / 2;
-      const halfHeight = dimensions.height / 2;
-      let nodeName;
-      for (nodeName in nodePositions) {
-        if ({}.hasOwnProperty.call(nodePositions, nodeName)) {
-          nodePositions[nodeName].x -= halfWidth;
-          nodePositions[nodeName].y -= halfHeight;
-        }
-      }
+    nodePositions = self.customLayoutRings(graph.nodes, graph.edges, dimensions);
 
-    }
+    // run the layout
+    // nodePositions = self.jrlayouter.layout(graph.nodes, graph.edges, dimensions);
+    // adjust the layout since our coordinates are center origin
+    // const halfWidth = dimensions.width / 2;
+    // const halfHeight = dimensions.height / 2;
+    // let nodeName;
+    // for (nodeName in nodePositions) {
+    //   if ({}.hasOwnProperty.call(nodePositions, nodeName)) {
+    //     nodePositions[nodeName].x -= halfWidth;
+    //     nodePositions[nodeName].y -= halfHeight;
+    //   }
+    // }
     self.layoutCache[key] = nodePositions;
   }
   self.postMessage(nodePositions);

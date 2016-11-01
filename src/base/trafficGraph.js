@@ -19,7 +19,7 @@ import _ from 'lodash';
 import EventEmitter from 'events';
 import TWEEN from 'tween.js';
 import LayoutWorker from 'worker?inline!./layoutWorker'; // eslint-disable-line import/no-extraneous-dependencies
-import Bla from '../physics/bla';
+import ParticleSystem from '../physics/particleSystem';
 import Notices from '../notices';
 import TrafficGraphView from './trafficGraphView';
 
@@ -62,7 +62,7 @@ class TrafficGraph extends EventEmitter {
     this.view = new TrafficGraphView(this);
 
     this._particleSystem_isEnabled = false;
-    this._particleSystem = new Bla(this, graphWidth, graphHeight, this._particleSystem_isEnabled);
+    this._particleSystem = new ParticleSystem(this, graphWidth, graphHeight, this._particleSystem_isEnabled);
 
     this.layoutDimensions = {
       width: graphWidth - 400,

@@ -184,7 +184,7 @@ class RegionTrafficGraph extends TrafficGraph {
       graph.edges.push({ visible: useInLayout(connection), source: connection.source.getName(), target: connection.target.getName() });
     });
     _.each(this.nodes, node => {
-      graph.nodes.push({ name: node.getName(), visible: useInLayout(node), position: node.position, weight: node.depth });
+      graph.nodes.push({ name: node.getName(), visible: useInLayout(node), position: node.position, metadata: node.metadata, weight: node.depth });
       if (node.connected) {
         if (!node.hidden) { totalNodes++; }
         if (node.isVisible()) { visibleNodes++; }

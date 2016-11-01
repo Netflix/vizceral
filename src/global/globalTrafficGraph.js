@@ -75,6 +75,8 @@ class GlobalTrafficGraph extends TrafficGraph {
     this.contextDivs = {};
 
     this.hasPositionData = true;
+
+    this.isInSetState = false;
   }
 
   setState (state) {
@@ -121,7 +123,18 @@ class GlobalTrafficGraph extends TrafficGraph {
     this.state.maxVolume = maxVolume * 1.5;
 
     positionNodes(this.state.nodes, this.orbitSize);
-    super.setState(this.state);
+    try {
+      this.isInSetState = true;
+      super.setState(this.state);
+    } finally {
+      this.isInSetState = false;
+    }
+  }
+
+  _relayout () {
+    if (!this.isInSetState) {
+      positionNodes(this.state.nodes, this.orbitSize);
+    }
   }
 
   handleIntersectedObjectClick () {
