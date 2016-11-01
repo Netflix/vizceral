@@ -78,6 +78,7 @@ class Vizceral extends EventEmitter {
     // Initial three.js setup
     this.scene = new THREE.Scene();
     this.renderer = new THREE.WebGLRenderer(parameters);
+    this.renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
     this.renderer.autoClear = false;
     this.renderer.setClearColor(0x2d2d2d, 1);
     this.renderer.domElement.style.width = '100%';
@@ -667,8 +668,8 @@ class Vizceral extends EventEmitter {
   }
 
   updateMousePosition (x, y) {
-    this.mouse.x = (((x - this.boundingRect.left) / this.renderer.domElement.width) * 2) - 1;
-    this.mouse.y = -(((y - this.boundingRect.top) / this.renderer.domElement.height) * 2) + 1;
+    this.mouse.x = (((x - this.boundingRect.left) / this.renderer.domElement.clientWidth) * 2) - 1;
+    this.mouse.y = -(((y - this.boundingRect.top) / this.renderer.domElement.clientHeight) * 2) + 1;
   }
 
   onDocumentMouseMove (event) {
