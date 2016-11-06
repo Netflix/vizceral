@@ -36,7 +36,7 @@ function Graph (nodes, edges) {
 
   this._outgoingEdges = {};
 
-  _.each(edges, edge => {
+  _.each(edges, (edge) => {
     // Add the connection to the incoming connections object
     this._incomingNodes[edge.target] = this._incomingNodes[edge.target] || {};
     this._incomingNodes[edge.target][edge.source] = true;
@@ -142,7 +142,7 @@ Graph.prototype.reverseEdge = function (edge) {
 
 Graph.prototype.removeSameEdges = function () {
   this.storedSameEdges = this.storedSameEdges || [];
-  _.each(this.edges, edge => {
+  _.each(this.edges, (edge) => {
     if (edge && edge.source === edge.target) {
       this.storedSameEdges.push(edge);
       this.removeEdge(edge);
@@ -151,7 +151,7 @@ Graph.prototype.removeSameEdges = function () {
 };
 
 Graph.prototype.restoreSameEdges = function () {
-  _.each(this.storedSameEdges, edge => {
+  _.each(this.storedSameEdges, (edge) => {
     this.addEdge(edge);
   });
   this.storedSameEdges.length = 0;

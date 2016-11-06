@@ -70,6 +70,7 @@ class Node extends GraphObject {
 
   removeIncomingConnection (connection) {
     _.remove(this.incomingConnections, incomingConnection => incomingConnection.name === connection.name);
+    this.invalidateIncomingVolume();
     if (this.incomingConnections.length === 0 && this.outgoingConnections.length === 0) {
       this.connected = false;
     }
@@ -77,6 +78,7 @@ class Node extends GraphObject {
 
   removeOutgoingConnection (connection) {
     _.remove(this.outgoingConnections, outgoingConnection => outgoingConnection.name === connection.name);
+    this.invalidateOutgoingVolume();
     if (this.incomingConnections.length === 0 && this.outgoingConnections.length === 0) {
       this.connected = false;
     }
@@ -90,7 +92,7 @@ class Node extends GraphObject {
 
   validateIncomingVolume () {
     this.incomingVolumeTotal = _.reduce(this.incomingConnections, (total, connection) => total + connection.getVolumeTotal(), 0);
-    _.each(this.incomingConnections, c => {
+    _.each(this.incomingConnections, (c) => {
       _.each(c.volume, (value, key) => {
         this.incomingVolume[key] = this.incomingVolume[key] || 0;
         this.incomingVolume[key] += value;
@@ -116,7 +118,7 @@ class Node extends GraphObject {
 
   validateOutgoingVolume () {
     this.outgoingVolumeTotal = _.reduce(this.outgoingConnections, (total, connection) => total + connection.getVolumeTotal(), 0);
-    _.each(this.outgoingConnections, c => {
+    _.each(this.outgoingConnections, (c) => {
       _.each(c.volume, (value, key) => {
         this.outgoingVolume[key] = this.outgoingVolume[key] || 0;
         this.outgoingVolume[key] += value;
@@ -182,6 +184,7 @@ class Node extends GraphObject {
 
   setContext (context) {
     super.setContext(context);
+    if (this.view) { this.view.updateText(); }
   }
 
   render () {
@@ -222,6 +225,16 @@ class Node extends GraphObject {
         });
       }
     }
+
+    if (updated) {
+      this.data.globalClassPercents = this.data.globalClassPercents || {};
+      const percentGlobal = this.data.volume / totalVolume;
+      // generate global class percents
+      _.each(this.data.classPercents, (classPercent, key) => {
+        this.data.globalClassPercents[key] = classPercent * percentGlobal;
+      });
+    }
+
     return updated;
   }
 
@@ -258,7 +271,7 @@ class Node extends GraphObject {
   }
 
   isEntryNode () {
-    return this.getName() === 'INTERNET';
+    return this.incomingConnections.length === 0 && this.outgoingConnections.length > 0;
   }
 
   cleanup () {

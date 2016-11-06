@@ -77,23 +77,12 @@ self.layout = function (options) {
   } else {
     nodePositions = self.customLayoutRings(graph.nodes, graph.edges, dimensions);
 
-    // run the layout
-    // nodePositions = self.jrlayouter.layout(graph.nodes, graph.edges, dimensions);
-    // adjust the layout since our coordinates are center origin
-    // const halfWidth = dimensions.width / 2;
-    // const halfHeight = dimensions.height / 2;
-    // let nodeName;
-    // for (nodeName in nodePositions) {
-    //   if ({}.hasOwnProperty.call(nodePositions, nodeName)) {
-    //     nodePositions[nodeName].x -= halfWidth;
-    //     nodePositions[nodeName].y -= halfHeight;
-    //   }
-    // }
     self.layoutCache[key] = nodePositions;
   }
   self.postMessage(nodePositions);
+  self.close();
 };
 
-self.addEventListener('message', event => {
+self.addEventListener('message', (event) => {
   self.layout(event.data);
 });

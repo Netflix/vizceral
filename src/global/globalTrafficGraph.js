@@ -22,9 +22,9 @@ import GlobalNode from './globalNode';
 import RendererUtils from '../rendererUtils';
 import TrafficGraph from '../base/trafficGraph';
 
-function updatePosition (node, nodeCount, nodeIndex, orbitSize) {
+function updatePosition (node, nodeCount, nodeIndex, orbitSize, nodeSize) {
   const rotationAdjustment = nodeCount % 2 === 0 ? Math.PI / 4 : (5 / 6) * Math.PI;
-  node.size = 115;
+  node.size = nodeSize;
   const adjustment = (((2 * Math.PI) * nodeIndex) / nodeCount) + rotationAdjustment;
   node.position = {
     x: ((orbitSize / 2) * Math.cos(adjustment)),
@@ -32,41 +32,57 @@ function updatePosition (node, nodeCount, nodeIndex, orbitSize) {
   };
 }
 
-function positionNodes (nodes, orbitSize) {
+function positionNodes (nodes, orbitSize, nodeSize) {
   let nodeIndex = 0;
-  const nodeCount = nodes.length - 1;
+  const nodeCount = Object.keys(nodes).length - 1;
 
   const sortedNodeNames = _.map(nodes, 'name');
   sortedNodeNames.sort();
 
   // Layout the nodes with the entry node in the middle
   const nodeMap = _.keyBy(nodes, 'name');
-  _.each(sortedNodeNames, nodeName => {
+  _.each(sortedNodeNames, (nodeName) => {
     const node = nodeMap[nodeName];
-    if (nodeName !== 'INTERNET') {
+    if (!node.isEntryNode()) {
       nodeIndex++;
-      updatePosition(node, nodeCount, nodeIndex, orbitSize);
+      updatePosition(node, nodeCount, nodeIndex, orbitSize, nodeSize);
     } else {
-      node.size = 130;
+      node.size = nodeSize * 1.25;
       node.position = {
         x: 0,
         y: 0
       };
     }
   });
+}
 
+function centerNodesVertically (nodes) {
   // Center the nodes vertically on the canvas
   const yPositions = _.map(nodes, n => n.position.y);
   const yOffset = Math.abs(Math.abs(_.max(yPositions)) - Math.abs(_.min(yPositions))) / 2;
-  _.each(nodes, n => {
+  _.each(nodes, (n) => {
     n.position.y += yOffset;
   });
 }
 
+function recalculateOrbitSize (nodes, orbitSize, nodeSize) {
+  const yPositions = _.map(nodes, n => n.position.y);
+  const yDistance = _.max(yPositions) - _.min(yPositions);
+  const totalHeight = (nodeSize * 2.25) + yDistance;
+  const newOrbitSize = orbitSize - Math.max(totalHeight - orbitSize, 0);
+
+  return newOrbitSize;
+}
+
 class GlobalTrafficGraph extends TrafficGraph {
-  constructor (name, mainView, graphWidth, graphHeight) {
-    super(name, mainView, graphWidth, graphHeight, GlobalNode, GlobalConnection);
-    this.orbitSize = Math.min(graphWidth - 240, graphHeight - 240);
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight) {
+    super(name, mainView, parentGraph, graphWidth, graphHeight, GlobalNode, GlobalConnection);
+    this.type = 'global';
+
+    this.nodeSize = 120;
+    this.maxDimension = Math.min(graphWidth, graphHeight);
+    this.orbitSize = this.maxDimension;
+
     this.linePrecision = 50;
     this.state = {
       nodes: [],
@@ -75,16 +91,15 @@ class GlobalTrafficGraph extends TrafficGraph {
     this.contextDivs = {};
 
     this.hasPositionData = true;
-
-    this.isInSetState = false;
   }
 
-  setState (state) {
-    _.each(state.nodes, node => {
+  setState (state, force) {
+    _.each(state.nodes, (node) => {
       const existingNodeIndex = _.findIndex(this.state.nodes, { name: node.name });
       if (existingNodeIndex !== -1) {
         this.state.nodes[existingNodeIndex] = node;
       } else {
+        this.layoutValid = false;
         this.state.nodes.push(node);
         if (!this.contextDivs[node.name]) {
           const parentDiv = RendererUtils.getParent();
@@ -98,7 +113,7 @@ class GlobalTrafficGraph extends TrafficGraph {
       }
     });
 
-    _.each(state.connections, newConnection => {
+    _.each(state.connections, (newConnection) => {
       const existingConnectionIndex = _.findIndex(this.state.connections, { source: newConnection.source, target: newConnection.target });
       if (existingConnectionIndex !== -1) {
         this.state.connections[existingConnectionIndex] = newConnection;
@@ -116,24 +131,30 @@ class GlobalTrafficGraph extends TrafficGraph {
     // more visually dense.
     let maxVolume = state.maxVolume || 0;
     if (!maxVolume) {
-      _.each(this.state.nodes, node => {
+      _.each(this.state.nodes, (node) => {
         maxVolume = Math.max(maxVolume, node.maxVolume || 0);
       });
     }
     this.state.maxVolume = maxVolume * 1.5;
 
-    positionNodes(this.state.nodes, this.orbitSize);
-    try {
-      this.isInSetState = true;
-      super.setState(this.state);
-    } finally {
-      this.isInSetState = false;
-    }
+    super.setState(this.state, force);
+    this.validateLayout();
+  }
+
+  setFilters () {
+    // no-op
   }
 
   _relayout () {
-    if (!this.isInSetState) {
-      positionNodes(this.state.nodes, this.orbitSize);
+    if (Object.keys(this.nodes).length > 0) {
+      // Position the nodes based on the current orbitSize
+      positionNodes(this.nodes, this.orbitSize, this.nodeSize);
+      // Now that the nodes are positioned, adjust orbit size accordingly so the nodes all fit
+      this.orbitSize = recalculateOrbitSize(this.nodes, this.maxDimension, this.nodeSize);
+      // Position again with the proper orbitSize
+      positionNodes(this.nodes, this.orbitSize, this.nodeSize);
+      centerNodesVertically(this.nodes);
+      this.updateView();
     }
   }
 
@@ -178,10 +199,14 @@ class GlobalTrafficGraph extends TrafficGraph {
 
   setCurrent (current) {
     super.setCurrent(current);
-    _.each(this.contextDivs, div => {
+    _.each(this.contextDivs, (div) => {
       div.style.display = current ? 'block' : 'none';
     });
     this.updateLabelScreenDimensions(true);
+  }
+
+  highlightObject () {
+    // no-op
   }
 
   update (time) {
