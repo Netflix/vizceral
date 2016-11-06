@@ -19,14 +19,53 @@ import RegionConnection from './regionConnection';
 import RegionNode from './regionNode';
 import TrafficGraph from '../base/trafficGraph';
 
+const Console = console;
+
 class RegionTrafficGraph extends TrafficGraph {
   constructor (name, mainView, parentGraph, graphWidth, graphHeight) {
     super(name, mainView, parentGraph, graphWidth, graphHeight, RegionNode, RegionConnection, false);
     this.type = 'region';
     this.linePrecision = 4;
+    this.data = {};
     this._layoutTimeoutId = null;
     this._numberOfRunningAsyncLayoutTasks = 0;
     this._onAsyncLayoutTimeout_func = this._onAsyncLayoutTimeout.bind(this);
+  }
+
+  setFocusedNode (nodeName) {
+    const changed = (this.nodes[nodeName] || nodeName === undefined) && this.nodeName !== nodeName;
+    if (changed) {
+      // Remove the mouseover effect
+      this.setIntersectedObject(undefined);
+      this.highlightObject(undefined);
+
+      // If there was a node selected...
+      if (this.nodeName) {
+        // make sure to reset the node view
+        this.view.removeObject(this.nodes[this.nodeName]);
+        this.nodes[this.nodeName].showDetailedView(false);
+      }
+
+      this.nodeName = nodeName;
+
+      // If a new node was passed in...
+      if (this.nodeName) {
+        // switch to the detailed node view
+        this.view.removeObject(this.nodes[this.nodeName]);
+        this.nodes[this.nodeName].showDetailedView(true);
+        this.emit('nodeFocused', this.nodes[this.nodeName]);
+      } else {
+        this.emit('nodeFocused', undefined);
+      }
+
+      this.updateVisibleInfo();
+      this._relayout();
+    }
+  }
+
+  updateVisibleInfo () {
+    const minimumNoticeLevel = this.nodeName ? 0 : 1;
+    _.each(this.connections, connection => { connection.setMinimumNoticeLevel(minimumNoticeLevel); });
   }
 
   setIntersectedObject (object) {
@@ -62,8 +101,30 @@ class RegionTrafficGraph extends TrafficGraph {
       this.emit('setView', [this.name, this.intersectedObject.getName()]);
     }
   }
-      graph.nodes.push({ name: node.getName(), visible: useInLayout(node), position: node.position, metadata: node.metadata, weight: node.depth });
-      this._onAsyncLayoutBegin();
+
+  getSelectedNode () {
+    return this.nodes[this.nodeName];
+  }
+
+  setFilters (filters) {
+    let filtersChanged = false;
+    _.each(filters, filter => {
+      if (!this.filters[filter.name]) {
+        this.filters[filter.name] = filter;
+        filtersChanged = true;
+      }
+      if (filter.value !== this.filters[filter.name].value) {
+        this.filters[filter.name].value = filter.value;
+        filtersChanged = true;
+      }
+      if (this.filters[filter.name].defaultValue === undefined) {
+        this.filters[filter.name].defaultValue = this.filters[filter.name].value;
+        filtersChanged = true;
+      }
+    });
+
+    if (this.isPopulated() && filtersChanged) {
+      this._relayout();
     }
   }
 
@@ -83,7 +144,7 @@ class RegionTrafficGraph extends TrafficGraph {
 
   _onAsyncLayoutTimeout () {
     this._numberOfRunningAsyncLayoutTasks = 0;
-    Console.debug('AsyncLayout timed out:', 0);
+    Console.warn('AsyncLayout timed out:', 0);
     this._clearLayoutTimeoutId();
     this.updateIsParticleSystemEnabled();
   }
@@ -100,6 +161,8 @@ class RegionTrafficGraph extends TrafficGraph {
         this._clearLayoutTimeoutId();
       }
       this.updateIsParticleSystemEnabled();
+    }
+  }
 }
 
 export default RegionTrafficGraph;

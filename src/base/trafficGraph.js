@@ -82,11 +82,13 @@ class TrafficGraph extends EventEmitter {
       showLabels: true
     };
 
-      this.onAsyncLayoutCompleted();
     this.nodeCounts = { total: 0, visible: 0 };
 
     this.hasPositionData = false;
     this.loadedOnce = false;
+  }
+
+  onAsyncLayoutBegin () {
   }
 
   onAsyncLayoutCompleted () {
@@ -732,8 +734,8 @@ class TrafficGraph extends EventEmitter {
     if (flag) {
       this.updateIsParticleSystemEnabled();
     }
- 
-  
+  }
+
   _relayout () {
     // Update filters
     const graph = { nodes: [], edges: [] };
@@ -785,12 +787,12 @@ class TrafficGraph extends EventEmitter {
         this._updateNodePositions(event.data);
         this.updateView();
         layoutWorker.removeEventListener('message', layoutWorkerComplete);
+        this.onAsyncLayoutCompleted();
       };
       Console.info(`Layout: Updating the layout for ${this.name} with the worker...`);
       layoutWorker.addEventListener('message', layoutWorkerComplete);
-
-
       layoutWorker.postMessage({ graph: graph, dimensions: this.layoutDimensions, entryNode: 'INTERNET' });
+      this.onAsyncLayoutBegin();
     } else {
       Console.warn(`Layout: Attempted to update the layout for ${this.name} but there are zero nodes and/or zero connections.`);
     }
