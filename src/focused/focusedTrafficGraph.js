@@ -18,11 +18,12 @@
 import _ from 'lodash';
 import RegionConnection from '../region/regionConnection';
 import FocusedNode from './focusedNode';
+import LTRTreeLayout from '../layouts/ltrTreeLayout';
 import TrafficGraph from '../base/trafficGraph';
 
 class FocusedTrafficGraph extends TrafficGraph {
-  constructor (name, mainView, parentGraph, graphWidth, graphHeight) {
-    super(name, mainView, parentGraph, graphWidth, graphHeight, FocusedNode, RegionConnection, false);
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight, Layout = LTRTreeLayout) {
+    super(name, mainView, parentGraph, graphWidth, graphHeight, FocusedNode, RegionConnection, Layout);
     this.type = 'focused';
     this.linePrecision = 4;
   }

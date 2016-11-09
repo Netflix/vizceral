@@ -17,23 +17,15 @@
  */
 /* eslint-env worker */
 /* eslint no-restricted-syntax: 0 */
-const JRLayouter = require('./jrlayouter/jrlayouter.js');
+const LTRTreeLayouter = require('./ltrTreeLayouter.js');
 
-self.jrlayouter = new JRLayouter();
+self.ltrTreeLayouter = new LTRTreeLayouter();
 
 self.layoutCache = {};
-self.layoutElements = {
-  nodes: {},
-  edges: {}
-};
 
 self.layout = function (options) {
   const graph = options.graph;
   const dimensions = options.dimensions;
-
-  graph.nodes = graph.nodes.filter(node => node.visible);
-
-  graph.edges = graph.edges.filter(edge => edge.visible);
 
   let key = graph.edges.map(edge => edge.source + edge.target).sort().toString();
   if (key === '') {
@@ -45,7 +37,7 @@ self.layout = function (options) {
     nodePositions = self.layoutCache[key];
   } else {
     // run the layout
-    nodePositions = self.jrlayouter.layout(graph.nodes, graph.edges, dimensions, options.entryNode);
+    nodePositions = self.ltrTreeLayouter.layout(graph.nodes, graph.edges, dimensions, options.entryNode);
 
     // adjust the layout since our coordinates are center origin
     const halfWidth = dimensions.width / 2;

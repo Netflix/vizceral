@@ -21,6 +21,7 @@ import NodeViewDetailed from '../base/nodeViewDetailed';
 class GlobalNode extends Node {
   constructor (node) {
     super(node, 'global');
+    this.size = 120;
     this.refreshLoaded();
   }
 
