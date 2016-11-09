@@ -21,12 +21,15 @@ import * as THREE from 'three';
 import TWEEN from 'tween.js';
 import Hammer from 'hammerjs';
 
+import DNSLayout from './layouts/dnsLayout';
 import DnsTrafficGraph from './dns/dnsTrafficGraph';
 import FocusedTrafficGraph from './focused/focusedTrafficGraph';
 import GlobalDefinitions from './globalDefinitions';
 import GlobalStyles from './globalStyles';
 import GlobalTrafficGraph from './global/globalTrafficGraph';
+import LTRTreeLayout from './layouts/ltrTreeLayout';
 import RegionTrafficGraph from './region/regionTrafficGraph';
+import RingCenterLayout from './layouts/ringCenterLayout';
 
 import RendererUtils from './rendererUtils';
 
@@ -125,6 +128,12 @@ class Vizceral extends EventEmitter {
       focused: FocusedTrafficGraph,
       dns: DnsTrafficGraph
     };
+
+    this.layouts = {
+      ltrTree: LTRTreeLayout,
+      dns: DNSLayout,
+      ringCenter: RingCenterLayout
+    };
   }
 
 
@@ -173,7 +182,10 @@ class Vizceral extends EventEmitter {
         const parent = parentGraph || this;
         graph = parent.graphs[graphData.name];
         if (!graph) {
-          graph = new (this.renderers[graphData.renderer])(graphData.name, mainView, parentGraph, width, height);
+          if (graphData.layout && !this.layouts[graphData.layout]) {
+            Console.log(`Attempted to create a graph with a layout type that does not exist: ${graphData.layout}. Using default layout for graph type.`);
+          }
+          graph = new (this.renderers[graphData.renderer])(graphData.name, mainView, parentGraph, width, height, this.layouts[graphData.layout]);
           this._attachGraphHandlers(graph);
           graph.setFilters(this.filters);
           graph.showLabels(this.options.showLabels);
@@ -197,9 +209,7 @@ class Vizceral extends EventEmitter {
       if (currentGraphData) {
         graph.manipulateState(currentGraphData, parentGraphData);
         graph.setState(currentGraphData);
-        if (graph.current) {
-          graph.validateLayout();
-        }
+        graph.validateLayout();
       }
     }
   }

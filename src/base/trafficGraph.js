@@ -439,11 +439,13 @@ class TrafficGraph extends EventEmitter {
   }
 
   validateLayout () {
-    if (!this.layoutValid) {
-      this._relayout();
-      this.layoutValid = true;
-    } else {
-      this.updateView();
+    if (this.current) {
+      if (!this.layoutValid) {
+        this._relayout();
+        this.layoutValid = true;
+      } else {
+        this.updateView();
+      }
     }
   }
 
