@@ -20,68 +20,15 @@ import _ from 'lodash';
 import GlobalConnection from './globalConnection';
 import GlobalNode from './globalNode';
 import RendererUtils from '../rendererUtils';
+import RingCenterLayout from '../layouts/ringCenterLayout';
 import TrafficGraph from '../base/trafficGraph';
 
-function updatePosition (node, nodeCount, nodeIndex, orbitSize, nodeSize) {
-  const rotationAdjustment = nodeCount % 2 === 0 ? Math.PI / 4 : (5 / 6) * Math.PI;
-  node.size = nodeSize;
-  const adjustment = (((2 * Math.PI) * nodeIndex) / nodeCount) + rotationAdjustment;
-  node.position = {
-    x: ((orbitSize / 2) * Math.cos(adjustment)),
-    y: ((orbitSize / 2) * Math.sin(adjustment))
-  };
-}
-
-function positionNodes (nodes, orbitSize, nodeSize) {
-  let nodeIndex = 0;
-  const nodeCount = Object.keys(nodes).length - 1;
-
-  const sortedNodeNames = _.map(nodes, 'name');
-  sortedNodeNames.sort();
-
-  // Layout the nodes with the entry node in the middle
-  const nodeMap = _.keyBy(nodes, 'name');
-  _.each(sortedNodeNames, (nodeName) => {
-    const node = nodeMap[nodeName];
-    if (!node.isEntryNode()) {
-      nodeIndex++;
-      updatePosition(node, nodeCount, nodeIndex, orbitSize, nodeSize);
-    } else {
-      node.size = nodeSize * 1.25;
-      node.position = {
-        x: 0,
-        y: 0
-      };
-    }
-  });
-}
-
-function centerNodesVertically (nodes) {
-  // Center the nodes vertically on the canvas
-  const yPositions = _.map(nodes, n => n.position.y);
-  const yOffset = Math.abs(Math.abs(_.max(yPositions)) - Math.abs(_.min(yPositions))) / 2;
-  _.each(nodes, (n) => {
-    n.position.y += yOffset;
-  });
-}
-
-function recalculateOrbitSize (nodes, orbitSize, nodeSize) {
-  const yPositions = _.map(nodes, n => n.position.y);
-  const yDistance = _.max(yPositions) - _.min(yPositions);
-  const totalHeight = (nodeSize * 2.25) + yDistance;
-  const newOrbitSize = orbitSize - Math.max(totalHeight - orbitSize, 0);
-
-  return newOrbitSize;
-}
-
 class GlobalTrafficGraph extends TrafficGraph {
-  constructor (name, mainView, parentGraph, graphWidth, graphHeight) {
-    super(name, mainView, parentGraph, graphWidth, graphHeight, GlobalNode, GlobalConnection);
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight, Layout = RingCenterLayout) {
+    super(name, mainView, parentGraph, graphWidth, graphHeight, GlobalNode, GlobalConnection, Layout);
     this.type = 'global';
 
-    this.nodeSize = 120;
     this.maxDimension = Math.min(graphWidth, graphHeight);
-    this.orbitSize = this.maxDimension;
 
     this.linePrecision = 50;
     this.state = {
@@ -143,19 +90,6 @@ class GlobalTrafficGraph extends TrafficGraph {
 
   setFilters () {
     // no-op
-  }
-
-  _relayout () {
-    if (Object.keys(this.nodes).length > 0) {
-      // Position the nodes based on the current orbitSize
-      positionNodes(this.nodes, this.orbitSize, this.nodeSize);
-      // Now that the nodes are positioned, adjust orbit size accordingly so the nodes all fit
-      this.orbitSize = recalculateOrbitSize(this.nodes, this.maxDimension, this.nodeSize);
-      // Position again with the proper orbitSize
-      positionNodes(this.nodes, this.orbitSize, this.nodeSize);
-      centerNodesVertically(this.nodes);
-      this.updateView();
-    }
   }
 
   handleIntersectedObjectClick () {

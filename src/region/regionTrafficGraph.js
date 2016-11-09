@@ -15,13 +15,14 @@
  *     limitations under the License.
  *
  */
+import LTRTreeLayout from '../layouts/ltrTreeLayout';
 import RegionConnection from './regionConnection';
 import RegionNode from './regionNode';
 import TrafficGraph from '../base/trafficGraph';
 
 class RegionTrafficGraph extends TrafficGraph {
-  constructor (name, mainView, parentGraph, graphWidth, graphHeight) {
-    super(name, mainView, parentGraph, graphWidth, graphHeight, RegionNode, RegionConnection, false);
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight, Layout = LTRTreeLayout) {
+    super(name, mainView, parentGraph, graphWidth, graphHeight, RegionNode, RegionConnection, Layout);
     this.type = 'region';
     this.linePrecision = 4;
   }

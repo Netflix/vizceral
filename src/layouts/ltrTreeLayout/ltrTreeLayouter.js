@@ -16,7 +16,7 @@
  *
  */
 /* eslint no-restricted-syntax: 0 */
-import Graph from './jrgraph';
+import Graph from './ltrTreeGraph';
 import AcyclicFAS from './acyclicFAS';
 import Ranker from './ranker';
 
