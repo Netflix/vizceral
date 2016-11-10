@@ -16,6 +16,7 @@
  *
  */
 import _ from 'lodash';
+import { BufferAttribute, BufferGeometry, MeshBasicMaterial, Mesh } from 'three';
 
 import BaseView from './baseView';
 
@@ -30,6 +31,14 @@ class TrafficGraphView extends BaseView {
   constructor (trafficGraph) {
     super();
     this.trafficGraph = trafficGraph;
+
+    // Add invisible element to make sure the container gets rendered even if all nodes/connections are removed.
+    // Required to cleanup the scene if all nodes/connections are filtered out
+    const geometry = new BufferGeometry();
+    geometry.addAttribute('position', new BufferAttribute(new Float32Array([0, 0, 0]), 3));
+    const material = new MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 });
+    const mesh = new Mesh(geometry, material);
+    this.container.add(mesh);
 
     if (!this.trafficGraph.isEmpty()) {
       this.updateState();

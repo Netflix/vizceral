@@ -705,16 +705,12 @@ class TrafficGraph extends EventEmitter {
     this.nodeCounts.total = totalNodes;
     this.nodeCounts.visible = visibleNodes;
 
-    if (Object.keys(graph.nodes).length > 0 && Object.keys(graph.connections).length > 0) {
-      const layout = new this.Layout();
-      layout.run(graph, this.layoutDimensions, (() => {
-        Console.info(`Layout: Received updated layout for ${this.name} from the worker.`);
-        this.hasPositionData = true;
-        this.updateView();
-      }));
-    } else {
-      Console.warn(`Layout: Attempted to update the layout for ${this.name} but there are zero nodes and/or zero connections.`);
-    }
+    const layout = new this.Layout();
+    layout.run(graph, this.layoutDimensions, (() => {
+      Console.info(`Layout: Received updated layout for ${this.name} from the worker.`);
+      this.hasPositionData = true;
+      this.updateView();
+    }));
   }
 }
 
