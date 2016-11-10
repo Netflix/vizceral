@@ -27,8 +27,8 @@ const weightSort = function (a, b) {
 };
 
 (function () {
-  const JRLayouter = (function () {
-    const jrlayouter = function () {};
+  const LTRTreeLayouter = (function () {
+    const ltrTreeLayouter = function () {};
     // TODO: Make layout deterministic
 
     function sortNodesByDepth (graph) {
@@ -110,7 +110,7 @@ const weightSort = function (a, b) {
       return nodePositions;
     }
 
-    jrlayouter.prototype.layout = function (nodes, edges, dimensions, entryNode) {
+    ltrTreeLayouter.prototype.layout = function (nodes, edges, dimensions, entryNode) {
       const graph = new Graph(nodes, edges); // Build a simple graph object
       graph.removeSameEdges(); // Remove edges that have same source and target
       AcyclicFAS.remove(graph); // Remove acyclic links
@@ -130,15 +130,15 @@ const weightSort = function (a, b) {
       return nodePositions;
     };
 
-    return jrlayouter;
+    return ltrTreeLayouter;
   }());
 
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-    module.exports = JRLayouter;
+    module.exports = LTRTreeLayouter;
   } else if (self !== undefined) {
-    self.JRLayouter = JRLayouter;
+    self.LTRTreeLayouter = LTRTreeLayouter;
   } else {
-    window.JRLayouter = JRLayouter;
+    window.LTRTreeLayouter = LTRTreeLayouter;
   }
 }());
 
