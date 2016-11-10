@@ -78,6 +78,8 @@ class TrafficGraph extends EventEmitter {
       // Re-apply highlighting to the graph in case there are new nodes or connections
       if (this.searchString) { this.highlightMatchedNodes(this.searchString); }
       if (this.highlightedObject) { this.highlightObject(this.highlightedObject, true); }
+      // Emit a viewUpdated event so any coordinating UI can update accordingly
+      this.emit('viewUpdated');
     }
   }
 

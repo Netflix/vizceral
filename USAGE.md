@@ -38,6 +38,10 @@ The `matchesFound` event is fired whenever nodes are found via findNodes().
 
 -   `matches` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The matches object { total, visible }
 
+# viewUpdated
+
+The `viewUpdated` event is fired whenever the current displayed graph's view updates.
+
 # objectHighlighted
 
 The `objectHighlighted` event is fired whenever an object is highlighted.

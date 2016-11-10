@@ -59,6 +59,11 @@ import RendererUtils from './rendererUtils';
 * @event matchesFound
 * @property {object} matches The matches object { total, visible }
 */
+/**
+* The `viewUpdated` event is fired whenever the current displayed graph's view updates.
+*
+* @event viewUpdated
+*/
 
 
 // These are a static size and ratio for graph placement.  The element itself can resize.
@@ -169,6 +174,7 @@ class Vizceral extends EventEmitter {
     graph.on('nodeContextSizeChanged', dimensions => this.emit('nodeContextSizeChanged', dimensions));
     graph.on('objectHighlighted', highlightedObject => this.emit('objectHighlighted', highlightedObject));
     graph.on('setView', view => this.setView(view));
+    graph.on('viewUpdated', () => this.emit('viewUpdated'));
   }
 
   createGraph (graphData, mainView, parentGraph, width, height) {
