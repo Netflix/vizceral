@@ -18,7 +18,6 @@
 import _ from 'lodash';
 import EventEmitter from 'events';
 import TWEEN from 'tween.js';
-import LayoutWorker from 'worker?inline!./layoutWorker'; // eslint-disable-line import/no-extraneous-dependencies, import/extensions
 import ParticleSystem from '../physics/particleSystem';
 import Notices from '../notices';
 import TrafficGraphView from './trafficGraphView';
@@ -46,7 +45,7 @@ function getPerformanceNow () {
 }
 
 class TrafficGraph extends EventEmitter {
-  constructor (name, mainView, parentGraph, graphWidth, graphHeight, NodeClass, ConnectionClass) {
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight, NodeClass, ConnectionClass, Layout) {
     super();
     this.type = 'default';
     this.name = name;
@@ -58,6 +57,8 @@ class TrafficGraph extends EventEmitter {
     this.NodeClass = NodeClass;
     this.ConnectionClass = ConnectionClass;
     this.volume = { max: 0, current: 0 };
+
+    this.Layout = Layout;
 
     if (parentGraph) {
       this.graphIndex = parentGraph.graphIndex.slice();
@@ -106,6 +107,8 @@ class TrafficGraph extends EventEmitter {
       // Re-apply highlighting to the graph in case there are new nodes or connections
       if (this.searchString) { this.highlightMatchedNodes(this.searchString); }
       if (this.highlightedObject) { this.highlightObject(this.highlightedObject, true); }
+      // Emit a viewUpdated event so any coordinating UI can update accordingly
+      this.emit('viewUpdated');
     }
   }
 
@@ -483,11 +486,13 @@ class TrafficGraph extends EventEmitter {
   }
 
   validateLayout () {
-    if (!this.layoutValid) {
-      this._relayout();
-      this.layoutValid = true;
-    } else {
-      this.updateView();
+    if (this.current) {
+      if (!this.layoutValid) {
+        this._relayout();
+        this.layoutValid = true;
+      } else {
+        this.updateView();
+      }
     }
   }
 
@@ -502,19 +507,6 @@ class TrafficGraph extends EventEmitter {
   }
 
   /* ***** LOCAL FUNCTIONS *****/
-
-  _updateNodePositions (nodePositions) {
-    // loop through all the position maps to set position on the nodes
-    _.each(nodePositions, (nodePosition, nodeName) => {
-      if (this.nodes[nodeName]) {
-        this.nodes[nodeName].updatePosition(nodePosition);
-      } else {
-        Console.warn(`Got a position for a node that does not exist: ${nodeName}`);
-      }
-    });
-
-    this.hasPositionData = true;
-  }
 
   _buildConnection (connectionData) {
     let source;
@@ -738,7 +730,7 @@ class TrafficGraph extends EventEmitter {
 
   _relayout () {
     // Update filters
-    const graph = { nodes: [], edges: [] };
+    const graph = { nodes: [], connections: [] };
     let totalNodes = 0;
     let visibleNodes = 0;
 
@@ -767,10 +759,14 @@ class TrafficGraph extends EventEmitter {
 
     // build the layout graph
     _.each(this.connections, (connection) => {
-      graph.edges.push({ visible: useInLayout(connection), source: connection.source.getName(), target: connection.target.getName() });
+      if (useInLayout(connection)) {
+        graph.connections.push(connection);
+      }
     });
     _.each(this.nodes, (node) => {
-      graph.nodes.push({ name: node.getName(), visible: useInLayout(node), position: node.position, weight: node.depth });
+      if (useInLayout(node)) {
+        graph.nodes.push(node);
+      }
       if (node.connected) {
         totalNodes++;
         if (node.isVisible()) { visibleNodes++; }
@@ -780,22 +776,14 @@ class TrafficGraph extends EventEmitter {
     this.nodeCounts.total = totalNodes;
     this.nodeCounts.visible = visibleNodes;
 
-    if (Object.keys(graph.nodes).length > 0 && Object.keys(graph.edges).length > 0) {
-      const layoutWorker = LayoutWorker();
-      const layoutWorkerComplete = (event) => {
-        Console.info(`Layout: Received updated layout for ${this.name} from the worker.`);
-        this._updateNodePositions(event.data);
-        this.updateView();
-        layoutWorker.removeEventListener('message', layoutWorkerComplete);
+    const layout = new this.Layout();
+    layout.run(graph, this.layoutDimensions, (() => {
+      Console.info(`Layout: Received updated layout for ${this.name} from the worker.`);
+      this.hasPositionData = true;
+      this.updateView();
+    }));
         this.onAsyncLayoutCompleted();
-      };
-      Console.info(`Layout: Updating the layout for ${this.name} with the worker...`);
-      layoutWorker.addEventListener('message', layoutWorkerComplete);
-      layoutWorker.postMessage({ graph: graph, dimensions: this.layoutDimensions, entryNode: 'INTERNET' });
       this.onAsyncLayoutBegin();
-    } else {
-      Console.warn(`Layout: Attempted to update the layout for ${this.name} but there are zero nodes and/or zero connections.`);
-    }
   }
 }
 

@@ -18,64 +18,15 @@
 import _ from 'lodash';
 
 import DnsConnection from './dnsConnection';
+import DnsLayout from '../layouts/dnsLayout';
 import DnsNode from './dnsNode';
 import TrafficGraph from '../base/trafficGraph';
 
 const Console = console;
 
-function positionNodes (nodes, dimensions) {
-  const nodesByIndex = _.groupBy(nodes, (n) => {
-    try {
-      return n.metadata.layout.rank;
-    } catch (e) {
-      return Math.Infinity;
-    }
-  });
-
-  const ranks = _.map(Object.keys(nodesByIndex).sort(),
-    idx => _.sortBy(nodesByIndex[idx], (node) => {
-      try {
-        return node.metadata.layout.rank;
-      } catch (e) {
-        return Math.Infinity;
-      }
-    })
-  );
-
-  const nodeSize = 100;
-  const availableWidth = dimensions.width;
-  const availableHeight = dimensions.height;
-
-  const rankHeight = availableHeight / ranks.length;
-
-  let rankIndex = 1;
-  const yCenter = (ranks.length + 1) / 2.0;
-
-  _.each(ranks, (rank) => {
-    const y = -1 * rankHeight * (rankIndex - yCenter);
-
-    const fileWidth = availableWidth / rank.length;
-    let fileIndex = 1;
-
-    const xCenter = (rank.length + 1) / 2.0;
-
-    _.each(rank, (node) => {
-      node.size = nodeSize;
-      node.loaded = true;
-      node.position = {
-        x: fileWidth * (fileIndex - xCenter),
-        y: y
-      };
-
-      fileIndex++;
-    });
-    rankIndex++;
-  });
-}
-
 class DNSTrafficGraph extends TrafficGraph {
-  constructor (name, mainView, parentGraph, graphWidth, graphHeight) {
-    super(name, mainView, parentGraph, graphWidth, graphHeight, DnsNode, DnsConnection);
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight, Layout = DnsLayout) {
+    super(name, mainView, parentGraph, graphWidth, graphHeight, DnsNode, DnsConnection, Layout);
     this.type = 'dns';
     this.linePrecision = 50;
     this.state = {
@@ -129,15 +80,10 @@ class DNSTrafficGraph extends TrafficGraph {
       Console.log(e);
     }
 
-    positionNodes(this.state.nodes, this.dimensions);
     super.setState(this.state, force);
   }
 
   setFilters () {
-    // no-op
-  }
-
-  _relayout () {
     // no-op
   }
 }

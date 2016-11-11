@@ -53,6 +53,7 @@ class Node extends GraphObject {
       classPercents: {}
     };
 
+    this.metadata = node.metadata;
     this.detailedMode = 'volume'; // 'volume' is default, can be a string that matches a data set in metadata: { details: {} }
   }
 
