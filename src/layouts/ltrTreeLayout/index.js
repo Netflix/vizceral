@@ -23,7 +23,7 @@ class LTRTreeLayout {
   run (graph, dimensions, layoutComplete) {
     const layoutWorker = LayoutWorker();
     const layoutWorkerComplete = (event) => {
-      graph.nodes.forEach(node => {
+      graph.nodes.forEach((node) => {
         if (event.data[node.name]) {
           node.updatePosition(event.data[node.name]);
         }
