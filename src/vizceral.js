@@ -696,7 +696,10 @@ class Vizceral extends EventEmitter {
   }
 
   animate (time) {
-    requestAnimationFrame(this.animate.bind(this));
+    var that = this;
+    setTimeout(function() {
+      requestAnimationFrame(that.animate.bind(that));
+    }, 1000 / 30);
     this.render(time);
   }
 
