@@ -519,7 +519,6 @@ class ParticleSystem {
   onTrafficGraphChanged () {
     try {
       this.synchronizeStructure();
-      Console.info('ParticleSystem synchronized structure with graph: ', this._id);
     } catch (e) {
       Console.error('ParticleSystem synchronizeStructure, got error:', e);
     }
