@@ -380,10 +380,9 @@ class ConnectionView extends BaseView {
     // [[0, 0], [this.object.volumeGreatest, this.maxParticleReleasedPerTick]] is a straight linear releationship. not great for the left side of the normal distribution -- dots will fire too rarely.
     //  must be in ascending order.
     //  we dont want to a log because we really just want to boost the low end for our needs.
-    const linearRatio = this.maxParticleReleasedPerTick / this.object.volumeGreatest;
-
     const maxVolume = this.object.volumeGreatest;
     const maxReleasesPerTick = this.maxParticleReleasedPerTick;
+    const linearRatio = maxReleasesPerTick / maxVolume;
 
     function secondsPerReleaseToReleasesPerTick (seconds) {
       const releasesPerSecond = 1 / seconds;
@@ -396,10 +395,13 @@ class ConnectionView extends BaseView {
       [1, secondsPerReleaseToReleasesPerTick(7)],
       [10, secondsPerReleaseToReleasesPerTick(5)],
       [100, linearRatio * 100],
-      [maxVolume, maxReleasesPerTick]
     ];
-
-
+    if (0 < maxVolume) {
+      this.rateMap.push([100, 100 * linearRatio]);
+    }
+    if (100 < maxVolume) {
+      this.rateMap.push([maxVolume, maxReleasesPerTick]);
+    }
     this.releasesPerTick = mapVolumesToReleasesPerTick(this.object.volume, this.rateMap);
   }
 
@@ -435,7 +437,7 @@ class ConnectionView extends BaseView {
     let j;
 
     // We need the highest RPS connection to make this volume relative against
-    if (!this.object.volumeGreatest) { return; }
+    if (!this.object.volumeGreatest && this.object.volumeGreatest !== 0) { return; }
 
     // for each volume, calculate the amount of particles to release:
     for (i = 0; i < this.releasesPerTick.length; i++) {
