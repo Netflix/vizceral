@@ -30,6 +30,7 @@ import GlobalTrafficGraph from './global/globalTrafficGraph';
 import LTRTreeLayout from './layouts/ltrTreeLayout';
 import RegionTrafficGraph from './region/regionTrafficGraph';
 import RingCenterLayout from './layouts/ringCenterLayout';
+import RingLayout from './layouts/ringLayout';
 
 import RendererUtils from './rendererUtils';
 import MoveNodeInteraction from './moveNodeInteraction';
@@ -139,7 +140,8 @@ class Vizceral extends EventEmitter {
     this.layouts = {
       ltrTree: LTRTreeLayout,
       dns: DNSLayout,
-      ringCenter: RingCenterLayout
+      ringCenter: RingCenterLayout,
+      ring: RingLayout
     };
   }
 
@@ -299,7 +301,9 @@ class Vizceral extends EventEmitter {
 
   onDocumentClick (event) {
     this.calculateIntersectedObject(event.center.x, event.center.y);
-    this.currentGraph.handleIntersectedObjectClick();
+    if (this.currentGraph) {
+      this.currentGraph.handleIntersectedObjectClick();
+    }
   }
 
   onDocumentDoubleClick (event) {
