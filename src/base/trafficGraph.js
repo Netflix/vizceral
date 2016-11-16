@@ -37,7 +37,7 @@ function getPerformanceNow () {
           return perfNow;
         }
       } catch (e) {
-        Console.debug('performance.now() seems unavailable :', e);
+        Console.error('performance.now() seems unavailable :', e);
       }
     }
   }
@@ -427,10 +427,17 @@ class TrafficGraph extends EventEmitter {
         });
 
         // Check for updated max volume
-        if (state.maxVolume) {
-          this.volume.max = state.maxVolume;
-        } else {
-          Console.error(`maxVolume required to calculate relative particle density, but no maxVolume provided for ${state.name}. See https://github.com/Netflix/Vizceral/wiki/How-to-Use#graph-data-format`);
+        let maxVolume = null;
+        if (hasOwnPropF.call(state, "maxVolume")) {
+          maxVolume = state.maxVolume;
+          if (typeof maxVolume === "number" && maxVolume % 1 === 0 && -1 < maxVolume && maxVolume < 1/0) {
+            this.volume.max = state.maxVolume;
+          } else {
+            maxVolume = null;
+          }
+        }
+        if (maxVolume === null) {
+          Console.error(`maxVolume is missing or invalid (${state.maxVolume}), but it is required to calculate relative particle density. See https://github.com/Netflix/Vizceral/wiki/How-to-Use#graph-data-format`);
         }
 
         // Check for updated current volume
