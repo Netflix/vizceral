@@ -111,7 +111,6 @@ class Vizceral extends EventEmitter {
     this.scene.add(new THREE.AmbientLight(0xffffff));
 
     // Mouse/Touch interactivity
-    // true if the raycaster has been updated with the latest mouse position.
     this.raycaster_mouseLocation_viewportSpace = new THREE.Vector2(-1, -1);
     this.raycaster = new THREE.Raycaster();
 
@@ -127,7 +126,10 @@ class Vizceral extends EventEmitter {
     this.hammertime.on('singletap', event => this.onDocumentClick(event), false);
 
     this.graphs = {};
-    this.options = {};
+    this.options = {
+      showLabels: true,
+      allowDraggingOfNodes: false
+    };
     this.filters = {};
 
     this.renderers = {
@@ -143,6 +145,7 @@ class Vizceral extends EventEmitter {
       ringCenter: RingCenterLayout,
       ring: RingLayout
     };
+    this.moveNodeInteraction.setEnabled(this.options.allowDraggingOfNodes);
   }
 
 
@@ -458,9 +461,25 @@ class Vizceral extends EventEmitter {
 
   setOptions (options) {
     // Show labels
-    if (options.showLabels !== this.options.showLabels) {
-      this.options.showLabels = options.showLabels;
+    let showLabels = options.showLabels;
+    if (typeof showLabels !== 'boolean') {
+      Console.warn('Vizceral.setOptions: allowDraggingOfNodes must be a boolean but was something else, coercing to boolean. Got the following value: ', allowDraggingOfNodes);
+      showLabels = !!showLabels;
+    }
+    if (showLabels !== this.options.showLabels) {
+      this.options.showLabels = showLabels;
       this.showLabels(this.getGraph(this.rootGraphName));
+    }
+    
+    // Allow repositioning of nodes through dragging
+    let allowDraggingOfNodes = options.allowDraggingOfNodes;
+    if (typeof allowDraggingOfNodes !== 'boolean') {
+      Console.warn('Vizceral.setOptions: allowDraggingOfNodes must be a boolean but was something else, coercing to boolean. Got the following value: ', allowDraggingOfNodes);
+      allowDraggingOfNodes = !!allowDraggingOfNodes;
+    }
+    if (allowDraggingOfNodes !== this.options.allowDraggingOfNodes) {
+      this.options.allowDraggingOfNodes = allowDraggingOfNodes;
+      this.moveNodeInteraction.setEnabled(allowDraggingOfNodes);
     }
   }
 

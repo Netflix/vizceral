@@ -6,6 +6,23 @@ function getMouseLocInVPSpace (event, r) {
   return r;
 }
 
+function isPositiveIntegralDouble(v) {
+  return typeof v === "number" && v % 1 === 0 && 0 < v;
+}
+
+function MouseEvent_isLeftButtonOrButtonIsUnknown(e) {
+  let f = false;
+  if (isPositiveIntegralDouble(e.which)) {
+    f = e.which === 1;
+  } else if (isPositiveIntegralDouble(e.button)) {
+    f = (eButton & 1) !== 0;
+  } else {
+    f = true;
+  }
+  return f;
+}
+
+
 const canCoerceToFiniteDouble = isFinite;
 const DOUBLE_NAN = NaN;
 function isFiniteDouble (v) {
@@ -18,17 +35,17 @@ class MoveNodeInteraction {
   constructor (vizceral) {
     this.vizceral = vizceral;
 
-    this._onCanvasMouseDown_func = event => this.onCanvasMouseDown(event);
-    this.getCanvas().addEventListener('mousedown', this._onCanvasMouseDown_func, false);
+    this._onCanvasMouseDown_func = this.onCanvasMouseDown.bind(this);
 
+    this._onScriptEnvLostMouseCapture_func = this._onScriptEnvLostMouseCapture.bind(this); 
 
-    this._onDocumentMouseMove_func = event => this.onDocumentMouseMove(event);
-    this._onDocumentMouseUp_func = event => this.onDocumentMouseUp(event);
-    document.addEventListener('mousemove', this._onDocumentMouseMove_func, false);
-    document.addEventListener('mouseup', this._onDocumentMouseUp_func, false);
-
+    this._onDocumentMouseMove_func = this.onDocumentMouseMove.bind(this);
+    this._onDocumentMouseUp_func = this.onDocumentMouseUp.bind(this);
+    
+    this._isEnabled = false;
+    
     this._state = 0;
-    // The pressed object during the last mouse button press is the top most object under the cursor.
+    // The pressed object during the last mouse button press is (should be) the top most object under the cursor.
     this._lastMBPress_pressedObj = null;
     this._lastMBPress_pressedObj_pos = new Vector2(0, 0);
     this._lastMBPress_pressedObj_isDraggable = false;
@@ -40,8 +57,17 @@ class MoveNodeInteraction {
     return this.vizceral.renderer.domElement;
   }
 
+  isEnabled() {
+    return this._isEnabled;
+  }
+
   onCanvasMouseDown (event) {
     if (this._state !== 0) {
+      return;
+    }
+    // Support all browsers (IE5.5+ even if we were to care about using attachEvent)
+    if (event === undefined) event = window.event;
+    if (!MouseEvent_isLeftButtonOrButtonIsUnknown(event)) {
       return;
     }
     this._lastMBPress_pressedObj = this.vizceral.objectToSwitch;
@@ -87,6 +113,24 @@ class MoveNodeInteraction {
     }
   }
 
+  onDocumentMouseUp () {
+    // We do not want to filter on mouse button here since any mouse button release outside of the document 
+    // will cause us to no longer track mouse movements.
+    if (this._state === 0) return;
+    this._state = 0;
+    this._lastMBPress_pressedObj = null;
+  }
+
+  _onDragStart () {
+    this._state = 2;
+  }
+
+  // Called when we should stop dragging because we can no longer track mouse movements due to something else than a mouseup event.
+  _onScriptEnvLostMouseCapture(event) {
+    this._state = 0;
+    this._lastMBPress_pressedObj = null;
+  }
+
   _setDraggableObjectPosition (draggableObject, posX, posY) {
     if (draggableObject.type !== 'node') {
       Console.warn('Cannot set position of draggable object, only nodes are supported currently: ', draggableObject);
@@ -117,14 +161,26 @@ class MoveNodeInteraction {
     }
   }
 
-  _onDragStart () {
-    this._state = 2;
-  }
+  setEnabled(value) {
+    if (typeof value !== 'boolean') throw new TypeError('MoveNodeInteraction.setEnabled: value must be a boolean');
 
-  onDocumentMouseUp () {
-    if (this._state === 0) return;
-    this._state = 0;
-    this._lastMBPress_pressedObj = null;
+    if (value === this._isEnabled) return;
+    this._isEnabled = value;
+    if (value) {
+      document.addEventListener('mousemove', this._onDocumentMouseMove_func, false);
+      document.addEventListener('mouseup', this._onDocumentMouseUp_func, false);
+      document.addEventListener('contextmenu', this._onScriptEnvLostMouseCapture_func, false);
+      window.addEventListener('blur', this._onScriptEnvLostMouseCapture_func, false);
+      document.addEventListener('dragstart', this._onScriptEnvLostMouseCapture_func, false);
+      this.getCanvas().addEventListener('mousedown', this._onCanvasMouseDown_func, false);
+    } else {
+      document.removeEventListener('mousemove', this._onDocumentMouseMove_func, false);
+      document.removeEventListener('mouseup', this._onDocumentMouseUp_func, false);
+      document.removeEventListener('contextmenu', this._onScriptEnvLostMouseCapture_func, false);
+      window.removeEventListener('blur', this._onScriptEnvLostMouseCapture_func, false);
+      document.removeEventListener('dragstart', this._onScriptEnvLostMouseCapture_func, false);
+      this.getCanvas().removeEventListener('mousedown', this._onCanvasMouseDown_func, false);
+    }
   }
 
 }
