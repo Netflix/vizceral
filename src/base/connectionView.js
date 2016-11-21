@@ -394,7 +394,6 @@ class ConnectionView extends BaseView {
       [Number.MIN_VALUE, secondsPerReleaseToReleasesPerTick(10)],
       [1, secondsPerReleaseToReleasesPerTick(7)],
       [10, secondsPerReleaseToReleasesPerTick(5)],
-      [100, linearRatio * 100],
     ];
     if (0 < maxVolume) {
       this.rateMap.push([100, 100 * linearRatio]);
