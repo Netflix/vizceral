@@ -105,7 +105,7 @@ function generateParticleSystem (size, customWidth, connectionWidth, connectionD
     customColors[i + 2] = GlobalStyles.rgba.colorTraffic.normal.b;
 
     customOpacities[i] = 0;
-    sizes[i] = 6;
+    sizes[i] = 6 * (window.devicePixelRatio || 1);
     velocities[i * 3] = 3 + (Math.random() * 2);
   }
 
