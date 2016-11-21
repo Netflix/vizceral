@@ -105,8 +105,8 @@ class RendererUtils {
     const screenVector = vector.clone();
     screenVector.project(this.camera);
 
-    const rendererWidthHalf = 0.5 * this.renderer.context.canvas.width;
-    const rendererHeightHalf = 0.5 * this.renderer.context.canvas.height;
+    const rendererWidthHalf = 0.5 * this.renderer.context.canvas.clientWidth;
+    const rendererHeightHalf = 0.5 * this.renderer.context.canvas.clientHeight;
     screenVector.x = (screenVector.x * rendererWidthHalf) + rendererWidthHalf;
     screenVector.y = -(screenVector.y * rendererHeightHalf) + rendererHeightHalf + 2;
 
