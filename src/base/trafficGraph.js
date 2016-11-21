@@ -430,7 +430,7 @@ class TrafficGraph extends EventEmitter {
         let maxVolume = null;
         if (hasOwnPropF.call(state, "maxVolume")) {
           maxVolume = state.maxVolume;
-          if (typeof maxVolume === "number" && maxVolume % 1 === 0 && -1 < maxVolume && maxVolume < 1/0) {
+          if (typeof maxVolume === "number" && -1 < maxVolume && maxVolume < 1/0) {
             this.volume.max = state.maxVolume;
           } else {
             maxVolume = null;
