@@ -58,6 +58,7 @@ Represents a Vizceral component.
 **Parameters**
 
 -   `canvas` **\[[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)]** The canvas to render the graph onto; if not provided, will create a canvas accessible by this.renderer.domElement
+-   `targetFramerate` **\[[Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)]** Target frame rate to render at. Will not limit FPS if not provided or set to 0.
 
 # getStyles
 
