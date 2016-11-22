@@ -224,13 +224,12 @@ class TrafficGraph extends EventEmitter {
       matches.total = 0;
       matches.visible = 0;
 
-      let targetString;
       const nodes = _.filter(this.nodes, (node) => {
-        targetString = node.getName();
-        if (node.nodes) {
-          targetString += `::${node.nodes.map(n => n.name).join('::')}`;
-        }
-        const match = (node === this.highlightedObject || targetString.indexOf(searchString) !== -1);
+        const matchTargets = [node.getName()];
+        if (node.displayName) { matchTargets.push(node.displayName); }
+        if (node.nodes) { Array.prototype.push.apply(matchTargets, node.nodes.map(n => n.name)); }
+
+        const match = (node === this.highlightedObject || matchTargets.join().toLowerCase().indexOf(searchString.toLowerCase()) !== -1);
         if (match) {
           matches.total++;
           if (node.isVisible()) {
