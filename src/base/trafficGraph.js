@@ -18,11 +18,31 @@
 import _ from 'lodash';
 import EventEmitter from 'events';
 import TWEEN from 'tween.js';
-
+import ParticleSystem from '../physics/particleSystem';
 import Notices from '../notices';
 import TrafficGraphView from './trafficGraphView';
 
 const Console = console; // Eliminate eslint warnings for non-debug console messages
+
+const hasOwnPropF = Object.prototype.hasOwnProperty;
+
+function getPerformanceNow () {
+  const g = window;
+  if (g != null) {
+    const perf = g.performance;
+    if (perf != null) {
+      try {
+        const perfNow = perf.now();
+        if (typeof perfNow === 'number') {
+          return perfNow;
+        }
+      } catch (e) {
+        Console.error('performance.now() seems unavailable :', e);
+      }
+    }
+  }
+  return null;
+}
 
 class TrafficGraph extends EventEmitter {
   constructor (name, mainView, parentGraph, graphWidth, graphHeight, NodeClass, ConnectionClass, Layout) {
@@ -51,6 +71,9 @@ class TrafficGraph extends EventEmitter {
 
     this.view = new TrafficGraphView(this);
 
+    this._particleSystem_isEnabled = false;
+    this._particleSystem = new ParticleSystem(this, graphWidth, graphHeight, this._particleSystem_isEnabled);
+
     this.layoutDimensions = {
       width: graphWidth - 400,
       height: graphHeight - 45
@@ -64,6 +87,12 @@ class TrafficGraph extends EventEmitter {
 
     this.hasPositionData = false;
     this.loadedOnce = false;
+  }
+
+  onAsyncLayoutBegin () {
+  }
+
+  onAsyncLayoutCompleted () {
   }
 
   /**
@@ -103,6 +132,20 @@ class TrafficGraph extends EventEmitter {
         _.each(this.connections, connection => connection.cleanup());
         _.each(this.nodes, node => node.cleanup());
       }
+      this._particleSystem.setLastUpdateTime(getPerformanceNow());
+      this.updateIsParticleSystemEnabled();
+    }
+  }
+
+  computeShouldParticleSystemBeEnabled () {
+    return this._particleSystem_isEnabled && !!this.current;
+  }
+
+  updateIsParticleSystemEnabled () {
+    if (this.computeShouldParticleSystemBeEnabled()) {
+      this._particleSystem.enable();
+    } else {
+      this._particleSystem.disable();
     }
   }
 
@@ -294,6 +337,7 @@ class TrafficGraph extends EventEmitter {
     _.each(this.nodes, (node) => {
       if (node.isVisible()) { node.getView().update(); }
     });
+    this._particleSystem.update(time);
   }
 
   isPopulated () {
@@ -383,10 +427,17 @@ class TrafficGraph extends EventEmitter {
         });
 
         // Check for updated max volume
-        if (state.maxVolume) {
-          this.volume.max = state.maxVolume;
-        } else {
-          Console.error(`maxVolume required to calculate relative particle density, but no maxVolume provided for ${state.name}. See https://github.com/Netflix/Vizceral/wiki/How-to-Use#graph-data-format`);
+        let maxVolume = null;
+        if (hasOwnPropF.call(state, 'maxVolume')) {
+          maxVolume = state.maxVolume;
+          if (typeof maxVolume === 'number' && maxVolume > -1 && maxVolume < 1 / 0) {
+            this.volume.max = state.maxVolume;
+          } else {
+            maxVolume = null;
+          }
+        }
+        if (maxVolume === null) {
+          Console.error(`maxVolume is missing or invalid (${state.maxVolume}), but it is required to calculate relative particle density. See https://github.com/Netflix/Vizceral/wiki/How-to-Use#graph-data-format`);
         }
 
         // Check for updated current volume
@@ -435,6 +486,7 @@ class TrafficGraph extends EventEmitter {
       } else {
         this.cachedState = state;
       }
+      this._particleSystem.onTrafficGraphChanged();
     }
 
     return updatedState;
@@ -658,10 +710,34 @@ class TrafficGraph extends EventEmitter {
               .start();
   }
 
+
+  getPhysicsOptions () {
+    const o = this._particleSystem.getOptions();
+    o.isEnabled = this._particleSystem_isEnabled;
+    return o;
+  }
+
+  setPhysicsOptions (options) {
+    let flag = false;
+    if (hasOwnPropF.call(options, 'isEnabled')) {
+      let isEnabled = options.isEnabled;
+      options = _.clone(options);
+      delete options.isEnabled;
+      if (typeof isEnabled !== 'boolean') {
+        Console.warn('Got non-boolean value for PhysicsOptions.isEnabled, coercing to boolean:', isEnabled);
+        isEnabled = !!isEnabled;
+      }
+      flag = this._particleSystem_isEnabled !== isEnabled;
+      this._particleSystem_isEnabled = isEnabled;
+    }
+    if (flag) {
+      this.updateIsParticleSystemEnabled();
+    }
+  }
+
   _relayout () {
     // Update filters
     const graph = { nodes: [], connections: [] };
-
     let totalNodes = 0;
     let visibleNodes = 0;
 
@@ -713,6 +789,8 @@ class TrafficGraph extends EventEmitter {
       this.hasPositionData = true;
       this.updateView();
     }));
+    this.onAsyncLayoutCompleted();
+    this.onAsyncLayoutBegin();
   }
 }
 

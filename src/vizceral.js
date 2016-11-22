@@ -30,9 +30,10 @@ import GlobalTrafficGraph from './global/globalTrafficGraph';
 import LTRTreeLayout from './layouts/ltrTreeLayout';
 import RegionTrafficGraph from './region/regionTrafficGraph';
 import RingCenterLayout from './layouts/ringCenterLayout';
+import RingLayout from './layouts/ringLayout';
 
 import RendererUtils from './rendererUtils';
-
+import MoveNodeInteraction from './moveNodeInteraction';
 
 /**
 * The `objectHighlighted` event is fired whenever an object is highlighted.
@@ -116,8 +117,9 @@ class Vizceral extends EventEmitter {
     this.scene.add(new THREE.AmbientLight(0xffffff));
 
     // Mouse/Touch interactivity
+    this.raycaster_mouseLocation_viewportSpace = new THREE.Vector2(-1, -1);
     this.raycaster = new THREE.Raycaster();
-    this.mouse = new THREE.Vector2(-1, -1);
+
     this.hammertime = new Hammer.Manager(this.renderer.domElement);
     this.hammertime.on('press', event => this.onDocumentMouseMove(event), false);
     this.renderer.domElement.addEventListener('mousemove', event => this.onDocumentMouseMove(event), false);
@@ -130,7 +132,10 @@ class Vizceral extends EventEmitter {
     this.hammertime.on('singletap', event => this.onDocumentClick(event), false);
 
     this.graphs = {};
-    this.options = {};
+    this.options = {
+      showLabels: true,
+      allowDraggingOfNodes: false
+    };
     this.filters = {};
 
     this.renderers = {
@@ -139,12 +144,14 @@ class Vizceral extends EventEmitter {
       focused: FocusedTrafficGraph,
       dns: DnsTrafficGraph
     };
-
+    this.moveNodeInteraction = new MoveNodeInteraction(this);
     this.layouts = {
       ltrTree: LTRTreeLayout,
       dns: DNSLayout,
-      ringCenter: RingCenterLayout
+      ringCenter: RingCenterLayout,
+      ring: RingLayout
     };
+    this.moveNodeInteraction.setEnabled(this.options.allowDraggingOfNodes);
   }
 
 
@@ -295,7 +302,7 @@ class Vizceral extends EventEmitter {
   }
 
   calculateIntersectedObject (x, y) {
-    this.updateMousePosition(x, y);
+    this.validateRaycaster(x, y);
     this.disableHoverInteractions = false;
     this.calculateMouseOver(true);
     return this.currentGraph && this.currentGraph.getIntersectedObject();
@@ -303,7 +310,9 @@ class Vizceral extends EventEmitter {
 
   onDocumentClick (event) {
     this.calculateIntersectedObject(event.center.x, event.center.y);
-    this.currentGraph.handleIntersectedObjectClick();
+    if (this.currentGraph) {
+      this.currentGraph.handleIntersectedObjectClick();
+    }
   }
 
   onDocumentDoubleClick (event) {
@@ -458,9 +467,25 @@ class Vizceral extends EventEmitter {
 
   setOptions (options) {
     // Show labels
-    if (options.showLabels !== this.options.showLabels) {
-      this.options.showLabels = options.showLabels;
+    let showLabels = options.showLabels;
+    if (typeof showLabels !== 'boolean') {
+      Console.warn('Vizceral.setOptions: allowDraggingOfNodes must be a boolean but was something else, coercing to boolean. Got the following value: ', allowDraggingOfNodes);
+      showLabels = !!showLabels;
+    }
+    if (showLabels !== this.options.showLabels) {
+      this.options.showLabels = showLabels;
       this.showLabels(this.getGraph(this.rootGraphName));
+    }
+
+    // Allow repositioning of nodes through dragging
+    let allowDraggingOfNodes = options.allowDraggingOfNodes;
+    if (typeof allowDraggingOfNodes !== 'boolean') {
+      Console.warn('Vizceral.setOptions: allowDraggingOfNodes must be a boolean but was something else, coercing to boolean. Got the following value: ', allowDraggingOfNodes);
+      allowDraggingOfNodes = !!allowDraggingOfNodes;
+    }
+    if (allowDraggingOfNodes !== this.options.allowDraggingOfNodes) {
+      this.options.allowDraggingOfNodes = allowDraggingOfNodes;
+      this.moveNodeInteraction.setEnabled(allowDraggingOfNodes);
     }
   }
 
@@ -638,9 +663,25 @@ class Vizceral extends EventEmitter {
     this.setCurrentGraph(graph, redirectedFrom);
   }
 
+  validateRaycaster (mouseLocVPSpaceX, mouseLocVPSpaceY) {
+    if (this.raycaster_mouseLocation_viewportSpace.x === mouseLocVPSpaceX &&
+      this.raycaster_mouseLocation_viewportSpace.y === mouseLocVPSpaceY) {
+      return;
+    }
+    const canvasDomElem = this.renderer.domElement;
+    const canvasBCRect = this.boundingRect;
+    const mouseLocCanvasSpaceX = mouseLocVPSpaceX - canvasBCRect.left;
+    const mouseLocCanvasSpaceY = mouseLocVPSpaceY - canvasBCRect.top;
+    const mouseLocNormScreenSpaceX = ((mouseLocCanvasSpaceX / canvasDomElem.clientWidth) * 2) - 1;
+    const mouseLocNormScreenSpaceY = -((mouseLocCanvasSpaceY / canvasDomElem.clientHeight) * 2) + 1;
+    const mouseLocNormScreenSpace = new THREE.Vector2(mouseLocNormScreenSpaceX, mouseLocNormScreenSpaceY);
+    this.raycaster.setFromCamera(mouseLocNormScreenSpace, this.camera);
+    this.raycaster_mouseLocation_viewportSpace.x = mouseLocVPSpaceX;
+    this.raycaster_mouseLocation_viewportSpace.y = mouseLocVPSpaceY;
+  }
+
   calculateMouseOver (immediate) {
     if (this.currentGraph) {
-      this.raycaster.setFromCamera(this.mouse, this.camera);
       this.raycaster.linePrecision = this.currentGraph.linePrecision || 1;
       const intersects = this.raycaster.intersectObjects(this.currentGraph.view.getInteractiveChildren());
       let userData = {};
@@ -688,15 +729,10 @@ class Vizceral extends EventEmitter {
     }
   }
 
-  updateMousePosition (x, y) {
-    this.mouse.x = (((x - this.boundingRect.left) / this.renderer.domElement.clientWidth) * 2) - 1;
-    this.mouse.y = -(((y - this.boundingRect.top) / this.renderer.domElement.clientHeight) * 2) + 1;
-  }
-
   onDocumentMouseMove (event) {
     event.preventDefault();
-    this.updateMousePosition(event.clientX, event.clientY);
     if (!this.disableHoverInteractions) {
+      this.validateRaycaster(event.clientX, event.clientY);
       this.calculateMouseOver();
     }
   }
