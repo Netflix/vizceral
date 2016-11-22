@@ -58,7 +58,7 @@ class TrafficGraph extends EventEmitter {
     this.ConnectionClass = ConnectionClass;
     this.volume = { max: 0, current: 0 };
 
-    this.Layout = Layout;
+    this.layout = new Layout();
 
     if (parentGraph) {
       this.graphIndex = parentGraph.graphIndex.slice();
@@ -782,8 +782,7 @@ class TrafficGraph extends EventEmitter {
     this.nodeCounts.total = totalNodes;
     this.nodeCounts.visible = visibleNodes;
 
-    const layout = new this.Layout();
-    layout.run(graph, this.layoutDimensions, (() => {
+    this.layout.run(graph, this.layoutDimensions, (() => {
       Console.info(`Layout: Received updated layout for ${this.name} from the worker.`);
       this.hasPositionData = true;
       this.updateView();

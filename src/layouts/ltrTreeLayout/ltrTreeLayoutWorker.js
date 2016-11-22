@@ -21,36 +21,22 @@ const LTRTreeLayouter = require('./ltrTreeLayouter.js');
 
 self.ltrTreeLayouter = new LTRTreeLayouter();
 
-self.layoutCache = {};
-
 self.layout = function (options) {
   const graph = options.graph;
   const dimensions = options.dimensions;
 
-  let key = graph.edges.map(edge => edge.source + edge.target).sort().toString();
-  if (key === '') {
-    key = `nodes: ${graph.nodes.map(node => node.name).sort().toString()}`;
-  }
+  // run the layout
+  const nodePositions = self.ltrTreeLayouter.layout(graph.nodes, graph.edges, dimensions, options.entryNode);
 
-  let nodePositions;
-  if (self.layoutCache[key]) {
-    nodePositions = self.layoutCache[key];
-  } else {
-    // run the layout
-    nodePositions = self.ltrTreeLayouter.layout(graph.nodes, graph.edges, dimensions, options.entryNode);
-
-    // adjust the layout since our coordinates are center origin
-    const halfWidth = dimensions.width / 2;
-    const halfHeight = dimensions.height / 2;
-    let nodeName;
-    for (nodeName in nodePositions) {
-      if ({}.hasOwnProperty.call(nodePositions, nodeName)) {
-        nodePositions[nodeName].x -= halfWidth;
-        nodePositions[nodeName].y -= halfHeight;
-      }
+  // adjust the layout since our coordinates are center origin
+  const halfWidth = dimensions.width / 2;
+  const halfHeight = dimensions.height / 2;
+  let nodeName;
+  for (nodeName in nodePositions) {
+    if ({}.hasOwnProperty.call(nodePositions, nodeName)) {
+      nodePositions[nodeName].x -= halfWidth;
+      nodePositions[nodeName].y -= halfHeight;
     }
-
-    self.layoutCache[key] = nodePositions;
   }
 
   self.postMessage(nodePositions);
