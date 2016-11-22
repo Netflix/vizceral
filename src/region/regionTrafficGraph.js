@@ -15,16 +15,28 @@
  *     limitations under the License.
  *
  */
+import _ from 'lodash';
 import LTRTreeLayout from '../layouts/ltrTreeLayout';
 import RegionConnection from './regionConnection';
 import RegionNode from './regionNode';
 import TrafficGraph from '../base/trafficGraph';
+
+const Console = console;
 
 class RegionTrafficGraph extends TrafficGraph {
   constructor (name, mainView, parentGraph, graphWidth, graphHeight, Layout = LTRTreeLayout) {
     super(name, mainView, parentGraph, graphWidth, graphHeight, RegionNode, RegionConnection, Layout);
     this.type = 'region';
     this.linePrecision = 4;
+    this.data = {};
+    this._layoutTimeoutId = null;
+    this._numberOfRunningAsyncLayoutTasks = 0;
+    this._onAsyncLayoutTimeout_func = this._onAsyncLayoutTimeout.bind(this);
+  }
+
+  updateVisibleInfo () {
+    const minimumNoticeLevel = this.nodeName ? 0 : 1;
+    _.each(this.connections, connection => { connection.setMinimumNoticeLevel(minimumNoticeLevel); });
   }
 
   setIntersectedObject (object) {
@@ -58,6 +70,68 @@ class RegionTrafficGraph extends TrafficGraph {
   handleIntersectedObjectDoubleClick () {
     if (this.intersectedObject && this.intersectedObject.graphRenderer === 'region') {
       this.emit('setView', [this.name, this.intersectedObject.getName()]);
+    }
+  }
+
+  getSelectedNode () {
+    return this.nodes[this.nodeName];
+  }
+
+  setFilters (filters) {
+    let filtersChanged = false;
+    _.each(filters, filter => {
+      if (!this.filters[filter.name]) {
+        this.filters[filter.name] = filter;
+        filtersChanged = true;
+      }
+      if (filter.value !== this.filters[filter.name].value) {
+        this.filters[filter.name].value = filter.value;
+        filtersChanged = true;
+      }
+      if (this.filters[filter.name].defaultValue === undefined) {
+        this.filters[filter.name].defaultValue = this.filters[filter.name].value;
+        filtersChanged = true;
+      }
+    });
+
+    if (this.isPopulated() && filtersChanged) {
+      this._relayout();
+    }
+  }
+
+  _onAsyncLayoutBegin () {
+    this._numberOfRunningAsyncLayoutTasks += 1;
+    this._clearLayoutTimeoutId();
+    this._layoutTimeoutId = setTimeout(this._onAsyncLayoutTimeout_func, 5000);
+    this.updateIsParticleSystemEnabled();
+  }
+
+  _clearLayoutTimeoutId () {
+    if (this._layoutTimeoutId !== null) {
+      clearTimeout(this._layoutTimeoutId);
+      this._layoutTimeoutId = null;
+    }
+  }
+
+  _onAsyncLayoutTimeout () {
+    this._numberOfRunningAsyncLayoutTasks = 0;
+    Console.warn('AsyncLayout timed out:', 0);
+    this._clearLayoutTimeoutId();
+    this.updateIsParticleSystemEnabled();
+  }
+
+  computeShouldParticleSystemBeEnabled () {
+    return super.computeShouldParticleSystemBeEnabled() && this._numberOfRunningAsyncLayoutTasks === 0;
+  }
+
+  onAsyncLayoutCompleted () {
+    super.onAsyncLayoutCompleted();
+    if (this._numberOfRunningAsyncLayoutTasks > 0) {
+      this._numberOfRunningAsyncLayoutTasks -= 1;
+      if (this._numberOfRunningAsyncLayoutTasks === 0) {
+        this._clearLayoutTimeoutId();
+      }
+      this.updateIsParticleSystemEnabled();
     }
   }
 }

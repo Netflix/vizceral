@@ -34,16 +34,15 @@ class DNSTrafficGraph extends TrafficGraph {
       connections: []
     };
     this.contextDivs = {};
-
     this.dimensions = {
       width: graphWidth,
       height: graphHeight
     };
-
     this.hasPositionData = true;
   }
 
   setState (state, force) {
+    // This function cannot remove any nodes and leaks, but this is not our problem for now.
     try {
       _.each(state.nodes, (node) => {
         const existingNodeIndex = _.findIndex(this.state.nodes, { name: node.name });
