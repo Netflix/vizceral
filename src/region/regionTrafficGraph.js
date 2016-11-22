@@ -36,7 +36,7 @@ class RegionTrafficGraph extends TrafficGraph {
 
   updateVisibleInfo () {
     const minimumNoticeLevel = this.nodeName ? 0 : 1;
-    _.each(this.connections, connection => { connection.setMinimumNoticeLevel(minimumNoticeLevel); });
+    _.each(this.connections, (connection) => { connection.setMinimumNoticeLevel(minimumNoticeLevel); });
   }
 
   setIntersectedObject (object) {
@@ -79,7 +79,7 @@ class RegionTrafficGraph extends TrafficGraph {
 
   setFilters (filters) {
     let filtersChanged = false;
-    _.each(filters, filter => {
+    _.each(filters, (filter) => {
       if (!this.filters[filter.name]) {
         this.filters[filter.name] = filter;
         filtersChanged = true;

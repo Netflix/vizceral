@@ -25,7 +25,7 @@ class LTRTreeLayout {
   }
 
   findPositions (nodeKey, edgeKey) {
-    return this.cache.find(layout => {
+    return this.cache.find((layout) => {
       // If there are more nodes or edges than are in the layout, then we know it doesn't match
       if (nodeKey.length > layout.nodeKey.length || edgeKey.length > layout.edgeKey.length) {
         return false;

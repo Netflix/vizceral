@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Created by jbrekelmans on 21/10/2016.
  */
@@ -178,7 +179,7 @@ class ParticleSystem {
           Console.warn('ParticleSystem.setOptions(options): got invalid options.particles.mass. Expected number in range [0.1, Inf), but got: ', v);
         } else {
           this._particles_mass = v;
-          _.each(this._particleFromNodeName, node => {
+          _.each(this._particleFromNodeName, (node) => {
             node.mass = v;
           });
         }
@@ -303,7 +304,7 @@ class ParticleSystem {
         simNodeNames[node.name] = 1;
       }
       const connections = this._trafficGraph.connections;
-      _.each(connections, conn => {
+      _.each(connections, (conn) => {
         const connView = conn.view;
         if (connView &&
           (hasOwnPropFunc.call(simNodeNames, conn.source.name) ||
@@ -473,7 +474,7 @@ class ParticleSystem {
     let i = 0;
     const oldCount = hooksSpringList.length;
     // const oneOverMaxVolume = 1 / this._trafficGraph.volume.max;
-    _.each(connections, conn => {
+    _.each(connections, (conn) => {
       const srcNodeName = conn.source.name;
       if (!hasOwnPropFunc.call(particleFromNodeName, srcNodeName)) {
         return;

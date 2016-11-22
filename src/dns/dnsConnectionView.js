@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-properties */
 /**
  *
  *  Copyright 2016 Netflix, Inc.
