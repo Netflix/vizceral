@@ -77,8 +77,9 @@ class Vizceral extends EventEmitter {
    * Represents a Vizceral component.
    * @constructor
    * @param {object} [canvas] The canvas to render the graph onto; if not provided, will create a canvas accessible by this.renderer.domElement
+   * @param {Number} [targetFramerate] Target frame rate to render at. Will not limit FPS if not provided or set to 0.
    */
-  constructor (canvas) {
+  constructor (canvas, targetFramerate) {
     super();
     const parameters = { alpha: true, antialias: true };
     if (canvas) { parameters.canvas = canvas; }
@@ -106,6 +107,10 @@ class Vizceral extends EventEmitter {
     // Update the size of the renderer and the camera perspective
     // this.renderer.setSize(width, height);
     this.setSize(0, 0);
+
+    // Target FPS
+    this.targetFrameLength = targetFramerate ? (1000 / targetFramerate) : null;
+    this.lastRenderAt = 0;
 
     // Setup lighting
     this.scene.add(new THREE.AmbientLight(0xffffff));
@@ -696,8 +701,22 @@ class Vizceral extends EventEmitter {
     }
   }
 
-  animate (time) {
+  requestAnimationFrame () {
     requestAnimationFrame(this.animate.bind(this));
+  }
+
+  animate (time) {
+    if (this.targetFrameLength === null) {
+      this.requestAnimationFrame();
+    } else {
+      // Call requestAnimationFrame to be as close to the target frame rate as we can
+      // performance.now allows sub-millisecond timing for maximum smoothness
+      const now = performance.now();
+      const nextRenderAt = Math.max(now, this.lastRenderAt + this.targetFrameLength);
+      const nextRenderIn = nextRenderAt - now;
+      setTimeout(this.requestAnimationFrame.bind(this), nextRenderIn);
+      this.lastRenderAt = nextRenderAt;
+    }
     this.render(time);
   }
 
