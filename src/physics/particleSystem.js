@@ -237,7 +237,7 @@ class ParticleSystem {
   setLastUpdateTime (time) {
     this._lastUpdateTime = time;
     this._isFirstUpdateAfterSetLastUpdateTime = true;
-    Console.log('ParticleSystem setLastUpdateTime', time);
+    // Console.log('ParticleSystem setLastUpdateTime', time);
   }
 
   update (time) {
