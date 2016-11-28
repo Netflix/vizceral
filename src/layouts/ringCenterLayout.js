@@ -17,9 +17,8 @@
  */
 import _ from 'lodash';
 
-function updatePosition (node, nodeCount, nodeIndex, orbitSize, nodeSize) {
+function updatePosition (node, nodeCount, nodeIndex, orbitSize) {
   const rotationAdjustment = nodeCount % 2 === 0 ? Math.PI / 4 : (5 / 6) * Math.PI;
-  node.size = nodeSize;
   const adjustment = (((2 * Math.PI) * nodeIndex) / nodeCount) + rotationAdjustment;
   node.updatePosition({
     x: ((orbitSize / 2) * Math.cos(adjustment)),
@@ -27,7 +26,7 @@ function updatePosition (node, nodeCount, nodeIndex, orbitSize, nodeSize) {
   });
 }
 
-function positionNodes (nodes, orbitSize, nodeSize) {
+function positionNodes (nodes, orbitSize) {
   let nodeIndex = 0;
   const nodeCount = Object.keys(nodes).length - 1;
 
@@ -40,9 +39,8 @@ function positionNodes (nodes, orbitSize, nodeSize) {
     const node = nodeMap[nodeName];
     if (!node.isEntryNode()) {
       nodeIndex++;
-      updatePosition(node, nodeCount, nodeIndex, orbitSize, nodeSize);
+      updatePosition(node, nodeCount, nodeIndex, orbitSize);
     } else {
-      node.size = nodeSize * 1.25;
       node.updatePosition({ x: 0, y: 0 });
     }
   });
@@ -74,11 +72,11 @@ class RingCenterLayout {
 
     if (Object.keys(graph.nodes).length > 0) {
       // Position the nodes based on the current orbitSize
-      positionNodes(graph.nodes, orbitSize, nodeSize);
+      positionNodes(graph.nodes, orbitSize);
       // Now that the nodes are positioned, adjust orbit size accordingly so the nodes all fit
       orbitSize = recalculateOrbitSize(graph.nodes, maxDimension, nodeSize);
       // Position again with the proper orbitSize
-      positionNodes(graph.nodes, orbitSize, nodeSize);
+      positionNodes(graph.nodes, orbitSize);
       centerNodesVertically(graph.nodes);
     }
 
