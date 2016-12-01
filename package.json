@@ -1,7 +1,7 @@
 {
   "name": "vizceral",
   "version": "4.2.2",
-  "description": "Intuitive animated traffic graph using webgl. If a graph of nodes and edges with data about traffic volume is provided, it will render a traffic graph animating the connection volume between nodes.",
+  "description": "Intuitive animated traffic graph visualization using webgl. If a graph of nodes and edges with data about traffic volume is provided, it will render a traffic graph animating the connection volume between nodes.",
   "main": "dist/vizceral.js",
   "repository": {
     "type": "git",
@@ -52,7 +52,8 @@
     "particles",
     "flow",
     "intuition",
-    "visceral"
+    "visceral",
+    "visualization"
   ],
   "pre-commit": [
     "lint"
