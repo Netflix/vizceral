@@ -91,7 +91,7 @@ class DnsConnectionView extends ConnectionView {
   }
 
   drawAnnotations () {
-    if (!this.object.annotations || this.object.annotations.length === 0 || !this.startPosition) {
+    if (!this.startPosition) {
       return;
     }
 
@@ -104,13 +104,10 @@ class DnsConnectionView extends ConnectionView {
     }
 
     const bump = 40;
-    const headerFontSize = bump * 0.75;
-    const stubRadius = bump; // size of the arrow half-head
 
     // make sure we are tall enough for all the annotations.
-    const height = this.object.annotations.length * bump * 4;
-
-    if (!this.annotationCanvas) {
+    const height = this.object.annotations ? this.object.annotations.length * bump * 4 : 0;
+    if (this.object.annotations && this.object.annotations.length > 0 && !this.annotationCanvas) {
       this.annotationCanvas = this.createCanvas(width, height);
       this.annotationTexture = new THREE.Texture(this.annotationCanvas);
       this.annotationTexture.minFilter = THREE.LinearFilter;
@@ -126,93 +123,23 @@ class DnsConnectionView extends ConnectionView {
     }
 
 
-    const ctx = this.annotationCanvas.getContext('2d');
-    ctx.clearRect(0, 0, this.annotationCanvas.width, this.annotationCanvas.height);
-    ctx.fillStyle = 'rgba(255,255,255,0.125)';
+    if (this.annotationCanvas) {
+      const ctx = this.annotationCanvas.getContext('2d');
+      ctx.clearRect(0, 0, this.annotationCanvas.width, this.annotationCanvas.height);
+      ctx.fillStyle = 'rgba(255,255,255,0.125)';
 
-    function drawText (text, style, i) {
-      ctx.fillStyle = style;
-      ctx.font = `700 ${headerFontSize}px 'Source Sans Pro', sans-serif`;
-      ctx.textBaseline = 'bottom';
-      ctx.fillText(text, width / 2, height / 2 - i * bump);
+      const nodeRadius = this.object.source.getView().radius;
+
+
+      _.each(this.object.annotations, (annotation, index) => {
+        drawArrowHalfHead(ctx, width, height, bump, nodeRadius, GlobalStyles.getColorTraffic(annotation.class), index + 1);
+        if (annotation.label) {
+          drawText(ctx, width, height, bump, annotation.label, GlobalStyles.getColorTraffic(annotation.class), index + 1);
+        }
+      });
+
+      this.annotationTexture.needsUpdate = true;
     }
-
-    function drawCircle (point, startAngle, endAngle, radius, style) {
-      ctx.strokeStyle = style;
-      ctx.lineCap = 'round';
-      ctx.lineWidth = 10;
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, radius, startAngle, endAngle);
-      ctx.stroke();
-    }
-
-    const nodeRadius = this.object.source.getView().radius;
-
-    function drawArrowHalfHead (style, i) {
-      const start = {
-        x: nodeRadius,
-        y: height / 2
-      };
-
-      const end = {
-        x: width - nodeRadius,
-        y: height / 2
-      };
-
-
-        // find the angle perpendicular to the vector between start and end on the clockwise side.
-      let theta = Math.atan((end.y - start.y) / (end.x - start.x));
-      if (start.x <= end.x) {
-        theta -= Math.PI / 2;
-      } else {
-        theta += Math.PI / 2;
-      }
-
-        // find a point perpendicular to the segment between start and end that is `bump` distance away.
-      const offset = {
-        x: (end.x + start.x) / 2 + Math.cos(theta) * bump * i,
-        y: (end.y + start.y) / 2 + Math.sin(theta) * bump * i
-      };
-
-        // get the center of the circle whose arc goes through all three points, its radius and connect the dots
-      const center = CalculateCircleCenter(start, end, offset);
-      const radius = Math.sqrt(Math.pow(start.x - center.x, 2) + Math.pow(start.y - center.y, 2));
-      const startAngle = Math.atan2(start.y - center.y, start.x - center.x);
-      const endAngle = Math.atan2(end.y - center.y, end.x - center.x);
-      drawCircle(center, startAngle, endAngle, radius, style);
-
-        // to draw the arrowhead, we create a small circle opposite the end point from the main arc's center
-      const t2 = Math.atan((end.y - center.y) / (end.x - center.x));
-      let stubCenter = {
-        x: end.x + Math.cos(t2) * stubRadius,
-        y: end.y + Math.sin(t2) * stubRadius
-      };
-
-        // if we didn't actually go on the *opposite* side of the end point, make sure we do that ;)
-      if (distance(stubCenter, center) < distance(end, center)) {
-        stubCenter = {
-          x: end.x - Math.cos(t2) * stubRadius,
-          y: end.y - Math.sin(t2) * stubRadius
-        };
-      }
-
-      const stubAngle = Math.atan2(end.y - stubCenter.y, end.x - stubCenter.x);
-      drawCircle(stubCenter, stubAngle, stubAngle + Math.PI / 4, stubRadius, style);
-    }
-
-    _.each(this.object.annotations, (annotation, index) => {
-      drawArrowHalfHead(GlobalStyles.getColorTraffic(annotation.class), index + 1);
-    });
-
-    _.each(this.object.annotations, (annotation, index) => {
-      if (!annotation.label) {
-        return;
-      }
-
-      drawText(annotation.label, GlobalStyles.getColorTraffic(annotation.class), index + 1);
-    });
-
-    this.annotationTexture.needsUpdate = true;
   }
 
   updatePosition (depthOnly) {
@@ -224,6 +151,78 @@ class DnsConnectionView extends ConnectionView {
     super.updateVolume();
     this.drawAnnotations();
   }
+}
+
+function drawText (ctx, width, height, bump, text, style, i) {
+  const headerFontSize = bump * 0.75;
+
+  ctx.fillStyle = style;
+  ctx.font = `700 ${headerFontSize}px 'Source Sans Pro', sans-serif`;
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(text, width / 2, height / 2 - i * bump);
+}
+
+function drawCircle (ctx, point, startAngle, endAngle, radius, style) {
+  ctx.strokeStyle = style;
+  ctx.lineCap = 'round';
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, radius, startAngle, endAngle);
+  ctx.stroke();
+}
+
+function drawArrowHalfHead (ctx, width, height, bump, nodeRadius, style, i) {
+  const stubRadius = bump; // size of the arrow half-head
+
+  const start = {
+    x: nodeRadius,
+    y: height / 2
+  };
+
+  const end = {
+    x: width - nodeRadius,
+    y: height / 2
+  };
+
+
+    // find the angle perpendicular to the vector between start and end on the clockwise side.
+  let theta = Math.atan((end.y - start.y) / (end.x - start.x));
+  if (start.x <= end.x) {
+    theta -= Math.PI / 2;
+  } else {
+    theta += Math.PI / 2;
+  }
+
+    // find a point perpendicular to the segment between start and end that is `bump` distance away.
+  const offset = {
+    x: (end.x + start.x) / 2 + Math.cos(theta) * bump * i,
+    y: (end.y + start.y) / 2 + Math.sin(theta) * bump * i
+  };
+
+    // get the center of the circle whose arc goes through all three points, its radius and connect the dots
+  const center = CalculateCircleCenter(start, end, offset);
+  const radius = Math.sqrt(Math.pow(start.x - center.x, 2) + Math.pow(start.y - center.y, 2));
+  const startAngle = Math.atan2(start.y - center.y, start.x - center.x);
+  const endAngle = Math.atan2(end.y - center.y, end.x - center.x);
+  drawCircle(ctx, center, startAngle, endAngle, radius, style);
+
+    // to draw the arrowhead, we create a small circle opposite the end point from the main arc's center
+  const t2 = Math.atan((end.y - center.y) / (end.x - center.x));
+  let stubCenter = {
+    x: end.x + Math.cos(t2) * stubRadius,
+    y: end.y + Math.sin(t2) * stubRadius
+  };
+
+    // if we didn't actually go on the *opposite* side of the end point, make sure we do that ;)
+  if (distance(stubCenter, center) < distance(end, center)) {
+    stubCenter = {
+      x: end.x - Math.cos(t2) * stubRadius,
+      y: end.y - Math.sin(t2) * stubRadius
+    };
+  }
+
+  const stubAngle = Math.atan2(end.y - stubCenter.y, end.x - stubCenter.x);
+  drawCircle(ctx, stubCenter, stubAngle, stubAngle + Math.PI / 4, stubRadius, style);
 }
 
 export default DnsConnectionView;
