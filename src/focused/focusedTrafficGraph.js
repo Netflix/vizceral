@@ -28,31 +28,8 @@ class FocusedTrafficGraph extends TrafficGraph {
     this.linePrecision = 4;
   }
 
-  manipulateState (state, parentState) {
-    // set up the focused node
-    const thisNode = _.cloneDeep(state);
-    delete thisNode.renderer;
-    thisNode.focused = true;
-
-    // manipulate nodes and connections based on parent graph
-    state.connections = _.filter(parentState.connections, connection => connection.source === state.name || connection.target === state.name);
-    state.nodes = _.uniqBy(_.reduce(state.connections, (acc, connection) => {
-      acc.push(_.clone(_.find(parentState.nodes, { name: connection.source })));
-      acc.push(_.clone(_.find(parentState.nodes, { name: connection.target })));
-      return acc;
-    }, []), 'name');
-
-    // replace focused node
-    _.remove(state.nodes, node => node.name === thisNode.name);
-    state.nodes.push(thisNode);
-
-    // clean up new state
-    state.nodes.forEach(node => delete node.renderer);
-    state.maxVolume = state.maxVolume || _.get(this.parentGraph, ['volume', 'max'], 0);
-  }
-
-  setState (state, force) {
-    super.setState(state, force);
+  setState (state, force, parentState) {
+    super.setState(state, force, parentState);
     this.focusedNode = _.find(this.nodes, { focused: true });
   }
 

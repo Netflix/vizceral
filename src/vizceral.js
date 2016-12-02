@@ -23,6 +23,7 @@ import Hammer from 'hammerjs';
 
 import DNSLayout from './layouts/dnsLayout';
 import DnsTrafficGraph from './dns/dnsTrafficGraph';
+import FocusedChildTrafficGraph from './focused/focusedChildTrafficGraph';
 import FocusedTrafficGraph from './focused/focusedTrafficGraph';
 import GlobalDefinitions from './globalDefinitions';
 import GlobalStyles from './globalStyles';
@@ -142,6 +143,7 @@ class Vizceral extends EventEmitter {
       global: GlobalTrafficGraph,
       region: RegionTrafficGraph,
       focused: FocusedTrafficGraph,
+      focusedChild: FocusedChildTrafficGraph,
       dns: DnsTrafficGraph
     };
     this.moveNodeInteraction = new MoveNodeInteraction(this);
@@ -226,8 +228,7 @@ class Vizceral extends EventEmitter {
       });
 
       if (currentGraphData) {
-        graph.manipulateState(currentGraphData, parentGraphData);
-        graph.setState(currentGraphData);
+        graph.setState(currentGraphData, false, parentGraphData);
         graph.validateLayout();
       }
     }

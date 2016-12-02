@@ -358,9 +358,9 @@ class TrafficGraph extends EventEmitter {
    * most current state.
    */
   validateState () {
-    if (this.cachedState) {
-      this.setState(this.cachedState, true);
-      this.cachedState = undefined;
+    if (this.cachedStates) {
+      this.setState(this.cachedStates.self, true, this.cachedStates.parent);
+      this.cachedStates = undefined;
     }
   }
 
@@ -368,7 +368,7 @@ class TrafficGraph extends EventEmitter {
     // no-op
   }
 
-  setState (state, force) {
+  setState (state, force, parentState) {
     let updatedState = false;
     if (state && Object.keys(state).length > 0) {
       // If this is the first update, run it, otherwise, only update if it's the current graph
@@ -483,7 +483,7 @@ class TrafficGraph extends EventEmitter {
         this.emitObjectUpdated();
         updatedState = true;
       } else {
-        this.cachedState = state;
+        this.cachedStates = { self: state, parent: parentState };
       }
       this._particleSystem.onTrafficGraphChanged();
     }
