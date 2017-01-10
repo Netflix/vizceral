@@ -120,6 +120,9 @@ class Vizceral extends EventEmitter {
     // Mouse/Touch interactivity
     this.raycaster_mouseLocation_viewportSpace = new THREE.Vector2(-1, -1);
     this.raycaster = new THREE.Raycaster();
+    if (window) {
+      window.addEventListener('scroll', () => this.updateBoundingRectCache());
+    }
 
     this.hammertime = new Hammer.Manager(this.renderer.domElement);
     this.hammertime.on('press', event => this.onDocumentMouseMove(event), false);
