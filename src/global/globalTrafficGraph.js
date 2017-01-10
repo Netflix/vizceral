@@ -40,26 +40,61 @@ class GlobalTrafficGraph extends TrafficGraph {
     this.hasPositionData = true;
   }
 
+  validateContextDiv (name) {
+    if (!this.contextDivs[name]) {
+      const parentDiv = RendererUtils.getParent();
+      if (parentDiv) {
+        this.contextDivs[name] = document.createElement('div');
+        this.contextDivs[name].style.position = 'absolute';
+        this.contextDivs[name].className = `context ${name}`;
+        parentDiv.appendChild(this.contextDivs[name]);
+      }
+    }
+  }
+
+  removeContextDiv (name) {
+    if (this.contextDivs[name]) {
+      const parentDiv = RendererUtils.getParent();
+      if (parentDiv) {
+        parentDiv.removeChild(this.contextDivs[name]);
+        this.contextDivs[name] = undefined;
+      }
+    }
+  }
+
   setState (state, force) {
+    // Remove old nodes
+    for (let i = this.state.nodes.length - 1; i >= 0; i--) {
+      const newNodeIndex = _.findIndex(state.nodes, { name: this.state.nodes[i].name });
+      if (newNodeIndex === -1) {
+        this.removeContextDiv(this.state.nodes[i].name);
+        this.state.nodes.splice(i, 1);
+      }
+    }
+
+    // Add new nodes and update existing nodes
     _.each(state.nodes, (node) => {
       const existingNodeIndex = _.findIndex(this.state.nodes, { name: node.name });
       if (existingNodeIndex !== -1) {
+        // If the node already exists, replace the node
         this.state.nodes[existingNodeIndex] = node;
       } else {
+        // Add new node
         this.layoutValid = false;
         this.state.nodes.push(node);
-        if (!this.contextDivs[node.name]) {
-          const parentDiv = RendererUtils.getParent();
-          if (parentDiv) {
-            this.contextDivs[node.name] = document.createElement('div');
-            this.contextDivs[node.name].style.position = 'absolute';
-            this.contextDivs[node.name].className = `context ${node.name}`;
-            parentDiv.appendChild(this.contextDivs[node.name]);
-          }
-        }
+        this.validateContextDiv(node.name);
       }
     });
 
+    // Remove old connections
+    for (let i = this.state.connections.length - 1; i >= 0; i--) {
+      const newConnectionIndex = _.findIndex(state.connections, { source: this.state.connections[i].source, target: this.state.connections[i].target });
+      if (newConnectionIndex === -1) {
+        this.state.connections.splice(i, 1);
+      }
+    }
+
+    // Add new connection and update existing connectiond
     _.each(state.connections, (newConnection) => {
       const existingConnectionIndex = _.findIndex(this.state.connections, { source: newConnection.source, target: newConnection.target });
       if (existingConnectionIndex !== -1) {
