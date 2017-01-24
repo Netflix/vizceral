@@ -32,7 +32,7 @@ function dfsFas (graph) {
       if (_.has(stack, edge.target)) {
         fas.push(edge);
       } else {
-        dfs(edge.target);
+        dfs(graph.getNode(edge.target));
       }
     });
     delete stack[node.name];
