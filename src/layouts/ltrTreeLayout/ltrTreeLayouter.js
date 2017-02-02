@@ -110,8 +110,9 @@ const weightSort = function (a, b) {
       return nodePositions;
     }
 
-    ltrTreeLayouter.prototype.layout = function (nodes, edges, dimensions, entryNode) {
-      const graph = new Graph(nodes, edges); // Build a simple graph object
+    ltrTreeLayouter.prototype.layout = function (data) {
+      const options = data.options || {};
+      const graph = new Graph(data.graph.nodes, data.graph.edges); // Build a simple graph object
       graph.removeSameEdges(); // Remove edges that have same source and target
       AcyclicFAS.remove(graph); // Remove acyclic links
       Ranker.longestPathRanking(graph); // Run a longest path algorithm to build a layout baseline
@@ -121,12 +122,14 @@ const weightSort = function (a, b) {
       graph.restoreSameEdges(); // Replace edges that have same source and target
 
       Ranker.normalizeRanks(graph); // Normalize node ranks to be 0++
-      Ranker.forcePrimaryRankPromotions(graph, entryNode); // Force all entry nodes to be first
-      Ranker.forceSecondaryRankPromotions(graph, entryNode); // Force any leafs that are one level deep from specified entry node to not move all the way to the edge
+      if (!options.noRankPromotion) {
+        Ranker.forcePrimaryRankPromotions(graph, data.entryNode); // Force all entry nodes to be first
+        Ranker.forceSecondaryRankPromotions(graph, data.entryNode); // Force any leafs that are one level deep from specified entry node to not move all the way to the edge
+      }
 
       const nodesSortedByDepth = sortNodesByDepth(graph);
       sortNodesWithinDepth(nodesSortedByDepth);
-      const nodePositions = positionNodes(nodesSortedByDepth, dimensions);
+      const nodePositions = positionNodes(nodesSortedByDepth, data.dimensions);
       return nodePositions;
     };
 

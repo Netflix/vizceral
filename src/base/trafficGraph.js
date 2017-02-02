@@ -736,7 +736,7 @@ class TrafficGraph extends EventEmitter {
 
   _relayout () {
     // Update filters
-    const graph = { nodes: [], connections: [] };
+    const graph = { nodes: [], connections: [], options: this.layoutOptions };
     let totalNodes = 0;
     let visibleNodes = 0;
 

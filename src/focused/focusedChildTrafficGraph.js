@@ -25,6 +25,8 @@ class FocusedChildTrafficGraph extends FocusedTrafficGraph {
     delete thisNode.renderer;
     thisNode.focused = true;
 
+    this.layoutOptions = { noRankPromotion: true };
+
     // manipulate nodes and connections based on parent graph
     state.connections = _.filter(parentState.connections, connection => connection.source === state.name || connection.target === state.name);
     state.nodes = _.uniqBy(_.reduce(state.connections, (acc, connection) => {

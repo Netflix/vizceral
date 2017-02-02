@@ -48,9 +48,17 @@ function Graph (nodes, edges) {
     // Add the edge to the outgoing edges map
     this._outgoingEdges[edge.source] = this._outgoingEdges[edge.source] || [];
     this._outgoingEdges[edge.source].push(edge);
+  });
 
-    // Remove the target node from the entry node map
-    delete this._entryNodeMap[edge.target];
+  // In the rare case of entry nodes that have circular connections, we need to make sure we do not remove
+  // the node from the entry node list.
+  _.each(this._incomingNodes, (targetNodes, sourceNodeName) => {
+    const incomingNodeNames = Object.keys(targetNodes);
+    const outgoingNodeNames = Object.keys(this._outgoingNodes[sourceNodeName] || {});
+    const incomingWithoutOutgoing = _.without(incomingNodeNames, ...outgoingNodeNames);
+    if (incomingWithoutOutgoing.length !== 0) {
+      delete this._entryNodeMap[sourceNodeName];
+    }
   });
 }
 

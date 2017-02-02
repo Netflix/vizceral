@@ -22,15 +22,12 @@ const LTRTreeLayouter = require('./ltrTreeLayouter.js');
 self.ltrTreeLayouter = new LTRTreeLayouter();
 
 self.layout = function (options) {
-  const graph = options.graph;
-  const dimensions = options.dimensions;
-
   // run the layout
-  const nodePositions = self.ltrTreeLayouter.layout(graph.nodes, graph.edges, dimensions, options.entryNode);
+  const nodePositions = self.ltrTreeLayouter.layout(options);
 
   // adjust the layout since our coordinates are center origin
-  const halfWidth = dimensions.width / 2;
-  const halfHeight = dimensions.height / 2;
+  const halfWidth = options.dimensions.width / 2;
+  const halfHeight = options.dimensions.height / 2;
   let nodeName;
   for (nodeName in nodePositions) {
     if ({}.hasOwnProperty.call(nodePositions, nodeName)) {
