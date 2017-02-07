@@ -813,3 +813,4 @@ class Vizceral extends EventEmitter {
 }
 
 export default Vizceral;
+export * from './base';
