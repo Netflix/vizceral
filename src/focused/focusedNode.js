@@ -23,6 +23,7 @@ class FocusedNode extends Node {
   constructor (node) {
     super(node, 'focused');
     this.loaded = true;
+    this.size = node.size || 60;
   }
 
   isInteractive () {
