@@ -16,12 +16,12 @@
  *
  */
 import Node from '../base/node';
-import NodeViewDetailed from '../base/nodeViewDetailed';
+import FocusedNodeView from '../focused/focusedNodeView';
 
 class GlobalNode extends Node {
   constructor (node) {
+    node.size = node.size || 120;
     super(node, 'global');
-    this.size = node.size || 120;
     this.refreshLoaded();
   }
 
@@ -44,7 +44,7 @@ class GlobalNode extends Node {
   }
 
   render () {
-    this.view = new NodeViewDetailed(this);
+    this.view = new FocusedNodeView(this);
   }
 }
 

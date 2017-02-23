@@ -21,9 +21,9 @@ import FocusedNodeView from './focusedNodeView';
 
 class FocusedNode extends Node {
   constructor (node) {
+    node.size = node.size || 120;
     super(node, 'focused');
     this.loaded = true;
-    this.size = node.size || 60;
   }
 
   isInteractive () {

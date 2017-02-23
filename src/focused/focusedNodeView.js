@@ -55,7 +55,7 @@ class FocusedNodeView extends NodeView {
     this.donutGraphSegments = [];
     this.arcMeterSegments = [];
 
-    this.radius = this.object.size || 120;
+    this.radius = this.object.size;
     this.innerRadius = this.radius * 0.8;
 
     this.meshes.outerBorder = this.addChildElement(NodeView.getOuterBorderGeometry(this.radius), this.borderMaterial);

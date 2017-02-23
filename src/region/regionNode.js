@@ -20,9 +20,9 @@ import NodeViewStandard from '../base/nodeViewStandard';
 
 class RegionNode extends Node {
   constructor (node) {
+    node.size = node.size || 60;
     super(node, 'region');
     this.loaded = true;
-    this.size = node.size || 60;
   }
 
   isInteractive () {

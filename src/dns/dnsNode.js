@@ -20,9 +20,9 @@ import DnsNodeView from './dnsNodeView';
 
 class DnsNode extends Node {
   constructor (node) {
+    node.size = node.size || 100;
     super(node, 'dns');
     this.loaded = true;
-    this.size = 100;
   }
 
   isInteractive () {
