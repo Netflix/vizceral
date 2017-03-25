@@ -26,7 +26,8 @@ class GlobalNode extends Node {
   }
 
   isInteractive () {
-    return this.nodes && this.nodes.length > 0;
+    return true;
+    /*     return this.isEntryNode() && this.nodes && this.nodes.length > 0;*/
   }
 
   refreshLoaded () {
