@@ -45,12 +45,13 @@ function getPerformanceNow () {
 }
 
 class TrafficGraph extends EventEmitter {
-  constructor (name, mainView, parentGraph, graphWidth, graphHeight, NodeClass, ConnectionClass, Layout) {
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight, NodeClass, ConnectionClass, Layout, entryNode) {
     super();
     this.type = 'default';
     this.name = name;
     this.mainView = mainView;
     this.parentGraph = parentGraph;
+    this.entryNode = entryNode;
     this.nodes = {};
     this.connections = {};
     this.filters = {};
@@ -344,7 +345,9 @@ class TrafficGraph extends EventEmitter {
   }
 
   /**
-   * Return array of entry nodes; effectively nodes that have no incoming connections
+   * Return array of entry nodes,
+   * if entryNode in graph specified we return based on that,
+   * else list of nodes that have no incoming connections
    *
    * @returns {array} array of entry nodes
    */
@@ -394,7 +397,7 @@ class TrafficGraph extends EventEmitter {
           stateNodeMap[stateNode.name] = true;
           let node = this.nodes[stateNode.name];
           if (!node) {
-            node = new this.NodeClass(stateNode);
+            node = new this.NodeClass(stateNode, this.entryNode);
             node.updatePosition(stateNode.position, index);
             this.nodes[stateNode.name] = node;
             this.layoutValid = false;

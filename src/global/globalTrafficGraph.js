@@ -24,8 +24,8 @@ import RingCenterLayout from '../layouts/ringCenterLayout';
 import TrafficGraph from '../base/trafficGraph';
 
 class GlobalTrafficGraph extends TrafficGraph {
-  constructor (name, mainView, parentGraph, graphWidth, graphHeight, Layout = RingCenterLayout) {
-    super(name, mainView, parentGraph, graphWidth, graphHeight, GlobalNode, GlobalConnection, Layout);
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight, Layout = RingCenterLayout, entryNode) {
+    super(name, mainView, parentGraph, graphWidth, graphHeight, GlobalNode, GlobalConnection, Layout, entryNode);
     this.type = 'global';
 
     this.maxDimension = Math.min(graphWidth, graphHeight);

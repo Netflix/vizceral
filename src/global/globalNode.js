@@ -19,9 +19,9 @@ import Node from '../base/node';
 import FocusedNodeView from '../focused/focusedNodeView';
 
 class GlobalNode extends Node {
-  constructor (node) {
+  constructor (node, entryNode) {
     node.size = node.size || 120;
-    super(node, 'global');
+    super(node, 'global', entryNode);
     this.refreshLoaded();
   }
 

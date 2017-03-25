@@ -209,7 +209,7 @@ class Vizceral extends EventEmitter {
           if (graphData.layout && !this.layouts[graphData.layout]) {
             Console.log(`Attempted to create a graph with a layout type that does not exist: ${graphData.layout}. Using default layout for graph type.`);
           }
-          graph = new (this.renderers[graphData.renderer])(graphData.name, mainView, parentGraph, width, height, this.layouts[graphData.layout]);
+          graph = new (this.renderers[graphData.renderer])(graphData.name, mainView, parentGraph, width, height, this.layouts[graphData.layout], graphData.entryNode);
           this._attachGraphHandlers(graph);
           graph.setFilters(this.filters);
           graph.showLabels(this.options.showLabels);
