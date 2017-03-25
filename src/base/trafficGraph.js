@@ -670,7 +670,7 @@ class TrafficGraph extends EventEmitter {
     let changed = false;
     _.each(this.nodes, (node) => {
       node.defaultFiltered = !node.hasDefaultVisibleConnections() || !_.every(filters.node, filter => filter.passes(node, filter.defaultValue));
-      const filtered = !node.focused && (!node.hasVisibleConnections() || !_.every(filters.node, filter => filter.passes(node, filter.value)));
+      const filtered = !node.focused && !node.isEntryNode() && (!node.hasVisibleConnections() || !_.every(filters.node, filter => filter.passes(node, filter.value)));
       if (node.filtered !== filtered) {
         node.filtered = filtered;
         changed = true;
