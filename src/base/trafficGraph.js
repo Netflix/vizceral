@@ -374,6 +374,10 @@ class TrafficGraph extends EventEmitter {
   setState (state, force, parentState) {
     let updatedState = false;
     if (state && Object.keys(state).length > 0) {
+      // it's important to update entryNode when we're switching views
+      if (state.entryNode) {
+        this.entryNode = state.entryNode;
+      }
       // If this is the first update, run it, otherwise, only update if it's the current graph
       if (this.current || force) {
         // first, remove nodes that aren't in the new state
@@ -739,7 +743,7 @@ class TrafficGraph extends EventEmitter {
 
   _relayout () {
     // Update filters
-    const graph = { nodes: [], connections: [], options: this.layoutOptions };
+    const graph = { nodes: [], connections: [], options: this.layoutOptions, entryNode: this.entryNode };
     let totalNodes = 0;
     let visibleNodes = 0;
 

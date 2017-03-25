@@ -24,8 +24,9 @@ import TrafficGraph from '../base/trafficGraph';
 const Console = console;
 
 class RegionTrafficGraph extends TrafficGraph {
-  constructor (name, mainView, parentGraph, graphWidth, graphHeight, Layout = LTRTreeLayout) {
-    super(name, mainView, parentGraph, graphWidth, graphHeight, RegionNode, RegionConnection, Layout);
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight, Layout = LTRTreeLayout, entryNode) {
+    super(name, mainView, parentGraph, graphWidth, graphHeight, RegionNode, RegionConnection, Layout, entryNode);
+
     this.type = 'region';
     this.linePrecision = 4;
     this.data = {};

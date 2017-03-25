@@ -86,7 +86,7 @@ class LTRTreeLayout {
       };
       layoutWorker.addEventListener('message', layoutWorkerComplete);
 
-      layoutWorker.postMessage({ graph: workerGraph, dimensions: dimensions, entryNode: 'INTERNET', options: graph.options });
+      layoutWorker.postMessage({ graph: workerGraph, dimensions: dimensions, entryNode: graph.entryNode, options: graph.options });
     }
   }
 }
