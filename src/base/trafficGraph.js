@@ -670,7 +670,7 @@ class TrafficGraph extends EventEmitter {
     let changed = false;
     _.each(this.nodes, (node) => {
       node.defaultFiltered = !node.hasDefaultVisibleConnections() || !_.every(filters.node, filter => filter.passes(node, filter.defaultValue));
-      const filtered = !node.focused && !node.isEntryNode() && (!node.hasVisibleConnections() || !_.every(filters.node, filter => filter.passes(node, filter.value)));
+      const filtered = !node.focused && (!node.hasVisibleConnections() || !_.every(filters.node, filter => filter.passes(node, filter.value)));
       if (node.filtered !== filtered) {
         node.filtered = filtered;
         changed = true;
@@ -763,8 +763,10 @@ class TrafficGraph extends EventEmitter {
 
     _.each(this.nodes, (n) => { n.filtered = false; });
     _.each(this.connections, (c) => { c.filtered = false; });
-    this._updateConnectionFilters(filters);
-    this._updateNodeFilters(filters);
+    if (Object.keys(this.nodes).length > 1) {
+      this._updateConnectionFilters(filters);
+      this._updateNodeFilters(filters);
+    }
 
     const subsetOfDefaultVisibleNodes = _.every(this.nodes, n => !n.isVisible() || (n.isVisible() && !n.defaultFiltered));
     const subsetOfDefaultVisibleConnections = _.every(this.connections, c => !c.isVisible() || (c.isVisible() && !c.defaultFiltered));
