@@ -25,6 +25,10 @@ class RegionNode extends Node {
     this.loaded = true;
   }
 
+  isDraggable () {
+    return true;
+  }
+
   isInteractive () {
     return true;
   }

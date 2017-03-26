@@ -692,7 +692,7 @@ class Vizceral extends EventEmitter {
       if (intersects.length > 0) {
         if (intersects[0].object.userData.object) {
           userData = intersects[0].object.userData;
-          userData = (userData.object && userData.object.loaded && userData.object.isInteractive()) ? userData : {};
+          userData = (userData.object && userData.object.loaded && (userData.object.isInteractive() || (this.options.allowDraggingOfNodes && userData.object.isDraggable()))) ? userData : {};
         } else {
           Console.warn('Mouse cursor intersected with a visible object that does not have an associated object model. The object should be set at userData.object');
         }

@@ -26,6 +26,10 @@ class FocusedNode extends Node {
     this.loaded = true;
   }
 
+  isDraggable () {
+    return !this.focused;
+  }
+
   isInteractive () {
     return !this.focused;
   }

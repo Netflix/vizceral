@@ -131,13 +131,13 @@ class GlobalTrafficGraph extends TrafficGraph {
   }
 
   handleIntersectedObjectClick () {
-    if (this.intersectedObject && this.intersectedObject.graphRenderer === 'global') {
+    if (this.intersectedObject && this.intersectedObject.graphRenderer === 'global' && this.intersectedObject.isInteractive()) {
       this.emit('setView', [this.intersectedObject.getName()]);
     }
   }
 
   handleIntersectedObjectDoubleClick () {
-    if (this.intersectedObject && this.intersectedObject.graphRenderer === 'global') {
+    if (this.intersectedObject && this.intersectedObject.graphRenderer === 'global' && this.intersectedObject.isInteractive()) {
       this.emit('setView', [this.intersectedObject.getName()]);
     }
   }
