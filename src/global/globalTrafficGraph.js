@@ -63,7 +63,6 @@ class GlobalTrafficGraph extends TrafficGraph {
   }
 
   setState (state, force) {
-    console.log(state);
     // Remove old nodes
     for (let i = this.state.nodes.length - 1; i >= 0; i--) {
       const newNodeIndex = _.findIndex(state.nodes, { name: this.state.nodes[i].name });
