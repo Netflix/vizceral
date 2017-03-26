@@ -63,6 +63,7 @@ class GlobalTrafficGraph extends TrafficGraph {
   }
 
   setState (state, force) {
+    console.log(state);
     // Remove old nodes
     for (let i = this.state.nodes.length - 1; i >= 0; i--) {
       const newNodeIndex = _.findIndex(state.nodes, { name: this.state.nodes[i].name });
@@ -118,6 +119,9 @@ class GlobalTrafficGraph extends TrafficGraph {
       });
     }
     this.state.maxVolume = maxVolume * 1.5;
+
+    // setting this.state.entryNode to pass it to super.setState
+    this.state.entryNode = state.entryNode;
 
     super.setState(this.state, force);
     this.validateLayout();
