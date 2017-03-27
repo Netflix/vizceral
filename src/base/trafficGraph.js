@@ -761,7 +761,9 @@ class TrafficGraph extends EventEmitter {
 
     _.each(this.nodes, (n) => { n.filtered = false; });
     _.each(this.connections, (c) => { c.filtered = false; });
-    if (Object.keys(this.nodes).length > 1) {
+
+    const forceNodesVisible = Object.keys(this.nodes).length > 1;
+    if (forceNodesVisible) {
       this._updateConnectionFilters(filters);
       this._updateNodeFilters(filters);
     }
@@ -780,7 +782,7 @@ class TrafficGraph extends EventEmitter {
       if (useInLayout(node)) {
         graph.nodes.push(node);
       }
-      if (node.connected) {
+      if (node.connected || forceNodesVisible) {
         totalNodes++;
         if (node.isVisible()) { visibleNodes++; }
       }
