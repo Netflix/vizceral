@@ -24,6 +24,7 @@ class FocusedChildTrafficGraph extends FocusedTrafficGraph {
     const thisNode = _.cloneDeep(state);
     delete thisNode.renderer;
     thisNode.focused = true;
+    thisNode.size = 120;
 
     this.layoutOptions = { noRankPromotion: true };
 
