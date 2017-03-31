@@ -280,7 +280,9 @@ class TrafficGraph extends EventEmitter {
   }
 
   handleIntersectedObjectDoubleClick () {
-
+    const graphIndex = this.graphIndex.slice(0);
+    graphIndex.push(this.intersectedObject.getName());
+    this.emit('setView', graphIndex);
   }
 
   showLabels (showLabels) {

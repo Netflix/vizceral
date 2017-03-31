@@ -138,7 +138,7 @@ class GlobalTrafficGraph extends TrafficGraph {
 
   handleIntersectedObjectDoubleClick () {
     if (this.intersectedObject && this.intersectedObject.graphRenderer === 'global' && this.intersectedObject.isInteractive()) {
-      this.emit('setView', [this.intersectedObject.getName()]);
+      super.handleIntersectedObjectDoubleClick();
     }
   }
 
