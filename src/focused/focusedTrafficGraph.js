@@ -22,8 +22,8 @@ import LTRTreeLayout from '../layouts/ltrTreeLayout';
 import TrafficGraph from '../base/trafficGraph';
 
 class FocusedTrafficGraph extends TrafficGraph {
-  constructor (name, mainView, parentGraph, graphWidth, graphHeight, Layout = LTRTreeLayout) {
-    super(name, mainView, parentGraph, graphWidth, graphHeight, FocusedNode, RegionConnection, Layout);
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight, Layout = LTRTreeLayout, entryNode) {
+    super(name, mainView, parentGraph, graphWidth, graphHeight, FocusedNode, RegionConnection, Layout, entryNode);
     this.type = 'focused';
     this.linePrecision = 4;
   }

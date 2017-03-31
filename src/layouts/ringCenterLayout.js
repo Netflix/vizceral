@@ -37,7 +37,7 @@ function positionNodes (nodes, orbitSize) {
   const nodeMap = _.keyBy(nodes, 'name');
   _.each(sortedNodeNames, (nodeName) => {
     const node = nodeMap[nodeName];
-    if (!node.isEntryNode()) {
+    if (!node.isEntryNode() && nodeCount > 0) {
       nodeIndex++;
       updatePosition(node, nodeCount, nodeIndex, orbitSize);
     } else {

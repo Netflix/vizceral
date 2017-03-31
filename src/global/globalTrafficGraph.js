@@ -24,8 +24,8 @@ import RingCenterLayout from '../layouts/ringCenterLayout';
 import TrafficGraph from '../base/trafficGraph';
 
 class GlobalTrafficGraph extends TrafficGraph {
-  constructor (name, mainView, parentGraph, graphWidth, graphHeight, Layout = RingCenterLayout) {
-    super(name, mainView, parentGraph, graphWidth, graphHeight, GlobalNode, GlobalConnection, Layout);
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight, Layout = RingCenterLayout, entryNode) {
+    super(name, mainView, parentGraph, graphWidth, graphHeight, GlobalNode, GlobalConnection, Layout, entryNode);
     this.type = 'global';
 
     this.maxDimension = Math.min(graphWidth, graphHeight);
@@ -119,6 +119,9 @@ class GlobalTrafficGraph extends TrafficGraph {
     }
     this.state.maxVolume = maxVolume * 1.5;
 
+    // setting this.state.entryNode to pass it to super.setState
+    this.state.entryNode = state.entryNode;
+
     super.setState(this.state, force);
     this.validateLayout();
   }
@@ -128,13 +131,13 @@ class GlobalTrafficGraph extends TrafficGraph {
   }
 
   handleIntersectedObjectClick () {
-    if (this.intersectedObject && this.intersectedObject.graphRenderer === 'global') {
+    if (this.intersectedObject && this.intersectedObject.graphRenderer === 'global' && this.intersectedObject.isInteractive()) {
       this.emit('setView', [this.intersectedObject.getName()]);
     }
   }
 
   handleIntersectedObjectDoubleClick () {
-    if (this.intersectedObject && this.intersectedObject.graphRenderer === 'global') {
+    if (this.intersectedObject && this.intersectedObject.graphRenderer === 'global' && this.intersectedObject.isInteractive()) {
       super.handleIntersectedObjectDoubleClick();
     }
   }

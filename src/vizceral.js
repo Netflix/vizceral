@@ -209,7 +209,7 @@ class Vizceral extends EventEmitter {
           if (graphData.layout && !this.layouts[graphData.layout]) {
             Console.log(`Attempted to create a graph with a layout type that does not exist: ${graphData.layout}. Using default layout for graph type.`);
           }
-          graph = new (this.renderers[graphData.renderer])(graphData.name, mainView, parentGraph, width, height, this.layouts[graphData.layout]);
+          graph = new (this.renderers[graphData.renderer])(graphData.name, mainView, parentGraph, width, height, this.layouts[graphData.layout], graphData.entryNode);
           this._attachGraphHandlers(graph);
           graph.setFilters(this.filters);
           graph.showLabels(this.options.showLabels);
@@ -692,7 +692,7 @@ class Vizceral extends EventEmitter {
       if (intersects.length > 0) {
         if (intersects[0].object.userData.object) {
           userData = intersects[0].object.userData;
-          userData = (userData.object && userData.object.loaded && userData.object.isInteractive()) ? userData : {};
+          userData = (userData.object && userData.object.loaded && (userData.object.isInteractive() || (this.options.allowDraggingOfNodes && userData.object.isDraggable()))) ? userData : {};
         } else {
           Console.warn('Mouse cursor intersected with a visible object that does not have an associated object model. The object should be set at userData.object');
         }

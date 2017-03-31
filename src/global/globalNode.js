@@ -19,14 +19,18 @@ import Node from '../base/node';
 import FocusedNodeView from '../focused/focusedNodeView';
 
 class GlobalNode extends Node {
-  constructor (node) {
+  constructor (node, entryNode) {
     node.size = node.size || 120;
-    super(node, 'global');
+    super(node, 'global', entryNode);
     this.refreshLoaded();
   }
 
   isInteractive () {
-    return !this.isEntryNode();
+    return this.nodes && this.nodes.length > 0;
+  }
+
+  isDraggable () {
+    return true;
   }
 
   refreshLoaded () {

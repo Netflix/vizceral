@@ -45,12 +45,13 @@ function getPerformanceNow () {
 }
 
 class TrafficGraph extends EventEmitter {
-  constructor (name, mainView, parentGraph, graphWidth, graphHeight, NodeClass, ConnectionClass, Layout) {
+  constructor (name, mainView, parentGraph, graphWidth, graphHeight, NodeClass, ConnectionClass, Layout, entryNode) {
     super();
     this.type = 'default';
     this.name = name;
     this.mainView = mainView;
     this.parentGraph = parentGraph;
+    this.entryNode = entryNode;
     this.nodes = {};
     this.connections = {};
     this.filters = {};
@@ -346,7 +347,9 @@ class TrafficGraph extends EventEmitter {
   }
 
   /**
-   * Return array of entry nodes; effectively nodes that have no incoming connections
+   * Return array of entry nodes,
+   * if entryNode in graph specified we return based on that,
+   * else list of nodes that have no incoming connections
    *
    * @returns {array} array of entry nodes
    */
@@ -373,6 +376,8 @@ class TrafficGraph extends EventEmitter {
   setState (state, force, parentState) {
     let updatedState = false;
     if (state && Object.keys(state).length > 0) {
+      // it's important to update entryNode when we're switching views
+      this.entryNode = state.entryNode;
       // If this is the first update, run it, otherwise, only update if it's the current graph
       if (this.current || force) {
         // first, remove nodes that aren't in the new state
@@ -396,7 +401,7 @@ class TrafficGraph extends EventEmitter {
           stateNodeMap[stateNode.name] = true;
           let node = this.nodes[stateNode.name];
           if (!node) {
-            node = new this.NodeClass(stateNode);
+            node = new this.NodeClass(stateNode, this.entryNode);
             node.updatePosition(stateNode.position, index);
             this.nodes[stateNode.name] = node;
             this.layoutValid = false;
@@ -738,7 +743,7 @@ class TrafficGraph extends EventEmitter {
 
   _relayout () {
     // Update filters
-    const graph = { nodes: [], connections: [], options: this.layoutOptions };
+    const graph = { nodes: [], connections: [], options: this.layoutOptions, entryNode: this.entryNode };
     let totalNodes = 0;
     let visibleNodes = 0;
 
@@ -758,8 +763,12 @@ class TrafficGraph extends EventEmitter {
 
     _.each(this.nodes, (n) => { n.filtered = false; });
     _.each(this.connections, (c) => { c.filtered = false; });
-    this._updateConnectionFilters(filters);
-    this._updateNodeFilters(filters);
+
+    const forceNodesVisible = Object.keys(this.nodes).length > 1;
+    if (forceNodesVisible) {
+      this._updateConnectionFilters(filters);
+      this._updateNodeFilters(filters);
+    }
 
     const subsetOfDefaultVisibleNodes = _.every(this.nodes, n => !n.isVisible() || (n.isVisible() && !n.defaultFiltered));
     const subsetOfDefaultVisibleConnections = _.every(this.connections, c => !c.isVisible() || (c.isVisible() && !c.defaultFiltered));
@@ -775,7 +784,7 @@ class TrafficGraph extends EventEmitter {
       if (useInLayout(node)) {
         graph.nodes.push(node);
       }
-      if (node.connected) {
+      if (node.connected || forceNodesVisible) {
         totalNodes++;
         if (node.isVisible()) { visibleNodes++; }
       }

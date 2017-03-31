@@ -23,11 +23,12 @@ import Notices from '../notices';
 const Console = console;
 
 class Node extends GraphObject {
-  constructor (node, renderer) {
+  constructor (node, renderer, entryNode) {
     super();
     this.type = 'node';
     this.update(node);
     this.minimumNoticeLevel = 0;
+    this.entryNode = entryNode;
 
     this.graphRenderer = renderer;
     this.position = this.position || {};
@@ -271,7 +272,12 @@ class Node extends GraphObject {
       && _.every(this.outgoingConnections, connection => connection.source.getName() !== nodeName));
   }
 
+  // If entryNode is specified within graph we're checking if this node is entryNode
+  // else we define entryNode based on amount of incoming and outgoing connections
   isEntryNode () {
+    if (this.entryNode) {
+      return this.name === this.entryNode;
+    }
     return this.incomingConnections.length === 0 && this.outgoingConnections.length > 0;
   }
 

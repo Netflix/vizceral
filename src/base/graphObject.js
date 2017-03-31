@@ -86,10 +86,14 @@ class GraphObject extends EventEmitter {
   }
 
   isClickable () {
-    return this.isInteractive();
+    return this.isInteractive() || this.isDraggable();
   }
 
   isInteractive () {
+    return false;
+  }
+
+  isDraggable () {
     return false;
   }
 
