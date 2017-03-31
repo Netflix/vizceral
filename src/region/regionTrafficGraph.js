@@ -69,7 +69,7 @@ class RegionTrafficGraph extends TrafficGraph {
 
   handleIntersectedObjectDoubleClick () {
     if (this.intersectedObject && this.intersectedObject.graphRenderer === 'region') {
-      this.emit('setView', [this.name, this.intersectedObject.getName()]);
+      super.handleIntersectedObjectDoubleClick();
     }
   }
 
