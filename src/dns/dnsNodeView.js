@@ -54,7 +54,7 @@ class DnsNodeView extends NodeView {
     textContext.font = `700 ${this.headerFontSize}px 'Source Sans Pro', sans-serif`;
 
     top += (this.canvasWidth / 2);
-    textContext.fillText(this.object.name, this.textCanvas.width / 2, top);
+    textContext.fillText(this.object.getDisplayName(), this.textCanvas.width / 2, top);
 
     this.textTexture.needsUpdate = true;
   }
