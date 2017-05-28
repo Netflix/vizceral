@@ -69,8 +69,7 @@ Graph.prototype.validateData = function (nodes, edges) {
   }, {});
 
   // Warn if connection connects to a node that doesnt exist
-  let i;
-  for (i in edges) {
+  for (let i = edges.length - 1; i >= 0; i--) {
     if (nodeMap[edges[i].source] === undefined) {
       Console.warn(`Attempted to layout a connection with non-existent source node: ${edges[i].source}.`);
       edges.splice(i, 1);
@@ -86,7 +85,7 @@ Graph.prototype.validateData = function (nodes, edges) {
   }
 
   if (nodes.length > 1) {
-    for (i in nodes) {
+    for (let i = nodes.length - 1; i >= 0; i--) {
       if (!nodeMap[nodes[i].name] || !nodeMap[nodes[i].name].connected) {
         nodes.splice(i, 1);
       }
