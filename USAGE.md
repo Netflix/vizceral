@@ -42,6 +42,11 @@ The `matchesFound` event is fired whenever nodes are found via findNodes().
 
 The `viewUpdated` event is fired whenever the current displayed graph's view updates.
 
+# objectHovered
+
+The `objectHovered` event is fired whenever a mouse hovers over a `node` or `connection` object. In case another 'node' or 'connection'
+is already in focus (because of click/highlight event), then this event won't be triggered.
+
 # objectHighlighted
 
 The `objectHighlighted` event is fired whenever an object is highlighted.
@@ -73,7 +78,7 @@ Update the global styles
 **Parameters**
 
 -   `An` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** object map of style names to values
--   `styles`  
+-   `styles`
 
 # updateDefinitions
 
@@ -82,7 +87,7 @@ Update the global definitions
 **Parameters**
 
 -   `An` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** object map of definitions. See the format and defaults in (<https://github.com/Netflix/Vizceral/wiki/Configuration#definitions-for-data-to-display>)
--   `definitions`  
+-   `definitions`
 
 # updateData
 
@@ -92,7 +97,7 @@ with the complete set of traffic data anytime there is an update.
 **Parameters**
 
 -   `data` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The traffic data that matches the format in (<https://github.com/Netflix/Vizceral/wiki/How-to-Use#graph-data-format>)
--   `trafficData`  
+-   `trafficData`
 
 # setHighlightedNode
 
@@ -144,7 +149,7 @@ Set the current modes of vizceral
 
 **Parameters**
 
--   `modes`  
+-   `modes`
 
 # zoomOutViewLevel
 

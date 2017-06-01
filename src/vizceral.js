@@ -37,6 +37,14 @@ import RendererUtils from './rendererUtils';
 import MoveNodeInteraction from './moveNodeInteraction';
 
 /**
+* The `objectHovered` event is fired whenever on mouseover on a 'node' or 'connection' .
+* `object.type` will be either 'node' or 'connection'. In case another 'node' or 'connection'
+*  is already in focus (because of click/highlight event), then this event won't be triggered.
+*
+* @event objectHovered
+* @property {object} object The object that has been hovered,
+*/
+/**
 * The `objectHighlighted` event is fired whenever an object is highlighted.
 * `object.type` will be either 'node' or 'connection'
 *
