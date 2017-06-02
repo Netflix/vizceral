@@ -17,7 +17,7 @@ See [the wiki](https://github.com/Netflix/vizceral/wiki) for full documentation.
 
 To see your changes to `vizceral` locally, you'll need to link the package with bower:
 
-    $ git clone git@github.com:Netflix/vizceral.git
+    $ git clone https://github.com/Netflix/vizceral.git
     $ cd vizceral
     $ npm link
     $ npm run dev
