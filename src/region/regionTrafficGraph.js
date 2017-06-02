@@ -50,6 +50,7 @@ class RegionTrafficGraph extends TrafficGraph {
           this.highlightConnectedNodes(undefined);
         } else if (this.intersectedObject instanceof this.NodeClass ||
                     this.intersectedObject instanceof this.ConnectionClass) {
+          this.emit('objectHovered', this.intersectedObject);
           this.highlightConnectedNodes(this.intersectedObject);
         }
       }
