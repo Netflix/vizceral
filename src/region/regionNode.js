@@ -15,6 +15,7 @@
  *     limitations under the License.
  *
  */
+import FocusedNodeView from '../focused/focusedNodeView';
 import Node from '../base/node';
 import NodeViewStandard from '../base/nodeViewStandard';
 
@@ -35,7 +36,11 @@ class RegionNode extends Node {
 
   render () {
     // Set the default view renderer
-    this.view = new NodeViewStandard(this);
+    if (this.nodeView === 'focused') {
+      this.view = new FocusedNodeView(this);
+    } else {
+      this.view = new NodeViewStandard(this);
+    }
   }
 }
 
