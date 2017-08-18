@@ -218,7 +218,7 @@ class NodeView extends BaseView {
       const borderHole = new THREE.Path();
       borderHole.absarc(0, 0, radius, 0, Math.PI * 2, true);
       border.holes.push(borderHole);
-      return new THREE.ShapeGeometry(border, { curveSegments: curveSegments });
+      return new THREE.ShapeGeometry(border, curveSegments);
     });
   }
 
@@ -227,7 +227,7 @@ class NodeView extends BaseView {
       const circleShape = new THREE.Shape();
       circleShape.moveTo(radius, 0);
       circleShape.absarc(0, 0, radius, 0, 2 * Math.PI, false);
-      return new THREE.ShapeGeometry(circleShape, { curveSegments: curveSegments });
+      return new THREE.ShapeGeometry(circleShape, curveSegments);
     });
   }
 
@@ -238,7 +238,7 @@ class NodeView extends BaseView {
       const innerBorderHole = new THREE.Path();
       innerBorderHole.absarc(0, 0, radius - 2, 0, Math.PI * 2, true);
       innerBorder.holes.push(innerBorderHole);
-      return new THREE.ShapeGeometry(innerBorder, { curveSegments: curveSegments });
+      return new THREE.ShapeGeometry(innerBorder, curveSegments);
     });
   }
 
@@ -249,7 +249,7 @@ class NodeView extends BaseView {
       const holePath = new THREE.Path();
       holePath.absarc(0, 0, innerRadius, 0, Math.PI * 2, true);
       arcShape.holes.push(holePath);
-      return new THREE.ShapeGeometry(arcShape, { curveSegments: curveSegments });
+      return new THREE.ShapeGeometry(arcShape, curveSegments);
     });
   }
 
@@ -259,7 +259,7 @@ class NodeView extends BaseView {
       const dotRadius = radius * 0.5;
       noticeShape.moveTo(dotRadius, 0);
       noticeShape.absarc(0, 0, dotRadius, 0, 2 * Math.PI, false);
-      return new THREE.ShapeGeometry(noticeShape, { curveSegments: curveSegments });
+      return new THREE.ShapeGeometry(noticeShape, curveSegments);
     });
   }
 }
