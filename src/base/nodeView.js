@@ -45,8 +45,6 @@ class NodeView extends BaseView {
     super(node);
     this.loaded = node.loaded;
 
-    this.depth = 5;
-
     this.donutInternalColor = GlobalStyles.rgba.colorDonutInternalColor;
     this.donutInternalColorThree = new THREE.Color(this.donutInternalColor.r, this.donutInternalColor.g, this.donutInternalColor.b);
 
@@ -131,18 +129,13 @@ class NodeView extends BaseView {
     if (this.object.position) {
       const x = this.object.position.x;
       const y = this.object.position.y;
-      let z = 0;
+      this.depth = this.dimmed ? Constants.DEPTH.dimmedNode : Constants.DEPTH.normalNode;
 
-      if (this.object.depth !== undefined) {
-        z = this.dimmed ? Constants.DEPTH.dimmedNode : Constants.DEPTH.normalNode;
-        if (this.object.getClass() === 'normal') {
-          z -= (this.object.depth * 10);
-        } else {
-          z += (this.object.depth * 20);
-        }
+      if (this.object.getClass() !== 'normal') {
+        this.depth += 5;
       }
 
-      this.container.position.set(x, y, z);
+      this.container.position.set(x, y, this.depth);
     }
     this.updateLabelPosition();
   }

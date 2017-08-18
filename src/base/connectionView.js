@@ -235,8 +235,6 @@ class ConnectionView extends BaseView {
     this.opacityAttr = this.particles.geometry.getAttribute('customOpacity');
     this.container.add(this.particles);
 
-
-    // TODO: Use a THREE.Line and THREE.LineBasicMaterial with linewidth for the interactive object...
     // Line used to support interactivity
     this.interactiveLineGeometry = new THREE.Geometry();
     this.interactiveLineMaterial = new THREE.LineBasicMaterial({
