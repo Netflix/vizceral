@@ -105,7 +105,7 @@ class FocusedNodeView extends NodeView {
     const text = new THREE.Mesh(new THREE.PlaneBufferGeometry(this.textCanvas.width, this.textCanvas.height), this.textMaterial);
     this.container.add(text);
     this.addInteractiveChild(text, 'donut');
-    text.position.set(0, 0, this.depth + 1);
+    text.position.set(0, 0, 100);
   }
 
   updateText () {
