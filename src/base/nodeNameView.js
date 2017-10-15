@@ -93,7 +93,7 @@ class NodeNameView extends BaseView {
     this.resizeCanvas(this.nameCanvas, this.labelWidth, fontSize + 10);
 
     // label color
-    const labelColor = this.highlight ? GlobalStyles.styles.colorTrafficHighlighted[this.object.getClass()] : GlobalStyles.getColorTraffic(this.object.getClass());
+    const labelColor = GlobalStyles.getColorTraffic(this.object.getClass(), this.highlight);
     roundRect(context, 0, 0, this.nameCanvas.width, this.nameCanvas.height, 3, GlobalStyles.styles.colorLabelBorder, labelColor);
     context.fillStyle = GlobalStyles.styles.colorLabelText;
 
