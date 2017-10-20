@@ -52,7 +52,14 @@ class GlobalStyles {
       colorPageBackground: 'rgb(45, 45, 45)',
       colorPageBackgroundTransparent: 'rgba(45, 45, 45, 0)',
       colorBorderLines: 'rgb(137, 137, 137)',
-      colorArcBackground: 'rgb(60, 60, 60)'
+      colorArcBackground: 'rgb(60, 60, 60)',
+      colorConnectionLineBad: 'rgb(255, 10, 10)',
+      colorShapeBorder: 'rgb(255, 255, 255)',
+      colorShapePipe: 'rgb(10 10, 255)',
+      colorShapeAzure: 'rgb(91, 91, 255)',
+      colorShapeStorage: 'rgb(10, 200, 10)',
+      colorShapeService: 'rgb(50, 50, 250)',
+      colorShapeDefault: 'rgb(120, 120, 120)'
     };
 
     this.updateComputedStyles();
