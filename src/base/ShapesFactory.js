@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2017 Adobe, Inc.
+ *  Copyright 2016 Netflix, Inc.
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ ShapesFactory.registerShape = function (shapeName, shapeClass) {
 }
 
 ShapesFactory.getShape = function (shapeName) {
-  if (ShapesFactory.shapes[shapeName] !== null && ShapesFactory.shapes[shapeName] !== undefined) {
+  if (ShapesFactory.shapes[shapeName]) {
     return new ShapesFactory.shapes[shapeName]();
   }
   return new ShapesFactory.shapes['default']();

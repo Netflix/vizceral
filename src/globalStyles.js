@@ -52,14 +52,17 @@ class GlobalStyles {
       colorPageBackground: 'rgb(45, 45, 45)',
       colorPageBackgroundTransparent: 'rgba(45, 45, 45, 0)',
       colorBorderLines: 'rgb(137, 137, 137)',
-      colorArcBackground: 'rgb(60, 60, 60)',
-      colorConnectionLineBad: 'rgb(255, 10, 10)',
+      colorArcBackground: 'rgb(60, 60, 60)'
+    };
+
+    this.shapesStyles = {
+      colorShapeDefault: 'rgb(120, 120, 120)',
       colorShapeBorder: 'rgb(255, 255, 255)',
-      colorShapePipe: 'rgb(10 10, 255)',
-      colorShapeAzure: 'rgb(91, 91, 255)',
-      colorShapeStorage: 'rgb(10, 200, 10)',
-      colorShapeService: 'rgb(50, 50, 250)',
-      colorShapeDefault: 'rgb(120, 120, 120)'
+      colorShapePipe: 'rgb(91, 91, 255 )',
+      colorShapeUser: 'rgb(10, 142, 179)',
+      colorShapeUsers: 'rgb(10, 190, 234)',
+      colorShapeStorage: 'rgb(10, 134, 255)',
+      colorShapeService: 'rgb(91, 91, 91)'
     };
 
     this.updateComputedStyles();

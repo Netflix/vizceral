@@ -1,6 +1,6 @@
 /**
  *
- *  Copyright 2017 Adobe, Inc.
+ *  Copyright 2016 Netflix, Inc.
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ class ShapeUsers {
     this.customNode = {};
     this.customNode.innergeometry = this._createInnerGeometry(16, 32);
     this.customNode.outerborder = this._createOuterBorder(10, 32);
-    this.customNode.material = this._createMaterial(GlobalStyles.styles.colorShapeAzure);
-    this.customNode.bordermaterial = this._createMaterial(GlobalStyles.styles.colorShapeBorder);
+    this.customNode.material = this._createMaterial(GlobalStyles.shapesStyles.colorShapeUsers);
+    this.customNode.bordermaterial = this._createMaterial(GlobalStyles.shapesStyles.colorShapeBorder);
     return this.customNode;
   }
 
