@@ -57,12 +57,12 @@ class GlobalStyles {
 
     this.shapesStyles = {
       colorShapeDefault: 'rgb(120, 120, 120)',
-      colorShapeBorder: 'rgb(255, 255, 255)',
-      colorShapePipe: 'rgb(91, 91, 255 )',
-      colorShapeUser: 'rgb(10, 142, 179)',
-      colorShapeUsers: 'rgb(10, 190, 234)',
-      colorShapeStorage: 'rgb(10, 134, 255)',
-      colorShapeService: 'rgb(91, 91, 91)'
+      colorShapeBorder: 'rgb(250, 250, 250)',
+      colorShapePipe: 'rgb(120, 120, 120)',
+      colorShapeUser: 'rgb(120, 120, 120)',
+      colorShapeUsers: 'rgb(120, 120, 120)',
+      colorShapeStorage: 'rgb(120, 120, 120)',
+      colorShapeService: 'rgb(110, 110, 110)'
     };
 
     this.updateComputedStyles();
