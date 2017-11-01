@@ -1,6 +1,6 @@
 {
   "name": "vizceral",
-  "version": "4.5.5",
+  "version": "4.6.0",
   "description": "Intuitive animated traffic graph visualization using webgl. If a graph of nodes and edges with data about traffic volume is provided, it will render a traffic graph animating the connection volume between nodes.",
   "main": "dist/vizceral.js",
   "repository": {
