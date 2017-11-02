@@ -19,11 +19,15 @@ import ShapesFactory from '../ShapesFactory';
 import ShapesUtils from '../ShapesUtils';
 
 class ShapeService {
-  constructor () {
+  constructor (node) {
     this.customNode = {};
     this.customNode.innergeometry = this._createInnerGeometry(16, 32);
     this.customNode.outerborder = this._createOuterBorder(10, 32);
-    this.customNode.material = this._createMaterial(GlobalStyles.shapesStyles.colorShapeService);
+    if (node.class) {
+      this.customNode.material = this._createMaterial(GlobalStyles.styles.colorNodeHealth[node.class]);
+    } else {
+      this.customNode.material = this._createMaterial(GlobalStyles.styles.colorShapeDefault);
+    }
     this.customNode.bordermaterial = this._createMaterial(GlobalStyles.shapesStyles.colorShapeBorder);
 
     return this.customNode;
