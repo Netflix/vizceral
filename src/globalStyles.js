@@ -42,9 +42,9 @@ class GlobalStyles {
         warning: 'rgb(268, 185, 73)',
         danger: 'rgb(255, 53, 53)'
       },
-      colorNodeHealth: {
+      colorNodeStatus: {
         default: 'rgb(120, 120, 120)',
-        normal: 'rgb(120, 120, 120)',
+        normal: 'rgb(127, 255, 0)',
         warning: 'rgb(268, 185, 73)',
         danger: 'rgb(255, 53, 53)'
       },
