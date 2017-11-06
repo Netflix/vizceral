@@ -25,7 +25,7 @@ class ShapeUsers extends ShapeParent {
     const polyPath = [
       polyStr
     ];
-    const newShapes = ShapesUtils.getShapeFromPolyPointsArray(polyPath, ' ', -17, 0);
+    const newShapes = ShapesUtils.getShapeFromPolyPointsArray(polyPath, ' ', 4, 4);
 
     return new THREE.ShapeGeometry(newShapes, curveSegments);
   }
