@@ -96,7 +96,7 @@ class GlobalStyles {
       } else {
         acc[key] = chroma(value).brighten(3).css();
       }
-      // acc[key] = styles.colorTrafficHighlighted && styles.colorTrafficHighlighted[key] ? styles.colorTrafficHighlighted[key] : chroma(value).brighten(3).css();
+
       return acc;
     }, {});
 
