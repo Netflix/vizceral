@@ -14,21 +14,11 @@
  *
  */
 import * as THREE from 'three';
-import GlobalStyles from '../../globalStyles';
 import ShapesFactory from '../ShapesFactory';
 import ShapesUtils from '../ShapesUtils';
+import ShapeParent from './ShapeParent';
 
-class ShapeStorage {
-  constructor () {
-    this.customNode = {};
-    this.customNode.innergeometry = this._createInnerGeometry(16, 32);
-    this.customNode.outerborder = this._createOuterBorder(10, 32);
-    this.customNode.material = this._createMaterial(GlobalStyles.shapesStyles.colorShapeStorage);
-    this.customNode.bordermaterial = this._createMaterial(GlobalStyles.shapesStyles.colorShapeBorder);
-
-    return this.customNode;
-  }
-
+class ShapeStorage extends ShapeParent {
   _createInnerGeometry (radius, curveSegments) {
     const polyPath = [
       '23,28,19,28.1,11.9,28.8,6.2,30.1,2.7,31.9,2,33,2,31,2,29,2.4,27.8,5.5,25.6,11,24,18.4,23.1,22.5,23,26.6,23.1,34,24,39.5,25.6,42.6,27.8,43,29,43,31,43,33,42.3,31.9,39.1,30.1,33.8,28.8,26.9,28.1,23,28,23,28',
@@ -37,21 +27,10 @@ class ShapeStorage {
       '43,35,42.6,33.8,39.5,31.6,34,30,26.6,29.1,22.5,29,18.4,29.1,11,30,5.5,31.6,2.4,33.8,2,35,2,35.7,2,37,2,38.3,2,39,2.4,40.2,5.5,42.4,11,44,18.4,44.9,22.5,45,26.6,44.9,34,44,39.5,42.4,42.6,40.2,43,39,43,38.3,43,37,43,35.7,43,35,43,35'
     ];
 
-    const newShapes = ShapesUtils.getShapeFromPolyPointsArray(polyPath, ',', 0, 0);
+    const newShapes = ShapesUtils.getShapeFromPolyPointsArray(polyPath, ',', -22, -22);
 
     return new THREE.ShapeGeometry(newShapes, curveSegments);
   }
-
-  _createOuterBorder (radius, curveSegments) {
-    const border = new THREE.Shape();
-    border.absarc(0, 0, radius - 1, 0, Math.PI * 2, false);
-    return new THREE.ShapeGeometry(border, curveSegments);
-  }
-
-  _createMaterial (rgb) {
-    return new THREE.MeshBasicMaterial({ color: rgb });
-  }
-
 }
 ShapesFactory.registerShape('storage', ShapeStorage);
 export default ShapeStorage;

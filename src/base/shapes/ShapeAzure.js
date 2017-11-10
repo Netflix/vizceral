@@ -13,20 +13,21 @@
  *     limitations under the License.
  *
  */
-const ShapesFactory = {};
-ShapesFactory.shapes = [];
-ShapesFactory.registerShape = function (shapeName, shapeClass) {
-  if (ShapesFactory.shapes[shapeName] === undefined) {
-    ShapesFactory.shapes[shapeName] = shapeClass;
-  }
-};
+import * as THREE from 'three';
+import ShapesFactory from '../ShapesFactory';
+import ShapesUtils from '../ShapesUtils';
+import ShapeParent from './ShapeParent';
 
-ShapesFactory.getShape = function (node) {
-  const shapeName = node.node_type;
-  if (ShapesFactory.shapes[shapeName]) {
-    return new ShapesFactory.shapes[shapeName](node);
-  }
-  return new ShapesFactory.shapes.default(node);
-};
+class ShapeAzure extends ShapeParent {
+  _createInnerGeometry (radius, curveSegments) {
+    const polyPath = [
+      '0,3,14,35,23,42,14,3,0,3',
+      '20,23,24,42,42,0,10,1,35,5,20,23'
+    ];
+    const newShapes = ShapesUtils.getShapeFromPolyPointsArray(polyPath, ',', -19, -17);
 
-export default ShapesFactory;
+    return new THREE.ShapeGeometry(newShapes, curveSegments);
+  }
+}
+ShapesFactory.registerShape('azure', ShapeAzure);
+export default ShapeAzure;
