@@ -96,12 +96,17 @@ class GlobalStyles {
 
   updateStyles (styles) {
     _.merge(this.styles, styles);
-    this.updateComputedStyles();
+    this.updateComputedStyles(styles);
   }
 
-  updateComputedStyles () {
+  updateComputedStyles (styles) {
     this.styles.colorTrafficHighlighted = _.reduce(this.styles.colorTraffic, (acc, value, key) => {
-      acc[key] = chroma(value).brighten(3).css();
+      if (styles && styles.colorTrafficHighlighted && styles.colorTrafficHighlighted[key]) {
+        acc[key] = styles.colorTrafficHighlighted[key];
+      } else {
+        acc[key] = chroma(value).brighten(3).css();
+      }
+
       return acc;
     }, {});
 
