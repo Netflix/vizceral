@@ -530,7 +530,7 @@ class Vizceral extends EventEmitter {
           node = nextNode;
           return false;
         }
-        const nextGraph = currentGraph.graphs[nextNode];
+        const nextGraph = currentGraph.graphs[nodeName];
         if (nextGraph) {
           currentGraph = nextGraph;
           return true;
