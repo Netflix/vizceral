@@ -137,11 +137,15 @@ class Vizceral extends EventEmitter {
     this.renderer.domElement.addEventListener('mousemove', event => this.onDocumentMouseMove(event), false);
     const singleTap = new Hammer.Tap({ event: 'singletap' });
     const doubleTap = new Hammer.Tap({ event: 'doubletap', taps: 2 });
+    const panning = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 0 });
+    this.hammertime.add(panning);
     this.hammertime.add([doubleTap, singleTap]);
     doubleTap.recognizeWith(singleTap);
     singleTap.requireFailure([doubleTap]);
     this.hammertime.on('doubletap', event => this.onDocumentDoubleClick(event), false);
     this.hammertime.on('singletap', event => this.onDocumentClick(event), false);
+    this.hammertime.on('panstart', event => this.onDocumentPanStart(event), false);
+    this.hammertime.on('panend', event => this.onDocumentPanEnd(event), false);
 
     this.graphs = {};
     this.options = {
@@ -330,6 +334,22 @@ class Vizceral extends EventEmitter {
   onDocumentDoubleClick (event) {
     this.calculateIntersectedObject(event.center.x, event.center.y);
     this.currentGraph.handleIntersectedObjectDoubleClick();
+  }
+
+  onDocumentPanStart (event) {
+    this.calculateIntersectedObject(event.center.x, event.center.y);
+    // make sure not clicking and dragging on a node
+    if (this.objectToSwitch === null || this.objectToSwitch === undefined) {
+      Console.log('Should Pan');
+      Console.log(event);
+    }
+  }
+
+  onDocumentPanEnd (event) {
+    if (this.objectToSwitch === null || this.objectToSwitch === undefined) {
+      Console.log('Should Stop Pan');
+      Console.log(event);
+    }
   }
 
   getNearestValidGraph (viewArray) {
