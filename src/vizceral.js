@@ -336,22 +336,6 @@ class Vizceral extends EventEmitter {
     this.currentGraph.handleIntersectedObjectDoubleClick();
   }
 
-  onDocumentPanStart (event) {
-    this.calculateIntersectedObject(event.center.x, event.center.y);
-    // make sure not clicking and dragging on a node
-    if (this.objectToSwitch === null || this.objectToSwitch === undefined) {
-      Console.log('Should Pan');
-      this.panningInteraction.set_initial_position(event.center.x, event.center.y)
-    }
-  }
-
-  onDocumentPanEnd (event) {
-    if (this.objectToSwitch === null || this.objectToSwitch === undefined) {
-      Console.log('Should Stop Pan');
-      this.panningInteraction.set_final_position(event.center.x, event.center.y)
-    }
-  }
-
   getNearestValidGraph (viewArray) {
     let newGraph = this.getGraph(this.rootGraphName);
     if (newGraph) {
