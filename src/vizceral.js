@@ -35,6 +35,7 @@ import RingLayout from './layouts/ringLayout';
 
 import RendererUtils from './rendererUtils';
 import MoveNodeInteraction from './moveNodeInteraction';
+import PanZoomInteraction from './panningInteraction';
 
 /**
 * The `objectHovered` event is fired whenever on mouseover on a 'node' or 'connection' .
@@ -144,8 +145,6 @@ class Vizceral extends EventEmitter {
     singleTap.requireFailure([doubleTap]);
     this.hammertime.on('doubletap', event => this.onDocumentDoubleClick(event), false);
     this.hammertime.on('singletap', event => this.onDocumentClick(event), false);
-    this.hammertime.on('panstart', event => this.onDocumentPanStart(event), false);
-    this.hammertime.on('panend', event => this.onDocumentPanEnd(event), false);
 
     this.graphs = {};
     this.options = {
@@ -162,6 +161,7 @@ class Vizceral extends EventEmitter {
       dns: DnsTrafficGraph
     };
     this.moveNodeInteraction = new MoveNodeInteraction(this);
+    this.panZoomInteraction = new PanZoomInteraction(this, canvas);
     this.layouts = {
       ltrTree: LTRTreeLayout,
       dns: DNSLayout,
@@ -341,14 +341,14 @@ class Vizceral extends EventEmitter {
     // make sure not clicking and dragging on a node
     if (this.objectToSwitch === null || this.objectToSwitch === undefined) {
       Console.log('Should Pan');
-      Console.log(event);
+      this.panningInteraction.set_initial_position(event.center.x, event.center.y)
     }
   }
 
   onDocumentPanEnd (event) {
     if (this.objectToSwitch === null || this.objectToSwitch === undefined) {
       Console.log('Should Stop Pan');
-      Console.log(event);
+      this.panningInteraction.set_final_position(event.center.x, event.center.y)
     }
   }
 
