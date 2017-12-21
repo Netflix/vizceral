@@ -29,13 +29,14 @@ class ShapeParent {
     }
 
     this.customNode.bordermaterial = this._createMaterial(GlobalStyles.styles.colorShapeBorder);
+    this.customNode.scale = this.scale;
     return this.customNode;
   }
 
   scale(factor) {
     const scaleParams = new Array(3).fill(factor);
-    this.innergeometry = this.innergeometry.scale(...scaleParams)
-    this.outerborder = this.outerborder.scale(...scaleParams)
+    this.innergeometry = this.innergeometry.scale(...scaleParams);
+    this.outerborder = this.outerborder.scale(...scaleParams);
   }
 
   _createOuterBorder (radius, curveSegments) {
