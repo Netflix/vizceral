@@ -20,29 +20,29 @@ import Node from '../base/node';
 import NodeViewStandard from '../base/nodeViewStandard';
 
 class RegionNode extends Node {
-    constructor (node) {
-        const defaultSize = node.nodeView === 'focused' ? 60 : 16;
-        node.size = node.size || defaultSize;
-        super(node, 'region');
-        this.loaded = true;
-    }
+  constructor (node) {
+    const defaultSize = node.nodeView === 'focused' ? 60 : 16;
+    node.size = node.size || defaultSize;
+    super(node, 'region');
+    this.loaded = true;
+  }
 
-    isDraggable () {
-        return true;
-    }
+  isDraggable () {
+    return true;
+  }
 
-    isInteractive () {
-        return true;
-    }
+  isInteractive () {
+    return true;
+  }
 
-    render () {
-        // Set the default view renderer
-        if (this.nodeView === 'focused') {
-            this.view = new FocusedNodeView(this);
-        } else {
-            this.view = new NodeViewStandard(this);
-        }
+  render () {
+    // Set the default view renderer
+    if (this.nodeView === 'focused') {
+      this.view = new FocusedNodeView(this);
+    } else {
+      this.view = new NodeViewStandard(this);
     }
+  }
 }
 
 export default RegionNode;
