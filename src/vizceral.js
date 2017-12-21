@@ -481,7 +481,7 @@ class Vizceral extends EventEmitter {
     // Show labels
     let showLabels = options.showLabels;
     if (typeof showLabels !== 'boolean') {
-      Console.warn('Vizceral.setOptions: allowDraggingOfNodes must be a boolean but was something else, coercing to boolean. Got the following value: ', allowDraggingOfNodes);
+      Console.warn('Vizceral.setOptions: showLabels must be a boolean but was something else, coercing to boolean. Got the following value: ', showLabels);
       showLabels = !!showLabels;
     }
     if (showLabels !== this.options.showLabels) {
