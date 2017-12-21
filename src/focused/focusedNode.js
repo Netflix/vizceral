@@ -21,7 +21,8 @@ import FocusedNodeView from './focusedNodeView';
 
 class FocusedNode extends Node {
   constructor (node) {
-    node.size = node.size || 120;
+    const defaultSize = node.focused ? 120 : 16;
+    node.size = node.size || defaultSize;
     super(node, 'focused');
     this.loaded = true;
   }
