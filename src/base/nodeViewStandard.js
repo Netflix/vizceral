@@ -32,7 +32,7 @@ class NodeViewStandard extends NodeView {
 
     this.dotColor = GlobalStyles.getColorTrafficRGBA(this.object.getClass());
     this.dotMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(this.dotColor.r, this.dotColor.g, this.dotColor.b), transparent: true, opacity: this.dotColor.a });
-        // custom shapes support. node_type property should be defined for a node in json. If node_type is missing or undefined, the default shape (circle) will be picked up
+    // custom shapes support. node_type property should be defined for a node in json. If node_type is missing or undefined, the default shape (circle) will be picked up
     const shape = ShapesFactory.getShape(service);
     shape.scale(this.radius / defaultRadius);
 
@@ -42,7 +42,7 @@ class NodeViewStandard extends NodeView {
     this.meshes.noticeDot = this.addChildElement(NodeView.getNoticeDotGeometry(this.radius), this.dotMaterial);
     this.refreshNotices();
 
-        // Add the service name
+    // Add the service name
     this.nameView = new NodeNameView(this, false);
     this.showLabel(this.object.options.showLabel);
   }
@@ -69,7 +69,7 @@ class NodeViewStandard extends NodeView {
   refresh (force) {
     super.refresh(force);
 
-        // Refresh severity
+    // Refresh severity
     if (this.highlight) {
       this.dotMaterial.color.set(this.donutInternalColor);
     } else {
@@ -77,7 +77,7 @@ class NodeViewStandard extends NodeView {
     }
     this.meshes.noticeDot.geometry.colorsNeedUpdate = true;
 
-        // Refresh notices
+    // Refresh notices
     this.refreshNotices();
   }
 }
