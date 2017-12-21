@@ -35,6 +35,7 @@ import RingLayout from './layouts/ringLayout';
 
 import RendererUtils from './rendererUtils';
 import MoveNodeInteraction from './moveNodeInteraction';
+import PanZoomInteraction from './PanZoomInteraction';
 
 /**
 * The `objectHovered` event is fired whenever on mouseover on a 'node' or 'connection' .
@@ -137,6 +138,8 @@ class Vizceral extends EventEmitter {
     this.renderer.domElement.addEventListener('mousemove', event => this.onDocumentMouseMove(event), false);
     const singleTap = new Hammer.Tap({ event: 'singletap' });
     const doubleTap = new Hammer.Tap({ event: 'doubletap', taps: 2 });
+    const panning = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 0 });
+    this.hammertime.add(panning);
     this.hammertime.add([doubleTap, singleTap]);
     doubleTap.recognizeWith(singleTap);
     singleTap.requireFailure([doubleTap]);
@@ -158,6 +161,7 @@ class Vizceral extends EventEmitter {
       dns: DnsTrafficGraph
     };
     this.moveNodeInteraction = new MoveNodeInteraction(this);
+    this.panZoomInteraction = new PanZoomInteraction(this, canvas);
     this.layouts = {
       ltrTree: LTRTreeLayout,
       dns: DNSLayout,
