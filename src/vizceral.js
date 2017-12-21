@@ -35,7 +35,7 @@ import RingLayout from './layouts/ringLayout';
 
 import RendererUtils from './rendererUtils';
 import MoveNodeInteraction from './moveNodeInteraction';
-import PanZoomInteraction from './panningInteraction';
+import PanZoomInteraction from './PanZoomInteraction';
 
 /**
 * The `objectHovered` event is fired whenever on mouseover on a 'node' or 'connection' .

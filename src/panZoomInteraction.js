@@ -14,6 +14,8 @@ class PanZoomInteraction {
     this.controls.maxZoom = 3;
     this.controls.minZoom = 0.5;
     this.controls.enableRotate = false;
+    this.controls.enablePan = false;
+
     this.controls.update();
   }
 

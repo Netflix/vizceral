@@ -18,8 +18,8 @@
 const DEPTH = {
   normalNode: -5000, // Moves more negative
   normalConnection: -5000, // Stays static
-  dimmedNode: -5000, // Moves more negative
-  dimmedConnection: -5000, // Stays static
+  dimmedNode: -8000, // Moves more negative
+  dimmedConnection: -8000, // Stays static
 };
 
 export default {
