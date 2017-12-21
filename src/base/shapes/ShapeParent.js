@@ -32,6 +32,12 @@ class ShapeParent {
     return this.customNode;
   }
 
+  scale(factor) {
+    const scaleParams = new Array(3).fill(factor);
+    this.innergeometry = this.innergeometry.scale(...scaleParams)
+    this.outerborder = this.outerborder.scale(...scaleParams)
+  }
+
   _createOuterBorder (radius, curveSegments) {
     const border = new THREE.Shape();
     border.absarc(0, 0, radius * 3.2, 0, Math.PI * 2, false);
