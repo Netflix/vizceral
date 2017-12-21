@@ -5,7 +5,7 @@
   "main": "dist/vizceral.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:Netflix/vizceral.git"
+    "url": "git+https://github.com/amplify-education/vizceral.git"
   },
   "scripts": {
     "dev": "npm run watch",
