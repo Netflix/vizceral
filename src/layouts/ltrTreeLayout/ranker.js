@@ -56,10 +56,8 @@ function normalizeRanks (graph) {
 
 function forcePrimaryRankPromotions (graph, entryNodeName = 'INTERNET') {
   let entryNodes = graph.entryNodes();
-  if (entryNodeName) {
-    if (entryNodes.includes(entryNodeName)) {
-      entryNodes = [entryNodeName];
-    }
+  if (entryNodes.includes(entryNodeName)) {
+    entryNodes = [entryNodeName];
   }
   for (let i = 0; i < entryNodes.length; i++) {
     const entryNode = graph.getNode(entryNodes[i]);
@@ -69,16 +67,18 @@ function forcePrimaryRankPromotions (graph, entryNodeName = 'INTERNET') {
 
 function forceSecondaryRankPromotions (graph, entryNodeName = 'INTERNET') {
   let entryNodes = graph.entryNodes();
-  if (entryNodeName) {
-    if (entryNodes.includes(entryNodeName)) {
-      entryNodes = [entryNodeName];
-    }
+  if (entryNodes.includes(entryNodeName)) {
+    entryNodes = [entryNodeName];
   }
   for (let i = 0; i < entryNodes.length; i++) {
     const outgoingNodes = graph.outgoingNodes(entryNodes[i]);
     for (let j = 0; j < outgoingNodes.length; j++) {
       const node = graph.getNode(outgoingNodes[j]);
-      node.rank = 1;
+      if (graph.incomingNodes(node.name).length === 1) {
+        node.rank = 1;
+      } else {
+        node.rank = 2;
+      }
     }
   }
 }
