@@ -15,11 +15,14 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import groupBy from 'lodash/groupBy';
+import map from 'lodash/map';
+import sortBy from 'lodash/sortBy';
+import each from 'lodash/sortBy';
 
 class DNSLayout {
   run (graph, dimensions, layoutComplete) {
-    const nodesByIndex = _.groupBy(graph.nodes, (n) => {
+    const nodesByIndex = groupBy(graph.nodes, (n) => {
       try {
         return n.metadata.layout.rank;
       } catch (e) {
@@ -27,8 +30,8 @@ class DNSLayout {
       }
     });
 
-    const ranks = _.map(Object.keys(nodesByIndex).sort(),
-      idx => _.sortBy(nodesByIndex[idx], (node) => {
+    const ranks = map(Object.keys(nodesByIndex).sort(),
+      idx => sortBy(nodesByIndex[idx], (node) => {
         try {
           return node.metadata.layout.rank;
         } catch (e) {
@@ -45,7 +48,7 @@ class DNSLayout {
     let rankIndex = 1;
     const yCenter = (ranks.length + 1) / 2.0;
 
-    _.each(ranks, (rank) => {
+    each(ranks, (rank) => {
       const y = -1 * rankHeight * (rankIndex - yCenter);
 
       const fileWidth = availableWidth / rank.length;
@@ -53,7 +56,7 @@ class DNSLayout {
 
       const xCenter = (rank.length + 1) / 2.0;
 
-      _.each(rank, (node) => {
+      each(rank, (node) => {
         node.updatePosition({ x: fileWidth * (fileIndex - xCenter), y: y });
         fileIndex++;
       });

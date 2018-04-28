@@ -21,7 +21,7 @@
 
 
 import * as THREE from 'three';
-import _ from 'lodash';
+import each from 'lodash/each';
 
 import ConnectionView from '../base/connectionView';
 import GlobalStyles from '../globalStyles';
@@ -72,7 +72,7 @@ class DnsConnectionView extends ConnectionView {
 
   cleanup () {
     super.cleanup();
-    _.each([
+    each([
       this.annotationMaterial,
       this.annotationTexture,
       this.annotationGeometry,
@@ -131,7 +131,7 @@ class DnsConnectionView extends ConnectionView {
       const nodeRadius = this.object.source.getView().radius;
 
 
-      _.each(this.object.annotations, (annotation, index) => {
+      each(this.object.annotations, (annotation, index) => {
         drawArrowHalfHead(ctx, width, height, bump, nodeRadius, GlobalStyles.getColorTraffic(annotation.class), index + 1);
         if (annotation.label) {
           drawText(ctx, width, height, bump, annotation.label, GlobalStyles.getColorTraffic(annotation.class), index + 1);
