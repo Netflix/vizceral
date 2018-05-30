@@ -9,6 +9,10 @@ This component can take multiple traffic graphs and will generate a 'global' gra
 
 There are three levels of information, global, regional, and service-level, with clicking or double-clicking on a node bringing you one level deeper.
 
+## Not actively maintained
+
+We are not using this internally at Netflix at this time and the project is not actively being worked on. We occasionally look at the repo and will review PRs as time permits.
+
 ## Using
 
 See [the wiki](https://github.com/Netflix/vizceral/wiki) for full documentation.
