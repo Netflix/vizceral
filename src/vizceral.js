@@ -199,6 +199,7 @@ class Vizceral extends EventEmitter {
   _attachGraphHandlers (graph) {
     graph.on('nodeContextSizeChanged', dimensions => this.emit('nodeContextSizeChanged', dimensions));
     graph.on('objectHighlighted', highlightedObject => this.emit('objectHighlighted', highlightedObject));
+    graph.on('objectHovered', hoveredObject => this.emit('hoveredObject', hoveredObject));
     graph.on('setView', view => this.setView(view));
     graph.on('viewUpdated', () => this.emit('viewUpdated'));
   }
