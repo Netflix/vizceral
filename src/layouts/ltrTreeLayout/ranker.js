@@ -15,7 +15,10 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import has from 'lodash/has';
+import map from 'lodash/map';
+import min from 'lodash/min';
+import each from 'lodash/each';
 
 const minimumLength = 1;
 
@@ -25,10 +28,10 @@ function longestPathRanking (graph) {
   function dfs (nodeName) {
     const node = graph.getNode(nodeName);
     if (!node) { return undefined; }
-    if (!_.has(visited, nodeName)) {
+    if (!has(visited, nodeName)) {
       visited[nodeName] = true;
 
-      let rank = _.min(_.map(graph.outgoingEdges(nodeName), edge => dfs(edge.target) - minimumLength));
+      let rank = min(map(graph.outgoingEdges(nodeName), edge => dfs(edge.target) - minimumLength));
       if (rank === undefined) {
         rank = 0;
       }
@@ -37,7 +40,7 @@ function longestPathRanking (graph) {
     return node.rank;
   }
 
-  _.each(graph.entryNodes(), dfs);
+  each(graph.entryNodes(), dfs);
 }
 
 function normalizeRanks (graph) {

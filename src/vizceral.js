@@ -15,7 +15,11 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import find from 'lodash/find';
+import isEqual from 'lodash/isEqual';
+import each from 'lodash/each';
+import clone from 'lodash/clone';
+import every from 'lodash/every';
 import EventEmitter from 'events';
 import * as THREE from 'three';
 import TWEEN from 'tween.js';
@@ -235,7 +239,7 @@ class Vizceral extends EventEmitter {
       let parentGraphData;
       graph.graphIndex.every((graphLevel) => {
         parentGraphData = currentGraphData;
-        currentGraphData = _.find(currentGraphData.nodes, { name: graphLevel });
+        currentGraphData = find(currentGraphData.nodes, { name: graphLevel });
         return currentGraphData;
       });
 
@@ -366,7 +370,7 @@ class Vizceral extends EventEmitter {
       if (newGraph) {
         initialView.view = newGraph.graphIndex;
 
-        if (initialView.view && this.initialView && !_.isEqual(initialView.view, this.initialView)) {
+        if (initialView.view && this.initialView && !isEqual(initialView.view, this.initialView)) {
           initialView.redirectedFrom = this.initialView;
         }
         this.initialView = undefined;
@@ -430,7 +434,7 @@ class Vizceral extends EventEmitter {
     const newGraph = this.getNearestValidGraph(viewArray);
 
     // If the view changed, set it.
-    if (!this.currentGraph || !_.isEqual(newGraph.graphIndex, this.currentGraph.graphIndex)) {
+    if (!this.currentGraph || !isEqual(newGraph.graphIndex, this.currentGraph.graphIndex)) {
       const difference = this.currentGraph ? (newGraph.graphIndex.length - this.currentGraph.graphIndex.length) : 0;
       if (difference === -1) {
         this.zoomOutOfNode();
@@ -456,14 +460,14 @@ class Vizceral extends EventEmitter {
 
   showLabels (graph) {
     graph.showLabels(this.options.showLabels);
-    _.each(graph.graphs, (subGraph) => {
+    each(graph.graphs, (subGraph) => {
       this.showLabels(subGraph);
     });
   }
 
   updateModes (graph) {
     graph.setModes(this.modes);
-    _.each(graph.graphs, (subGraph) => {
+    each(graph.graphs, (subGraph) => {
       this.updateModes(subGraph);
     });
   }
@@ -472,7 +476,7 @@ class Vizceral extends EventEmitter {
    * Set the current modes of vizceral
    */
   setModes (modes) {
-    if (!_.isEqual(modes, this.modes)) {
+    if (!isEqual(modes, this.modes)) {
       this.modes = modes;
       this.updateModes(this.getGraph(this.rootGraphName));
     }
@@ -524,7 +528,7 @@ class Vizceral extends EventEmitter {
   getNode (viewArray) {
     let currentGraph = this.getGraph(this.rootGraphName);
     let node;
-    _.every(viewArray, (nodeName, index) => {
+    every(viewArray, (nodeName, index) => {
       const nextNode = currentGraph.getNode(nodeName);
       if (nextNode) {
         if (index === viewArray.length - 1) {
@@ -587,7 +591,7 @@ class Vizceral extends EventEmitter {
     this.scene.add(toViewObject);
 
     // Pan over and zoom in to the selected node
-    new TWEEN.Tween(_.clone(parametersFrom))
+    new TWEEN.Tween(clone(parametersFrom))
               .to(parametersTo, 1000)
               .easing(TWEEN.Easing.Cubic.Out)
               .onUpdate(function () {

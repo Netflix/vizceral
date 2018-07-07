@@ -15,7 +15,9 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import find from 'lodash/find';
+import each from 'lodash/each';
+import remove from 'lodash/remove';
 import * as THREE from 'three';
 
 class BaseView {
@@ -32,7 +34,7 @@ class BaseView {
   }
 
   addInteractiveChild (child, context) {
-    if (!_.find(this.interactiveChildren, { id: child.id })) {
+    if (!find(this.interactiveChildren, { id: child.id })) {
       child.userData.object = this.object;
       child.userData.context = context;
       this.interactiveChildren.push(child);
@@ -40,12 +42,12 @@ class BaseView {
   }
 
   addInteractiveChildren (children) {
-    _.each(children, child => this.addInteractiveChild(child));
+    each(children, child => this.addInteractiveChild(child));
   }
 
   removeInteractiveChildren (children) {
     const childrenIds = children.map(c => c.id);
-    _.remove(this.interactiveChildren, c => childrenIds.includes(c.id));
+    remove(this.interactiveChildren, c => childrenIds.includes(c.id));
   }
 
   getInteractiveChildren () {

@@ -15,7 +15,8 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import merge from 'lodash/merge';
+import reduce from 'lodash/reduce';
 import chroma from 'chroma-js';
 
 const Console = console;
@@ -95,12 +96,12 @@ class GlobalStyles {
   }
 
   updateStyles (styles) {
-    _.merge(this.styles, styles);
+    merge(this.styles, styles);
     this.updateComputedStyles(styles);
   }
 
   updateComputedStyles (styles) {
-    this.styles.colorTrafficHighlighted = _.reduce(this.styles.colorTraffic, (acc, value, key) => {
+    this.styles.colorTrafficHighlighted = reduce(this.styles.colorTraffic, (acc, value, key) => {
       if (styles && styles.colorTrafficHighlighted && styles.colorTrafficHighlighted[key]) {
         acc[key] = styles.colorTrafficHighlighted[key];
       } else {
@@ -115,11 +116,11 @@ class GlobalStyles {
       colorConnectionLine: getRGBA(this.styles.colorConnectionLine),
       colorDonutInternalColor: getRGBA(this.styles.colorDonutInternalColor),
       colorPageBackground: getRGBA(this.styles.colorPageBackground),
-      colorTraffic: _.reduce(this.styles.colorTraffic, (acc, value, key) => {
+      colorTraffic: reduce(this.styles.colorTraffic, (acc, value, key) => {
         acc[key] = getRGBA(value);
         return acc;
       }, {}),
-      colorTrafficHighlighted: _.reduce(this.styles.colorTrafficHighlighted, (acc, value, key) => {
+      colorTrafficHighlighted: reduce(this.styles.colorTrafficHighlighted, (acc, value, key) => {
         acc[key] = getRGBA(value);
         return acc;
       }, {}),

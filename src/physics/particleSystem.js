@@ -2,7 +2,8 @@
 /**
  * Created by jbrekelmans on 21/10/2016.
  */
-import _ from 'lodash';
+import each from 'lodash/each';
+import keys from 'lodash/keys';
 
 const objectPrototype = Object.prototype;
 const objectGetPrototypeOf = Object.getPrototypeOf;
@@ -102,9 +103,9 @@ class ParticleSystem {
     const nodes = this._trafficGraph.nodes;
     const particleFromNodeName = this._particleFromNodeName;
     let hasParticleNodeInconsistency = false;
-    const nodesKeys = _.keys(nodes);
+    const nodesKeys = keys(nodes);
     const nodeCount = nodesKeys.length;
-    const particleFromNodeNameKeys = _.keys(particleFromNodeName);
+    const particleFromNodeNameKeys = keys(particleFromNodeName);
     const particleCount = particleFromNodeNameKeys.length;
     for (let i = 0; i < particleCount; i++) {
       if (!hasOwnPropFunc.call(nodes, particleFromNodeNameKeys[i])) {
@@ -124,7 +125,7 @@ class ParticleSystem {
     const simParticles = [];
     let n1 = 0;
     const particleFromNodeName = this._particleFromNodeName;
-    const particleFromNodeNameKeys = _.keys(particleFromNodeName);
+    const particleFromNodeNameKeys = keys(particleFromNodeName);
     const n = particleFromNodeNameKeys.length;
     for (let i = 0; i < n; i++) {
       const nodeName = particleFromNodeNameKeys[i];
@@ -179,7 +180,7 @@ class ParticleSystem {
           Console.warn('ParticleSystem.setOptions(options): got invalid options.particles.mass. Expected number in range [0.1, Inf), but got: ', v);
         } else {
           this._particles_mass = v;
-          _.each(this._particleFromNodeName, (node) => {
+          each(this._particleFromNodeName, (node) => {
             node.mass = v;
           });
         }
@@ -304,7 +305,7 @@ class ParticleSystem {
         simNodeNames[node.name] = 1;
       }
       const connections = this._trafficGraph.connections;
-      _.each(connections, (conn) => {
+      each(connections, (conn) => {
         const connView = conn.view;
         if (connView &&
           (hasOwnPropFunc.call(simNodeNames, conn.source.name) ||
@@ -444,7 +445,7 @@ class ParticleSystem {
   synchronizeStructureParticlesWithNodes () {
     const nodes = this._trafficGraph.nodes;
     const particleFromNodeName = this._particleFromNodeName;
-    const particleFromNodeNameKeys = _.keys(particleFromNodeName);
+    const particleFromNodeNameKeys = keys(particleFromNodeName);
     const particleRecycleList = [];
     for (const nodeName of particleFromNodeNameKeys) {
       if (!hasOwnPropFunc.call(nodes, nodeName)) {
@@ -452,7 +453,7 @@ class ParticleSystem {
         delete particleFromNodeName[nodeName];
       }
     }
-    const nodesKeys = _.keys(nodes);
+    const nodesKeys = keys(nodes);
     for (const nodeName of nodesKeys) {
       const node = nodes[nodeName];
       if (!hasOwnPropFunc.call(particleFromNodeName, nodeName)) {
@@ -474,7 +475,7 @@ class ParticleSystem {
     let i = 0;
     const oldCount = hooksSpringList.length;
     // const oneOverMaxVolume = 1 / this._trafficGraph.volume.max;
-    _.each(connections, (conn) => {
+    each(connections, (conn) => {
       const srcNodeName = conn.source.name;
       if (!hasOwnPropFunc.call(particleFromNodeName, srcNodeName)) {
         return;
