@@ -20,6 +20,8 @@ import * as THREE from 'three';
 import NodeView from './nodeView';
 import NodeNameView from './nodeNameView';
 import GlobalStyles from '../globalStyles';
+import ShapesFactory from './ShapesFactory';
+import './shapes/CommonShapes';
 
 const radius = 16;
 
@@ -30,10 +32,27 @@ class NodeViewStandard extends NodeView {
 
     this.dotColor = GlobalStyles.getColorTrafficRGBA(this.object.getClass());
     this.dotMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(this.dotColor.r, this.dotColor.g, this.dotColor.b), transparent: true, opacity: this.dotColor.a });
+    // custom shapes support. node_type property should be defined for a node in json. If node_type is missing or undefined, the default shape (circle) will be picked up
+    const shape = ShapesFactory.getShape(service, radius);
 
-    this.meshes.outerBorder = this.addChildElement(NodeView.getOuterBorderGeometry(radius), this.borderMaterial);
-    this.meshes.innerCircle = this.addChildElement(NodeView.getInnerCircleGeometry(radius), this.innerCircleMaterial);
+    this.shapeMaterial = shape.material;
+
+    this.meshes.outerBorder = this.addChildElement(shape.outerBorder, this.borderMaterial);
+    this.meshes.innerCircle = this.addChildElement(shape.innerCircleGeometry, this.innerCircleMaterial);
+    if (shape.innerGeometry !== undefined) {
+      this.meshes.innerGeometry = this.addChildElement(shape.innerGeometry, this.shapeMaterial);
+    }
+
     this.meshes.noticeDot = this.addChildElement(NodeView.getNoticeDotGeometry(radius), this.dotMaterial);
+    // if (shape.innerGeometry != undefined) {
+    //   this.meshes.noticeDot = this.addChildElement(shape.innerGeometry, this.shapeMaterial);
+    //   if (this.object.hasNotices()) {
+    //     this.dotMaterial = this.shapeMaterial;
+    //   }
+    // } else {
+    //   this.meshes.noticeDot = this.addChildElement(NodeView.getNoticeDotGeometry(radius), this.dotMaterial);
+    // }
+
     this.refreshNotices();
 
     // Add the service name
