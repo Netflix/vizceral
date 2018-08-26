@@ -26,7 +26,7 @@ import Constants from './constants';
 const loader = new THREE.TextureLoader();
 
 // Preload the particle texture
-const particle = require('url!./particleD.png'); // eslint-disable-line import/no-extraneous-dependencies
+const particle = require('url-loader!./particleD.png'); // eslint-disable-line import/no-extraneous-dependencies
 
 let particleTexture;
 loader.load(particle, (texture) => { particleTexture = texture; });
