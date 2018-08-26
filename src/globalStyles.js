@@ -55,16 +55,6 @@ class GlobalStyles {
       colorArcBackground: 'rgb(60, 60, 60)'
     };
 
-    this.shapesStyles = {
-      colorShapeDefault: 'rgb(120, 120, 120)',
-      colorShapeBorder: 'rgb(250, 250, 250)',
-      colorShapePipe: 'rgb(120, 120, 120)',
-      colorShapeUser: 'rgb(120, 120, 120)',
-      colorShapeUsers: 'rgb(120, 120, 120)',
-      colorShapeStorage: 'rgb(120, 120, 120)',
-      colorShapeService: 'rgb(110, 110, 110)'
-    };
-
     this.updateComputedStyles();
   }
 
