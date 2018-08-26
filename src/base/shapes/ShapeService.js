@@ -14,11 +14,21 @@
  *
  */
 import * as THREE from 'three';
+import GlobalStyles from '../../globalStyles';
 import ShapesFactory from '../ShapesFactory';
 import ShapesUtils from '../ShapesUtils';
-import ShapeParent from './ShapeParent';
 
-class ShapeService extends ShapeParent {
+class ShapeService {
+  constructor () {
+    this.customNode = {};
+    this.customNode.innergeometry = this._createInnerGeometry(16, 32);
+    this.customNode.outerborder = this._createOuterBorder(10, 32);
+    this.customNode.material = this._createMaterial(GlobalStyles.shapesStyles.colorShapeService);
+    this.customNode.bordermaterial = this._createMaterial(GlobalStyles.shapesStyles.colorShapeBorder);
+
+    return this.customNode;
+  }
+
   _createInnerGeometry (radius, curveSegments) {
     const shapes = [];
     const shapeCircle = new THREE.Shape();
@@ -33,6 +43,7 @@ class ShapeService extends ShapeParent {
 
     return new THREE.ShapeGeometry(shapes, curveSegments);
   }
+
   _createOuterBorder (radius, curveSegments) {
     const shapes = [];
     const border = new THREE.Shape();
@@ -48,6 +59,11 @@ class ShapeService extends ShapeParent {
 
     return new THREE.ShapeGeometry(shapes, curveSegments);
   }
+
+  _createMaterial (rgb) {
+    return new THREE.MeshBasicMaterial({ color: rgb });
+  }
+
 }
 ShapesFactory.registerShape('service', ShapeService);
 export default ShapeService;

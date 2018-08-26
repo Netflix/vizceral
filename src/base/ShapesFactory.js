@@ -19,14 +19,13 @@ ShapesFactory.registerShape = function (shapeName, shapeClass) {
   if (ShapesFactory.shapes[shapeName] === undefined) {
     ShapesFactory.shapes[shapeName] = shapeClass;
   }
-};
+}
 
-ShapesFactory.getShape = function (node) {
-  const shapeName = node.node_type;
+ShapesFactory.getShape = function (shapeName) {
   if (ShapesFactory.shapes[shapeName]) {
-    return new ShapesFactory.shapes[shapeName](node);
+    return new ShapesFactory.shapes[shapeName]();
   }
-  return new ShapesFactory.shapes.default(node);
-};
+  return new ShapesFactory.shapes['default']();
+}
 
 export default ShapesFactory;

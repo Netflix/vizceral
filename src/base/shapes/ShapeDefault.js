@@ -14,13 +14,20 @@
  *
  */
 import * as THREE from 'three';
+import GlobalStyles from '../../globalStyles';
 import ShapesFactory from '../ShapesFactory';
-import ShapeParent from './ShapeParent';
 
-class ShapeDefault extends ShapeParent {
-  _createInnerGeometry () {
-    const radius = 16;
-    const curveSegments = 32;
+class ShapeDefault {
+  constructor () {
+    this.customNode = {};
+    this.customNode.innergeometry = this._createInnerGeometry(16, 32);
+    this.customNode.outerborder = this._createOuterBorder(16, 32);
+    this.customNode.material = this._createMaterial(GlobalStyles.shapesStyles.colorShapeDefault);
+    this.customNode.bordermaterial = this._createMaterial(GlobalStyles.shapesStyles.colorShapeBorder);
+    return this.customNode;
+  }
+
+  _createInnerGeometry (radius, curveSegments) {
     const circleShape = new THREE.Shape();
     circleShape.moveTo(radius, 0);
     circleShape.absarc(0, 0, radius, 0, 2 * Math.PI, false);
@@ -31,9 +38,7 @@ class ShapeDefault extends ShapeParent {
     return new THREE.ShapeGeometry(circleShape, curveSegments);
   }
 
-  _createOuterBorder () {
-    const radius = 16;
-    const curveSegments = 32;
+  _createOuterBorder (radius, curveSegments) {
     const border = new THREE.Shape();
     border.absarc(0, 0, radius + 2, 0, Math.PI * 2, false);
     const borderHole = new THREE.Path();
@@ -41,6 +46,11 @@ class ShapeDefault extends ShapeParent {
     border.holes.push(borderHole);
     return new THREE.ShapeGeometry(border, curveSegments);
   }
+
+  _createMaterial (rgb) {
+    return new THREE.MeshBasicMaterial({ color: rgb });
+  }
+
 }
 ShapesFactory.registerShape('default', ShapeDefault);
 export default ShapeDefault;
