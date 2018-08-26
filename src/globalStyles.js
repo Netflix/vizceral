@@ -40,13 +40,7 @@ class GlobalStyles {
         normal: 'rgb(186, 213, 237)',
         normalDonut: 'rgb(91, 91, 91)',
         warning: 'rgb(268, 185, 73)',
-        danger: 'rgb(255, 53, 53)'
-      },
-      colorNodeStatus: {
-        default: 'rgb(120, 120, 120)',
-        normal: 'rgb(127, 255, 0)',
-        warning: 'rgb(268, 185, 73)',
-        danger: 'rgb(255, 53, 53)'
+        danger: 'rgb(184, 36, 36)'
       },
       colorNormalDimmed: 'rgb(101, 117, 128)',
       colorBackgroundDark: 'rgb(35, 35, 35)',
@@ -59,10 +53,6 @@ class GlobalStyles {
       colorPageBackgroundTransparent: 'rgba(45, 45, 45, 0)',
       colorBorderLines: 'rgb(137, 137, 137)',
       colorArcBackground: 'rgb(60, 60, 60)'
-    };
-
-    this.shapesStyles = {
-      colorShapeDefault: 'rgb(120, 120, 120)'
     };
 
     this.updateComputedStyles();
