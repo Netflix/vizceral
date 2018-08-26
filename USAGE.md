@@ -46,7 +46,7 @@ The `objectHighlighted` event is fired whenever an object is highlighted.
 
 **Properties**
 
--   `object` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The object that has been highlighted, or the highlighted object that has been updated.
+-   `object` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The object that has been highlighted, or the highlighted object that has been updated.
 
 ## viewChanged
 
@@ -54,7 +54,7 @@ The `viewChanged` event is fired whenever the view changes
 
 **Properties**
 
--   `view` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** The currently selected view (e.g. \[] for global, ['us-east-1'] for one node deep, ['us-east-1', 'api'] for two nodes deep)
+-   `view` **[array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** The currently selected view (e.g. \[] for global, ['us-east-1'] for one node deep, ['us-east-1', 'api'] for two nodes deep)
 
 ## nodeContextSizeChanged
 
@@ -62,7 +62,7 @@ The `nodeContextSizeChanged` event is fired whenever the context panel size for 
 
 **Properties**
 
--   `dimensions` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The dimensions of the node context panels
+-   `dimensions` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The dimensions of the node context panels
 
 ## matchesFound
 
@@ -70,7 +70,7 @@ The `matchesFound` event is fired whenever nodes are found via findNodes().
 
 **Properties**
 
--   `matches` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The matches object { total, visible }
+-   `matches` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The matches object { total, visible }
 
 ## viewUpdated
 
@@ -84,7 +84,7 @@ The `objectHovered` event is fired whenever on mouseover on a 'node' or 'connect
 
 **Properties**
 
--   `object` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The object that has been hovered,
+-   `object` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The object that has been hovered,
 
 ## constructor
 
@@ -92,14 +92,14 @@ Represents a Vizceral component.
 
 **Parameters**
 
--   `canvas` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)?** The canvas to render the graph onto; if not provided, will create a canvas accessible by this.renderer.domElement
--   `targetFramerate` **[Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)?** Target frame rate to render at. Will not limit FPS if not provided or set to 0.
+-   `canvas` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** The canvas to render the graph onto; if not provided, will create a canvas accessible by this.renderer.domElement
+-   `targetFramerate` **[Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?** Target frame rate to render at. Will not limit FPS if not provided or set to 0.
 
 ## getStyles
 
 Get an array of all possible defined styles
 
-Returns **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** Array of all possible styles
+Returns **[array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** Array of all possible styles
 
 ## updateStyles
 
@@ -108,7 +108,7 @@ Update the global styles
 **Parameters**
 
 -   `styles`  
--   `An` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** object map of style names to values
+-   `An` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** object map of style names to values
 
 ## updateDefinitions
 
@@ -117,7 +117,7 @@ Update the global definitions
 **Parameters**
 
 -   `definitions`  
--   `An` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** object map of definitions. See the format and defaults in (<https://github.com/Netflix/Vizceral/wiki/Configuration#definitions-for-data-to-display>)
+-   `An` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** object map of definitions. See the format and defaults in (<https://github.com/Netflix/Vizceral/wiki/Configuration#definitions-for-data-to-display>)
 
 ## updateData
 
@@ -127,7 +127,7 @@ with the complete set of traffic data anytime there is an update.
 **Parameters**
 
 -   `trafficData`  
--   `data` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The traffic data that matches the format in (<https://github.com/Netflix/Vizceral/wiki/How-to-Use#graph-data-format>)
+-   `data` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The traffic data that matches the format in (<https://github.com/Netflix/Vizceral/wiki/How-to-Use#graph-data-format>)
 
 ## setHighlightedNode
 
@@ -135,7 +135,7 @@ Sets the highlighted node.  If the node is undefined, clears any highlighting.
 
 **Parameters**
 
--   `node` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node to highlight
+-   `node` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node to highlight
 
 ## setHighlightedConnection
 
@@ -143,7 +143,7 @@ Sets the highlighted connection.  If the connection is undefined, clears any hig
 
 **Parameters**
 
--   `connection` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The connection to highlight
+-   `connection` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The connection to highlight
 
 ## findNodes
 
@@ -152,9 +152,9 @@ of sub nodes, if nodes have one.
 
 **Parameters**
 
--   `searchString` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** The string to match against the nodes.
+-   `searchString` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The string to match against the nodes.
 
-Returns **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** { total, totalMatches, visible, visibleMatches }
+Returns **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** { total, totalMatches, visible, visibleMatches }
 
 ## setView
 
@@ -170,8 +170,8 @@ Ex:
 
 **Parameters**
 
--   `viewArray` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** the array containing the view to set. (optional, default `[]`)
--   `objectNameToHighlight` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** a node or connection to set as highlighted in the current viewArray
+-   `viewArray` **[array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** the array containing the view to set. (optional, default `[]`)
+-   `objectNameToHighlight` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** a node or connection to set as highlighted in the current viewArray
 
 ## setModes
 
@@ -192,7 +192,7 @@ Get a specific node object
 
 **Parameters**
 
--   `viewArray` **[array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)** e.g. [ node1, node2 ]
+-   `viewArray` **[array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** e.g. [ node1, node2 ]
 
 ## setFilters
 
@@ -200,4 +200,4 @@ Set the set of filters to apply along with their current values.
 
 **Parameters**
 
--   `filters` **[object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** The filters that match the format in (<https://github.com/Netflix/Vizceral/wiki/Configuration#filters>)
+-   `filters` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The filters that match the format in (<https://github.com/Netflix/Vizceral/wiki/Configuration#filters>)
