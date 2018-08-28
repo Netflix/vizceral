@@ -50,6 +50,8 @@ class FocusedNodeView extends NodeView {
   constructor (service) {
     super(service);
 
+    this.surfaceDepth = 10;
+
     this.borderColor = GlobalStyles.rgba.colorPageBackground;
     this.borderColorThree = new THREE.Color(this.borderColor.r, this.borderColor.g, this.borderColor.b);
     this.donutMaterial = new THREE.MeshBasicMaterial({ color: this.borderColorThree, transparent: true, opacity: this.borderColor.a });
@@ -214,7 +216,7 @@ class FocusedNodeView extends NodeView {
       color: new THREE.Color(color.r, color.g, color.b), side: THREE.DoubleSide, transparent: true, opacity: color.a
     });
     const mesh = new THREE.Mesh(slice, mat);
-    mesh.position.set(0, 0, this.depth + 2);
+    mesh.position.set(0, 0, this.surfaceDepth + 2);
     mesh.rotation.y = Math.PI;
     mesh.userData.defaultOpacity = color.a;
 
@@ -294,7 +296,7 @@ class FocusedNodeView extends NodeView {
       color: new THREE.Color(color.r, color.g, color.b), side: THREE.DoubleSide, transparent: true, opacity: color.a
     });
     const mesh = new THREE.Mesh(slice, mat);
-    mesh.position.set(0, 0, this.depth + 5);
+    mesh.position.set(0, 0, this.surfaceDepth + 5);
     mesh.rotation.y = Math.PI;
     mesh.userData.context = 'arc';
     mesh.userData.defaultOpacity = color.a;
@@ -354,7 +356,7 @@ class FocusedNodeView extends NodeView {
           });
 
           const triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial);
-          triangleMesh.position.set(0, 0, this.depth + 3);
+          triangleMesh.position.set(0, 0, this.surfaceDepth + 3);
           triangleMesh.rotateZ((Math.PI * 2) - (linePosition - (Math.PI / 2)));
           this.arcMeterSegments.push(triangleMesh);
           this.container.add(triangleMesh);
@@ -383,7 +385,7 @@ class FocusedNodeView extends NodeView {
     const slice = new THREE.RingGeometry(this.innerRadius, this.radius, 30, 8, 0, Math.PI * 2 * 0.2);
     const mat = new THREE.MeshBasicMaterial({ color: GlobalStyles.styles.colorTraffic.normal, side: THREE.DoubleSide });
     this.loadingSpinner = new THREE.Mesh(slice, mat);
-    this.loadingSpinner.position.set(0, 0, this.depth + 2);
+    this.loadingSpinner.position.set(0, 0, this.surfaceDepth + 2);
     this.container.add(this.loadingSpinner);
     this.refresh(true);
   }
