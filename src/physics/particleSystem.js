@@ -2,19 +2,20 @@
 /**
  * Created by jbrekelmans on 21/10/2016.
  */
-import _ from 'lodash';
+import { each, keys } from 'lodash';
 
 const objectPrototype = Object.prototype;
 const objectGetPrototypeOf = Object.getPrototypeOf;
 const hasOwnPropFunc = objectPrototype.hasOwnProperty;
 const Console = console;
-const canCoerceToFiniteDouble = isFinite;
+const canCoerceToFiniteDouble = Number.isFinite;
 
 class Vector2 {
   constructor (x, y) {
     this.x = x;
     this.y = y;
   }
+
   set (x, y) {
     this.x = x;
     this.y = y;
@@ -41,8 +42,8 @@ class Particle {
     }
     const posx = pos.x;
     const posy = pos.y;
-    if (typeof posx !== 'number' || !canCoerceToFiniteDouble(posx) ||
-        typeof posy !== 'number' || !canCoerceToFiniteDouble(posy)) {
+    if (typeof posx !== 'number' || !canCoerceToFiniteDouble(posx)
+        || typeof posy !== 'number' || !canCoerceToFiniteDouble(posy)) {
       return false;
     }
     this.p.set(posx, posy);
@@ -67,7 +68,6 @@ function getOwnProp (o, p) {
 }
 
 class ParticleSystem {
-
   constructor (trafficGraph, width, height, isEnabled) {
     this._id = trafficGraph.name;
     this._nodeSpaceSpan2D = new Vector2(width, height);
@@ -99,12 +99,12 @@ class ParticleSystem {
   }
 
   debugEnsureStructureConsistency () {
-    const nodes = this._trafficGraph.nodes;
+    const { nodes } = this._trafficGraph;
     const particleFromNodeName = this._particleFromNodeName;
     let hasParticleNodeInconsistency = false;
-    const nodesKeys = _.keys(nodes);
+    const nodesKeys = keys(nodes);
     const nodeCount = nodesKeys.length;
-    const particleFromNodeNameKeys = _.keys(particleFromNodeName);
+    const particleFromNodeNameKeys = keys(particleFromNodeName);
     const particleCount = particleFromNodeNameKeys.length;
     for (let i = 0; i < particleCount; i++) {
       if (!hasOwnPropFunc.call(nodes, particleFromNodeNameKeys[i])) {
@@ -124,7 +124,7 @@ class ParticleSystem {
     const simParticles = [];
     let n1 = 0;
     const particleFromNodeName = this._particleFromNodeName;
-    const particleFromNodeNameKeys = _.keys(particleFromNodeName);
+    const particleFromNodeNameKeys = keys(particleFromNodeName);
     const n = particleFromNodeNameKeys.length;
     for (let i = 0; i < n; i++) {
       const nodeName = particleFromNodeNameKeys[i];
@@ -179,7 +179,7 @@ class ParticleSystem {
           Console.warn('ParticleSystem.setOptions(options): got invalid options.particles.mass. Expected number in range [0.1, Inf), but got: ', v);
         } else {
           this._particles_mass = v;
-          _.each(this._particleFromNodeName, (node) => {
+          each(this._particleFromNodeName, (node) => {
             node.mass = v;
           });
         }
@@ -303,12 +303,12 @@ class ParticleSystem {
         }
         simNodeNames[node.name] = 1;
       }
-      const connections = this._trafficGraph.connections;
-      _.each(connections, (conn) => {
+      const { connections } = this._trafficGraph;
+      each(connections, (conn) => {
         const connView = conn.view;
-        if (connView &&
-          (hasOwnPropFunc.call(simNodeNames, conn.source.name) ||
-            hasOwnPropFunc.call(simNodeNames, conn.target.name))) {
+        if (connView
+          && (hasOwnPropFunc.call(simNodeNames, conn.source.name)
+          || hasOwnPropFunc.call(simNodeNames, conn.target.name))) {
           connView.updatePosition();
         }
       });
@@ -343,7 +343,8 @@ class ParticleSystem {
       const particle = simParticles[i];
       particle.f.set(
         particle.v.x * -viscousDragCoefficient,
-        particle.v.y * -viscousDragCoefficient);
+        particle.v.y * -viscousDragCoefficient
+      );
     }
     if (simParticles.some(p => !canCoerceToFiniteDouble(p.f.x) || !canCoerceToFiniteDouble(p.f.y))) {
       const partic = simParticles.filter(p => !canCoerceToFiniteDouble(p.f.x) || !canCoerceToFiniteDouble(p.f.y))[0];
@@ -370,7 +371,8 @@ class ParticleSystem {
       let v3X;
       let v3Y;
       if (!canCoerceToFiniteDouble(v1LenReciproc)) {
-        v3X = v3Y = 0;
+        v3X = 0;
+        v3Y = 0;
       } else {
         v3X = v1X * v1LenReciproc;
         v3Y = v1Y * v1LenReciproc;
@@ -417,7 +419,8 @@ class ParticleSystem {
               let v3X;
               let v3Y;
               if (!canCoerceToFiniteDouble(v1LenReciproc)) {
-                v3X = v3Y = 0;
+                v3X = 0;
+                v3Y = 0;
               } else {
                 v3X = v1X * v1LenReciproc;
                 v3Y = v1Y * v1LenReciproc;
@@ -442,9 +445,9 @@ class ParticleSystem {
   }
 
   synchronizeStructureParticlesWithNodes () {
-    const nodes = this._trafficGraph.nodes;
+    const { nodes } = this._trafficGraph;
     const particleFromNodeName = this._particleFromNodeName;
-    const particleFromNodeNameKeys = _.keys(particleFromNodeName);
+    const particleFromNodeNameKeys = keys(particleFromNodeName);
     const particleRecycleList = [];
     for (const nodeName of particleFromNodeNameKeys) {
       if (!hasOwnPropFunc.call(nodes, nodeName)) {
@@ -452,7 +455,7 @@ class ParticleSystem {
         delete particleFromNodeName[nodeName];
       }
     }
-    const nodesKeys = _.keys(nodes);
+    const nodesKeys = keys(nodes);
     for (const nodeName of nodesKeys) {
       const node = nodes[nodeName];
       if (!hasOwnPropFunc.call(particleFromNodeName, nodeName)) {
@@ -469,12 +472,12 @@ class ParticleSystem {
 
   synchronizeStructureHooksSpringsWithConnections () {
     const particleFromNodeName = this._particleFromNodeName;
-    const connections = this._trafficGraph.connections;
+    const { connections } = this._trafficGraph;
     const hooksSpringList = this._hooksSprings;
     let i = 0;
     const oldCount = hooksSpringList.length;
     // const oneOverMaxVolume = 1 / this._trafficGraph.volume.max;
-    _.each(connections, (conn) => {
+    each(connections, (conn) => {
       const srcNodeName = conn.source.name;
       if (!hasOwnPropFunc.call(particleFromNodeName, srcNodeName)) {
         return;
@@ -496,7 +499,8 @@ class ParticleSystem {
           toParticle,
           this._hooksSprings_springConstant,
           this._hooksSprings_dampingConstant,
-          this._hooksSprings_restLength);
+          this._hooksSprings_restLength
+        );
         hooksSpringList[i] = hooksSpring;
       }
       // const connVolume = conn.volume;

@@ -15,7 +15,7 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import { each } from 'lodash';
 import LTRTreeLayout from '../layouts/ltrTreeLayout';
 import RegionConnection from './regionConnection';
 import RegionNode from './regionNode';
@@ -37,7 +37,7 @@ class RegionTrafficGraph extends TrafficGraph {
 
   updateVisibleInfo () {
     const minimumNoticeLevel = this.nodeName ? 0 : 1;
-    _.each(this.connections, (connection) => { connection.setMinimumNoticeLevel(minimumNoticeLevel); });
+    each(this.connections, (connection) => { connection.setMinimumNoticeLevel(minimumNoticeLevel); });
   }
 
   setIntersectedObject (object) {
@@ -48,8 +48,8 @@ class RegionTrafficGraph extends TrafficGraph {
         if (!this.intersectedObject) {
           // If we are not hovering over anything, clear the highlighting
           this.highlightConnectedNodes(undefined);
-        } else if (this.intersectedObject instanceof this.NodeClass ||
-                    this.intersectedObject instanceof this.ConnectionClass) {
+        } else if (this.intersectedObject instanceof this.NodeClass
+          || this.intersectedObject instanceof this.ConnectionClass) {
           this.emit('objectHovered', this.intersectedObject);
           this.highlightConnectedNodes(this.intersectedObject);
         }
@@ -81,7 +81,7 @@ class RegionTrafficGraph extends TrafficGraph {
 
   setFilters (filters) {
     let filtersChanged = false;
-    _.each(filters, (filter) => {
+    each(filters, (filter) => {
       if (!this.filters[filter.name]) {
         this.filters[filter.name] = filter;
         filtersChanged = true;

@@ -23,7 +23,7 @@ function MouseEventIsLeftButtonOrButtonIsUnknown (e) {
 }
 
 
-const canCoerceToFiniteDouble = isFinite;
+const canCoerceToFiniteDouble = Number.isFinite;
 const DOUBLE_NAN = NaN;
 function isFiniteDouble (v) {
   return typeof v === 'number' && canCoerceToFiniteDouble(v);
@@ -66,7 +66,7 @@ class MoveNodeInteraction {
       return;
     }
     // Support all browsers (IE5.5+ even if we were to care about using attachEvent)
-    if (event === undefined) event = window.event;
+    if (event === undefined) ({ event } = window);
     if (!MouseEventIsLeftButtonOrButtonIsUnknown(event)) {
       return;
     }
@@ -182,7 +182,6 @@ class MoveNodeInteraction {
       this.getCanvas().removeEventListener('mousedown', this._onCanvasMouseDown_func, false);
     }
   }
-
 }
 
 export default MoveNodeInteraction;

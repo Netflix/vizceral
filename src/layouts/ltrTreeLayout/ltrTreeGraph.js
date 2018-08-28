@@ -16,7 +16,9 @@
  *
  */
 /* eslint no-underscore-dangle: 0, no-restricted-syntax: 0 */
-import _ from 'lodash';
+import {
+  each, find, remove, without
+} from 'lodash';
 
 const Console = console;
 
@@ -36,7 +38,7 @@ function Graph (nodes, edges) {
 
   this._outgoingEdges = {};
 
-  _.each(edges, (edge) => {
+  each(edges, (edge) => {
     // Add the connection to the incoming connections object
     this._incomingNodes[edge.target] = this._incomingNodes[edge.target] || {};
     this._incomingNodes[edge.target][edge.source] = true;
@@ -52,10 +54,10 @@ function Graph (nodes, edges) {
 
   // In the rare case of entry nodes that have circular connections, we need to make sure we do not remove
   // the node from the entry node list.
-  _.each(this._incomingNodes, (targetNodes, sourceNodeName) => {
+  each(this._incomingNodes, (targetNodes, sourceNodeName) => {
     const incomingNodeNames = Object.keys(targetNodes);
     const outgoingNodeNames = Object.keys(this._outgoingNodes[sourceNodeName] || {});
-    const incomingWithoutOutgoing = _.without(incomingNodeNames, ...outgoingNodeNames);
+    const incomingWithoutOutgoing = without(incomingNodeNames, ...outgoingNodeNames);
     if (incomingWithoutOutgoing.length !== 0) {
       delete this._entryNodeMap[sourceNodeName];
     }
@@ -126,9 +128,9 @@ Graph.prototype.removeEdge = function (edge) {
   delete this._outgoingNodes[edge.source][edge.target];
   delete this._incomingNodes[edge.target][edge.source];
   if (this._outgoingEdges[edge.source]) {
-    _.remove(this._outgoingEdges[edge.source], anEdge => anEdge.source === edge.source && anEdge.target === edge.target);
+    remove(this._outgoingEdges[edge.source], anEdge => anEdge.source === edge.source && anEdge.target === edge.target);
   }
-  _.remove(this.edges, anEdge => anEdge.source === edge.source && anEdge.target === edge.target);
+  remove(this.edges, anEdge => anEdge.source === edge.source && anEdge.target === edge.target);
 };
 
 Graph.prototype.addEdge = function (edge) {
@@ -149,7 +151,7 @@ Graph.prototype.reverseEdge = function (edge) {
 
 Graph.prototype.removeSameEdges = function () {
   this.storedSameEdges = this.storedSameEdges || [];
-  _.each(this.edges, (edge) => {
+  each(this.edges, (edge) => {
     if (edge && edge.source === edge.target) {
       this.storedSameEdges.push(edge);
       this.removeEdge(edge);
@@ -158,14 +160,14 @@ Graph.prototype.removeSameEdges = function () {
 };
 
 Graph.prototype.restoreSameEdges = function () {
-  _.each(this.storedSameEdges, (edge) => {
+  each(this.storedSameEdges, (edge) => {
     this.addEdge(edge);
   });
   this.storedSameEdges.length = 0;
 };
 
 Graph.prototype.getNode = function (nodeName) {
-  return _.find(this.nodes, ['name', nodeName]);
+  return find(this.nodes, ['name', nodeName]);
 };
 
 module.exports = Graph;

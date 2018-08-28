@@ -15,7 +15,7 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import { each, has } from 'lodash';
 
 function dfsFas (graph) {
   const fas = [];
@@ -23,13 +23,13 @@ function dfsFas (graph) {
   const visited = {};
 
   function dfs (node) {
-    if (_.has(visited, node.name)) {
+    if (has(visited, node.name)) {
       return;
     }
     visited[node.name] = true;
     stack[node.name] = true;
-    _.each(graph.outgoingEdges(node.name), (edge) => {
-      if (_.has(stack, edge.target)) {
+    each(graph.outgoingEdges(node.name), (edge) => {
+      if (has(stack, edge.target)) {
         fas.push(edge);
       } else {
         dfs(graph.getNode(edge.target));
@@ -38,19 +38,19 @@ function dfsFas (graph) {
     delete stack[node.name];
   }
 
-  _.each(graph.nodes, dfs);
+  each(graph.nodes, dfs);
   return fas;
 }
 
 function remove (graph) {
   const fas = dfsFas(graph);
-  _.each(fas, (edge) => {
+  each(fas, (edge) => {
     graph.reverseEdge(edge);
   });
 }
 
 function restore (graph) {
-  _.each(graph.edges, (edge) => {
+  each(graph.edges, (edge) => {
     if (edge.reversed) {
       graph.reverseEdge(edge);
     }

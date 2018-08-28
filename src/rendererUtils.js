@@ -83,8 +83,7 @@ class RendererUtils {
     let x;
     let y;
     if (!anchorPoint) {
-      x = vector.x;
-      y = vector.y;
+      ({ x, y } = vector);
     } else if (anchorPoint === 'TL') {
       x = vector.x - (objectWidth / 2);
       y = vector.y - (objectHeight / 2);

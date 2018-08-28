@@ -15,6 +15,7 @@
  *     limitations under the License.
  *
  */
+/* eslint no-restricted-globals: 0 */
 /* eslint no-restricted-syntax: 0 */
 import Graph from './ltrTreeGraph';
 import AcyclicFAS from './acyclicFAS';

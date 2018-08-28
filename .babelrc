@@ -1,3 +1,4 @@
 {
-   "presets": [ "env" ]
+  "plugins": [ "lodash" ],
+  "presets": [ "env" ]
 }

@@ -15,7 +15,7 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import { each, findIndex, isEqual } from 'lodash';
 
 import GlobalConnection from './globalConnection';
 import GlobalNode from './globalNode';
@@ -65,7 +65,7 @@ class GlobalTrafficGraph extends TrafficGraph {
   setState (state, force) {
     // Remove old nodes
     for (let i = this.state.nodes.length - 1; i >= 0; i--) {
-      const newNodeIndex = _.findIndex(state.nodes, { name: this.state.nodes[i].name });
+      const newNodeIndex = findIndex(state.nodes, { name: this.state.nodes[i].name });
       if (newNodeIndex === -1) {
         this.removeContextDiv(this.state.nodes[i].name);
         this.state.nodes.splice(i, 1);
@@ -73,8 +73,8 @@ class GlobalTrafficGraph extends TrafficGraph {
     }
 
     // Add new nodes and update existing nodes
-    _.each(state.nodes, (node) => {
-      const existingNodeIndex = _.findIndex(this.state.nodes, { name: node.name });
+    each(state.nodes, (node) => {
+      const existingNodeIndex = findIndex(this.state.nodes, { name: node.name });
       if (existingNodeIndex !== -1) {
         // If the node already exists, replace the node
         this.state.nodes[existingNodeIndex] = node;
@@ -88,15 +88,15 @@ class GlobalTrafficGraph extends TrafficGraph {
 
     // Remove old connections
     for (let i = this.state.connections.length - 1; i >= 0; i--) {
-      const newConnectionIndex = _.findIndex(state.connections, { source: this.state.connections[i].source, target: this.state.connections[i].target });
+      const newConnectionIndex = findIndex(state.connections, { source: this.state.connections[i].source, target: this.state.connections[i].target });
       if (newConnectionIndex === -1) {
         this.state.connections.splice(i, 1);
       }
     }
 
     // Add new connection and update existing connectiond
-    _.each(state.connections, (newConnection) => {
-      const existingConnectionIndex = _.findIndex(this.state.connections, { source: newConnection.source, target: newConnection.target });
+    each(state.connections, (newConnection) => {
+      const existingConnectionIndex = findIndex(this.state.connections, { source: newConnection.source, target: newConnection.target });
       if (existingConnectionIndex !== -1) {
         this.state.connections[existingConnectionIndex] = newConnection;
       } else {
@@ -113,7 +113,7 @@ class GlobalTrafficGraph extends TrafficGraph {
     // more visually dense.
     let maxVolume = state.maxVolume || 0;
     if (!maxVolume) {
-      _.each(this.state.nodes, (node) => {
+      each(this.state.nodes, (node) => {
         maxVolume = Math.max(maxVolume, node.maxVolume || 0);
       });
     }
@@ -145,12 +145,12 @@ class GlobalTrafficGraph extends TrafficGraph {
   updateLabelScreenDimensions (force) {
     let changed = false;
     const dimensions = {};
-    _.each(this.nodes, (node, key) => {
+    each(this.nodes, (node, key) => {
       const labelView = node.getView().nameView ? node.getView().nameView.container : undefined;
       const newDimensions = RendererUtils.toScreenPosition(labelView, 'BL');
       if (newDimensions) {
         const oldDimensions = node.getView().getLabelScreenDimensions();
-        if (!_.isEqual(newDimensions, oldDimensions) || force) {
+        if (!isEqual(newDimensions, oldDimensions) || force) {
           changed = true;
           node.getView().setLabelScreenDimensions(newDimensions);
           dimensions[key] = newDimensions;
@@ -171,7 +171,7 @@ class GlobalTrafficGraph extends TrafficGraph {
 
   setCurrent (current) {
     super.setCurrent(current);
-    _.each(this.contextDivs, (div) => {
+    each(this.contextDivs, (div) => {
       div.style.display = current ? 'block' : 'none';
     });
     this.updateLabelScreenDimensions(true);

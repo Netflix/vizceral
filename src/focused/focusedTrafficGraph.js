@@ -15,7 +15,7 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import { find } from 'lodash';
 import RegionConnection from '../region/regionConnection';
 import FocusedNode from './focusedNode';
 import LTRTreeLayout from '../layouts/ltrTreeLayout';
@@ -30,7 +30,7 @@ class FocusedTrafficGraph extends TrafficGraph {
 
   setState (state, force, parentState) {
     super.setState(state, force, parentState);
-    this.focusedNode = _.find(this.nodes, { focused: true });
+    this.focusedNode = find(this.nodes, { focused: true });
   }
 
   handleIntersectedObjectClick () {

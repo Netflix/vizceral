@@ -15,7 +15,7 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import { map } from 'lodash';
 
 import LayoutWorker from 'worker-loader?inline!./ltrTreeLayoutWorker'; // eslint-disable-line import/no-extraneous-dependencies, import/extensions
 
@@ -65,8 +65,10 @@ class LTRTreeLayout {
 
   run (graph, dimensions, layoutComplete) {
     const workerGraph = {
-      nodes: _.map(graph.nodes, node => ({ name: node.getName(), position: node.position, size: node.size, weight: node.depth, metadata: node.metadata })),
-      edges: _.map(graph.connections, connection => ({ source: connection.source.getName(), target: connection.target.getName() }))
+      nodes: map(graph.nodes, node => ({
+        name: node.getName(), position: node.position, size: node.size, weight: node.depth, metadata: node.metadata
+      })),
+      edges: map(graph.connections, connection => ({ source: connection.source.getName(), target: connection.target.getName() }))
     };
 
     const edgeKey = workerGraph.edges.map(edge => edge.source + edge.target).sort();
@@ -86,7 +88,9 @@ class LTRTreeLayout {
       };
       layoutWorker.addEventListener('message', layoutWorkerComplete);
 
-      layoutWorker.postMessage({ graph: workerGraph, dimensions: dimensions, entryNode: graph.entryNode, options: graph.options });
+      layoutWorker.postMessage({
+        graph: workerGraph, dimensions: dimensions, entryNode: graph.entryNode, options: graph.options
+      });
     }
   }
 }

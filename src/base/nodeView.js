@@ -127,8 +127,7 @@ class NodeView extends BaseView {
 
   updatePosition () {
     if (this.object.position) {
-      const x = this.object.position.x;
-      const y = this.object.position.y;
+      const { x, y } = this.object.position;
       this.depth = this.dimmed ? Constants.DEPTH.dimmedNode : Constants.DEPTH.normalNode;
 
       if (this.object.getClass() !== 'normal') {

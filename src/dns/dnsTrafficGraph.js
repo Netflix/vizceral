@@ -15,7 +15,7 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import { each, findIndex } from 'lodash';
 
 import DnsConnection from './dnsConnection';
 import DnsLayout from '../layouts/dnsLayout';
@@ -44,8 +44,8 @@ class DNSTrafficGraph extends TrafficGraph {
   setState (state, force) {
     // This function cannot remove any nodes and leaks, but this is not our problem for now.
     try {
-      _.each(state.nodes, (node) => {
-        const existingNodeIndex = _.findIndex(this.state.nodes, { name: node.name });
+      each(state.nodes, (node) => {
+        const existingNodeIndex = findIndex(this.state.nodes, { name: node.name });
         if (existingNodeIndex !== -1) {
           this.state.nodes[existingNodeIndex] = node;
         } else {
@@ -53,8 +53,8 @@ class DNSTrafficGraph extends TrafficGraph {
         }
       });
 
-      _.each(state.connections, (newConnection) => {
-        const existingConnectionIndex = _.findIndex(this.state.connections, { source: newConnection.source, target: newConnection.target });
+      each(state.connections, (newConnection) => {
+        const existingConnectionIndex = findIndex(this.state.connections, { source: newConnection.source, target: newConnection.target });
         if (existingConnectionIndex !== -1) {
           this.state.connections[existingConnectionIndex] = newConnection;
         } else {
@@ -71,7 +71,7 @@ class DNSTrafficGraph extends TrafficGraph {
       // more visually dense.
       let maxVolume = state.maxVolume || 0;
       if (!maxVolume) {
-        _.each(this.state.nodes, (node) => {
+        each(this.state.nodes, (node) => {
           maxVolume = Math.max(maxVolume, node.maxVolume || 0);
         });
       }

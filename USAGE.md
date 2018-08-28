@@ -2,7 +2,7 @@
 
 ### Table of Contents
 
--   [\_](#_)
+-   [isEqual](#isequal)
 -   [objectHighlighted](#objecthighlighted)
 -   [viewChanged](#viewchanged)
 -   [nodeContextSizeChanged](#nodecontextsizechanged)
@@ -23,7 +23,7 @@
 -   [getNode](#getnode)
 -   [setFilters](#setfilters)
 
-## \_
+## isEqual
 
 Copyright 2016 Netflix, Inc.
 

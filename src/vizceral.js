@@ -15,7 +15,9 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import {
+  clone, each, every, find, isEqual
+} from 'lodash';
 import EventEmitter from 'events';
 import * as THREE from 'three';
 import TWEEN from 'tween.js';
@@ -235,7 +237,7 @@ class Vizceral extends EventEmitter {
       let parentGraphData;
       graph.graphIndex.every((graphLevel) => {
         parentGraphData = currentGraphData;
-        currentGraphData = _.find(currentGraphData.nodes, { name: graphLevel });
+        currentGraphData = find(currentGraphData.nodes, { name: graphLevel });
         return currentGraphData;
       });
 
@@ -366,7 +368,7 @@ class Vizceral extends EventEmitter {
       if (newGraph) {
         initialView.view = newGraph.graphIndex;
 
-        if (initialView.view && this.initialView && !_.isEqual(initialView.view, this.initialView)) {
+        if (initialView.view && this.initialView && !isEqual(initialView.view, this.initialView)) {
           initialView.redirectedFrom = this.initialView;
         }
         this.initialView = undefined;
@@ -424,13 +426,13 @@ class Vizceral extends EventEmitter {
       if (!initialView.view) { return; }
       viewArray = initialView.view;
       objectNameToHighlight = initialView.highlighted;
-      redirectedFrom = initialView.redirectedFrom;
+      ({ redirectedFrom } = initialView);
     }
 
     const newGraph = this.getNearestValidGraph(viewArray);
 
     // If the view changed, set it.
-    if (!this.currentGraph || !_.isEqual(newGraph.graphIndex, this.currentGraph.graphIndex)) {
+    if (!this.currentGraph || !isEqual(newGraph.graphIndex, this.currentGraph.graphIndex)) {
       const difference = this.currentGraph ? (newGraph.graphIndex.length - this.currentGraph.graphIndex.length) : 0;
       if (difference === -1) {
         this.zoomOutOfNode();
@@ -456,14 +458,14 @@ class Vizceral extends EventEmitter {
 
   showLabels (graph) {
     graph.showLabels(this.options.showLabels);
-    _.each(graph.graphs, (subGraph) => {
+    each(graph.graphs, (subGraph) => {
       this.showLabels(subGraph);
     });
   }
 
   updateModes (graph) {
     graph.setModes(this.modes);
-    _.each(graph.graphs, (subGraph) => {
+    each(graph.graphs, (subGraph) => {
       this.updateModes(subGraph);
     });
   }
@@ -472,7 +474,7 @@ class Vizceral extends EventEmitter {
    * Set the current modes of vizceral
    */
   setModes (modes) {
-    if (!_.isEqual(modes, this.modes)) {
+    if (!isEqual(modes, this.modes)) {
       this.modes = modes;
       this.updateModes(this.getGraph(this.rootGraphName));
     }
@@ -480,7 +482,7 @@ class Vizceral extends EventEmitter {
 
   setOptions (options) {
     // Show labels
-    let showLabels = options.showLabels;
+    let { showLabels } = options;
     if (typeof showLabels !== 'boolean') {
       Console.warn('Vizceral.setOptions: showLabels must be a boolean but was something else, coercing to boolean. Got the following value: ', showLabels);
       showLabels = !!showLabels;
@@ -491,7 +493,7 @@ class Vizceral extends EventEmitter {
     }
 
     // Allow repositioning of nodes through dragging
-    let allowDraggingOfNodes = options.allowDraggingOfNodes;
+    let { allowDraggingOfNodes } = options;
     if (typeof allowDraggingOfNodes !== 'boolean') {
       Console.warn('Vizceral.setOptions: allowDraggingOfNodes must be a boolean but was something else, coercing to boolean. Got the following value: ', allowDraggingOfNodes);
       allowDraggingOfNodes = !!allowDraggingOfNodes;
@@ -524,7 +526,7 @@ class Vizceral extends EventEmitter {
   getNode (viewArray) {
     let currentGraph = this.getGraph(this.rootGraphName);
     let node;
-    _.every(viewArray, (nodeName, index) => {
+    every(viewArray, (nodeName, index) => {
       const nextNode = currentGraph.getNode(nodeName);
       if (nextNode) {
         if (index === viewArray.length - 1) {
@@ -587,29 +589,29 @@ class Vizceral extends EventEmitter {
     this.scene.add(toViewObject);
 
     // Pan over and zoom in to the selected node
-    new TWEEN.Tween(_.clone(parametersFrom))
-              .to(parametersTo, 1000)
-              .easing(TWEEN.Easing.Cubic.Out)
-              .onUpdate(function () {
-                // Pan over to the selected node
-                fromViewObject.position.set(this.exitingX, this.exitingY, 0);
-                toViewObject.position.set(this.enteringX, this.enteringY, 0);
-                // Zoom in to the selected entering
-                fromViewObject.scale.set(this.exitingScale, this.exitingScale, 1);
-                toViewObject.scale.set(this.enteringScale, this.enteringScale, 1);
-                // Fade the node node
-                fromGraph.view.setOpacity(this.fromGraphOpacity);
-                if (toGraph.loadedOnce) {
-                  toGraph.view.setOpacity(this.toGraphOpacity);
-                }
-              })
-              .onComplete(() => {
-                // Remove the outgoing graph from the scene
-                if (fromViewObject !== undefined) {
-                  this.scene.remove(fromViewObject);
-                }
-              })
-              .start();
+    new TWEEN.Tween(clone(parametersFrom))
+      .to(parametersTo, 1000)
+      .easing(TWEEN.Easing.Cubic.Out)
+      .onUpdate(function () {
+        // Pan over to the selected node
+        fromViewObject.position.set(this.exitingX, this.exitingY, 0);
+        toViewObject.position.set(this.enteringX, this.enteringY, 0);
+        // Zoom in to the selected entering
+        fromViewObject.scale.set(this.exitingScale, this.exitingScale, 1);
+        toViewObject.scale.set(this.enteringScale, this.enteringScale, 1);
+        // Fade the node node
+        fromGraph.view.setOpacity(this.fromGraphOpacity);
+        if (toGraph.loadedOnce) {
+          toGraph.view.setOpacity(this.toGraphOpacity);
+        }
+      })
+      .onComplete(() => {
+        // Remove the outgoing graph from the scene
+        if (fromViewObject !== undefined) {
+          this.scene.remove(fromViewObject);
+        }
+      })
+      .start();
   }
 
   zoomIntoNode (nodeName) {
@@ -641,7 +643,7 @@ class Vizceral extends EventEmitter {
 
   zoomOutOfNode () {
     if (this.currentGraph && this.currentGraph !== this.getGraph(this.rootGraphName)) {
-      const parentGraph = this.currentGraph.parentGraph;
+      const { parentGraph } = this.currentGraph;
       if (parentGraph) {
         const currentNodeInParent = parentGraph.getNode(this.currentGraph.name);
 
@@ -677,8 +679,8 @@ class Vizceral extends EventEmitter {
   }
 
   validateRaycaster (mouseLocVPSpaceX, mouseLocVPSpaceY) {
-    if (this.raycaster_mouseLocation_viewportSpace.x === mouseLocVPSpaceX &&
-      this.raycaster_mouseLocation_viewportSpace.y === mouseLocVPSpaceY) {
+    if (this.raycaster_mouseLocation_viewportSpace.x === mouseLocVPSpaceX
+      && this.raycaster_mouseLocation_viewportSpace.y === mouseLocVPSpaceY) {
       return;
     }
     const canvasDomElem = this.renderer.domElement;
@@ -700,7 +702,7 @@ class Vizceral extends EventEmitter {
       let userData = {};
       if (intersects.length > 0) {
         if (intersects[0].object.userData.object) {
-          userData = intersects[0].object.userData;
+          ({ userData } = intersects[0].object);
           userData = (userData.object && userData.object.loaded && (userData.object.isInteractive() || (this.options.allowDraggingOfNodes && userData.object.isDraggable()))) ? userData : {};
         } else {
           Console.warn('Mouse cursor intersected with a visible object that does not have an associated object model. The object should be set at userData.object');
@@ -773,8 +775,8 @@ class Vizceral extends EventEmitter {
     TWEEN.update();
 
     // Check size
-    if ((this.renderer.domElement.offsetWidth !== 0 && this.width !== this.renderer.domElement.offsetWidth) ||
-        (this.renderer.domElement.offsetHeight !== 0 && this.height !== this.renderer.domElement.offsetHeight)) {
+    if ((this.renderer.domElement.offsetWidth !== 0 && this.width !== this.renderer.domElement.offsetWidth)
+        || (this.renderer.domElement.offsetHeight !== 0 && this.height !== this.renderer.domElement.offsetHeight)) {
       this.setSize(this.renderer.domElement.offsetWidth, this.renderer.domElement.offsetHeight);
     }
 

@@ -15,7 +15,7 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import { merge } from 'lodash';
 
 class GlobalDefinitions {
   constructor () {
@@ -50,7 +50,7 @@ class GlobalDefinitions {
   }
 
   updateDefinitions (definitions) {
-    _.merge(this.definitions, definitions);
+    merge(this.definitions, definitions);
   }
 
   getDefinitions () {
@@ -59,7 +59,7 @@ class GlobalDefinitions {
 
   getDefinition (category, definition, renderer, override) {
     const def = this.definitions[category][definition];
-    return def ? _.merge({}, def.default, def[renderer], def[override]) : {};
+    return def ? merge({}, def.default, def[renderer], def[override]) : {};
   }
 }
 

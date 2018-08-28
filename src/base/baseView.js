@@ -15,7 +15,7 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import { find, each, remove } from 'lodash';
 import * as THREE from 'three';
 
 class BaseView {
@@ -32,7 +32,7 @@ class BaseView {
   }
 
   addInteractiveChild (child, context) {
-    if (!_.find(this.interactiveChildren, { id: child.id })) {
+    if (!find(this.interactiveChildren, { id: child.id })) {
       child.userData.object = this.object;
       child.userData.context = context;
       this.interactiveChildren.push(child);
@@ -40,12 +40,12 @@ class BaseView {
   }
 
   addInteractiveChildren (children) {
-    _.each(children, child => this.addInteractiveChild(child));
+    each(children, child => this.addInteractiveChild(child));
   }
 
   removeInteractiveChildren (children) {
     const childrenIds = children.map(c => c.id);
-    _.remove(this.interactiveChildren, c => childrenIds.includes(c.id));
+    remove(this.interactiveChildren, c => childrenIds.includes(c.id));
   }
 
   getInteractiveChildren () {
@@ -71,9 +71,7 @@ class BaseView {
     const context = canvas.getContext('2d');
 
     // Store the context information we care about
-    const font = context.font;
-    const textAlign = context.textAlign;
-    const textBaseline = context.textBaseline;
+    const { font, textAlign, textBaseline } = context;
 
     const ratio = 1;
 

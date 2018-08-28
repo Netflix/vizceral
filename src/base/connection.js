@@ -15,7 +15,9 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import {
+  clone, sortBy, sum, isEmpty, values, reduce
+} from 'lodash';
 import GraphObject from './graphObject';
 import Notices from '../notices';
 
@@ -58,23 +60,23 @@ class Connection extends GraphObject {
     this.annotations = data.annotations || this.annotations;
 
     this.class = data.class || 'normal';
-    this.volume = data.metrics ? _.clone(data.metrics) : {};
-    if (_.isEmpty(this.volume)) {
+    this.volume = data.metrics ? clone(data.metrics) : {};
+    if (isEmpty(this.volume)) {
       // Add info notice to the connection with missing metrics
       this.notices = this.notices || [];
       this.notices.push({ title: 'Connection found, but no metrics.', severity: 0 });
     }
-    this.volumeTotal = _.sum(_.values(this.volume));
+    this.volumeTotal = sum(values(this.volume));
     this.notices = data.notices || undefined;
 
     // Store percentages on the object to not have to calculate it when
     // launching new particles in the view
-    this.volumePercent = _.reduce(this.volume, (acc, value, key) => {
+    this.volumePercent = reduce(this.volume, (acc, value, key) => {
       acc[key] = (this.volumeTotal && this.volumeTotal > 0) ? (value / this.volumeTotal) : 0;
       return acc;
     }, {});
 
-    this.volumePercentKeysSorted = _.sortBy(Object.keys(this.volumePercent), key => this.volumePercent[key]);
+    this.volumePercentKeysSorted = sortBy(Object.keys(this.volumePercent), key => this.volumePercent[key]);
 
     // Invalidate the volumes on the nodes themselves
     this.source.invalidateOutgoingVolume();

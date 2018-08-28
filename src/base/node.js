@@ -15,7 +15,9 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import {
+  assign, each, every, reduce, remove
+} from 'lodash';
 
 import GraphObject from './graphObject';
 import Notices from '../notices';
@@ -71,7 +73,7 @@ class Node extends GraphObject {
   }
 
   removeIncomingConnection (connection) {
-    _.remove(this.incomingConnections, incomingConnection => incomingConnection.name === connection.name);
+    remove(this.incomingConnections, incomingConnection => incomingConnection.name === connection.name);
     this.invalidateIncomingVolume();
     if (this.incomingConnections.length === 0 && this.outgoingConnections.length === 0) {
       this.connected = false;
@@ -79,7 +81,7 @@ class Node extends GraphObject {
   }
 
   removeOutgoingConnection (connection) {
-    _.remove(this.outgoingConnections, outgoingConnection => outgoingConnection.name === connection.name);
+    remove(this.outgoingConnections, outgoingConnection => outgoingConnection.name === connection.name);
     this.invalidateOutgoingVolume();
     if (this.incomingConnections.length === 0 && this.outgoingConnections.length === 0) {
       this.connected = false;
@@ -93,9 +95,9 @@ class Node extends GraphObject {
   }
 
   validateIncomingVolume () {
-    this.incomingVolumeTotal = _.reduce(this.incomingConnections, (total, connection) => total + connection.getVolumeTotal(), 0);
-    _.each(this.incomingConnections, (c) => {
-      _.each(c.volume, (value, key) => {
+    this.incomingVolumeTotal = reduce(this.incomingConnections, (total, connection) => total + connection.getVolumeTotal(), 0);
+    each(this.incomingConnections, (c) => {
+      each(c.volume, (value, key) => {
         this.incomingVolume[key] = this.incomingVolume[key] || 0;
         this.incomingVolume[key] += value;
       });
@@ -119,9 +121,9 @@ class Node extends GraphObject {
   }
 
   validateOutgoingVolume () {
-    this.outgoingVolumeTotal = _.reduce(this.outgoingConnections, (total, connection) => total + connection.getVolumeTotal(), 0);
-    _.each(this.outgoingConnections, (c) => {
-      _.each(c.volume, (value, key) => {
+    this.outgoingVolumeTotal = reduce(this.outgoingConnections, (total, connection) => total + connection.getVolumeTotal(), 0);
+    each(this.outgoingConnections, (c) => {
+      each(c.volume, (value, key) => {
         this.outgoingVolume[key] = this.outgoingVolume[key] || 0;
         this.outgoingVolume[key] += value;
       });
@@ -175,13 +177,13 @@ class Node extends GraphObject {
   }
 
   hasVisibleConnections () {
-    return !(_.every(this.incomingConnections, connection => !connection.isVisible())
-      && _.every(this.outgoingConnections, connection => !connection.isVisible()));
+    return !(every(this.incomingConnections, connection => !connection.isVisible())
+      && every(this.outgoingConnections, connection => !connection.isVisible()));
   }
 
   hasDefaultVisibleConnections () {
-    return !(_.every(this.incomingConnections, connection => connection.defaultFiltered)
-      && _.every(this.outgoingConnections, connection => connection.defaultFiltered));
+    return !(every(this.incomingConnections, connection => connection.defaultFiltered)
+      && every(this.outgoingConnections, connection => connection.defaultFiltered));
   }
 
   setContext (context) {
@@ -211,13 +213,13 @@ class Node extends GraphObject {
       }
       if (!serviceVolume) {
         this.data.volumePercent = 0;
-        _.each(this.data.classPercents, (v, k) => { this.data.classPercents[k] = 0; });
+        each(this.data.classPercents, (v, k) => { this.data.classPercents[k] = 0; });
       } else {
         if (this.data.volumePercent !== serviceVolumePercent) {
           this.data.volumePercent = serviceVolumePercent;
           updated = true;
         }
-        _.each(this.isEntryNode() ? this.outgoingVolume : this.incomingVolume, (volume, key) => {
+        each(this.isEntryNode() ? this.outgoingVolume : this.incomingVolume, (volume, key) => {
           const classVolumePercent = volume / serviceVolume;
           this.data.classPercents[key] = this.data.classPercents[key] || 0;
           if (this.data.classPercents[key] !== classVolumePercent) {
@@ -232,7 +234,7 @@ class Node extends GraphObject {
       this.data.globalClassPercents = this.data.globalClassPercents || {};
       const percentGlobal = this.data.volume / totalVolume;
       // generate global class percents
-      _.each(this.data.classPercents, (classPercent, key) => {
+      each(this.data.classPercents, (classPercent, key) => {
         this.data.globalClassPercents[key] = classPercent * percentGlobal;
       });
     }
@@ -242,7 +244,7 @@ class Node extends GraphObject {
 
   update (stateNode) {
     this.classInvalidated = this.class !== stateNode.class;
-    _.assign(this, stateNode);
+    assign(this, stateNode);
     this.notices = stateNode.notices;
     if (this.view) { this.view.refresh(false); }
   }
@@ -268,8 +270,8 @@ class Node extends GraphObject {
   connectedTo (nodeName) {
     if (super.connectionTo(nodeName)) { return true; }
 
-    return !(_.every(this.incomingConnections, connection => connection.source.getName() !== nodeName)
-      && _.every(this.outgoingConnections, connection => connection.source.getName() !== nodeName));
+    return !(every(this.incomingConnections, connection => connection.source.getName() !== nodeName)
+      && every(this.outgoingConnections, connection => connection.source.getName() !== nodeName));
   }
 
   // If entryNode is specified within graph we're checking if this node is entryNode

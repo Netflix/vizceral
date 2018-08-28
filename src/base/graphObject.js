@@ -15,7 +15,7 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import { map, max, some } from 'lodash';
 import EventEmitter from 'events';
 
 const Console = console;
@@ -38,7 +38,7 @@ class GraphObject extends EventEmitter {
   hasNotices () {
     if (this.notices && this.notices.length > 0) {
       if (this.minimumNoticeLevel > 0) {
-        return _.some(this.notices, notice => notice.severity >= this.minimumNoticeLevel);
+        return some(this.notices, notice => notice.severity >= this.minimumNoticeLevel);
       }
       return true;
     }
@@ -47,7 +47,7 @@ class GraphObject extends EventEmitter {
 
   highestNoticeLevel () {
     if (this.hasNotices()) {
-      return _.max(_.map(this.notices, n => n.severity || 0));
+      return max(map(this.notices, n => n.severity || 0));
     }
     return undefined;
   }

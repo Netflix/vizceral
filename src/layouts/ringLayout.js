@@ -2,7 +2,7 @@
 
 class RingLayout {
   run (graph, dimensions, layoutComplete) {
-    const nodes = graph.nodes;
+    const { nodes } = graph;
     const angleBetweenNodes = (Math.PI * 2) / nodes.length;
     const hw = dimensions.width * 0.5;
     const hh = dimensions.height * 0.5;
@@ -13,7 +13,7 @@ class RingLayout {
       if (metadataPosition) {
         const posX = metadataPosition.x;
         const posY = metadataPosition.y;
-        if (typeof posX === 'number' && isFinite(posX) && typeof posY === 'number' && isFinite(posY)) {
+        if (typeof posX === 'number' && Number.isFinite(posX) && typeof posY === 'number' && Number.isFinite(posY)) {
           fixedPos = { x: posX, y: posY };
         }
       }

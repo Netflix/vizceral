@@ -15,7 +15,7 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
+import { each, maxBy } from 'lodash';
 import * as THREE from 'three';
 
 import BaseView from './baseView';
@@ -52,7 +52,7 @@ function generateNoticeSVGs () {
       `
     ];
 
-    _.each(warningNoticeImages, (image, i) => {
+    each(warningNoticeImages, (image, i) => {
       image.src = `data:image/svg+xml;charset-utf-8,${encodeURIComponent(noticeIconSVG[i])}`;
     });
   }
@@ -80,9 +80,9 @@ class ConnectionNoticeView extends BaseView {
   updateNoticeIcon () {
     if (this.object.hasNotices()) {
       let severity;
-      const maxNotice = _.maxBy(this.object.notices, notice => notice.severity);
+      const maxNotice = maxBy(this.object.notices, notice => notice.severity);
       if (maxNotice) {
-        severity = maxNotice.severity;
+        ({ severity } = maxNotice);
       }
       if (severity === undefined) { severity = 0; }
 
@@ -98,9 +98,7 @@ class ConnectionNoticeView extends BaseView {
   }
 
   updatePosition () {
-    const x = this.connectionView.centerVector.x;
-    const y = this.connectionView.centerVector.y;
-
+    const { x, y } = this.connectionView.centerVector;
     this.container.position.set(x, y, 1);
   }
 

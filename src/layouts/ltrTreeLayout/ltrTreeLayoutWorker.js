@@ -16,6 +16,7 @@
  *
  */
 /* eslint-env worker */
+/* eslint no-restricted-globals: 0 */
 /* eslint no-restricted-syntax: 0 */
 const LTRTreeLayouter = require('./ltrTreeLayouter.js');
 

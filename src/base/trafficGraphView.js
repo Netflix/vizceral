@@ -15,8 +15,10 @@
  *     limitations under the License.
  *
  */
-import _ from 'lodash';
-import { BufferAttribute, BufferGeometry, MeshBasicMaterial, Mesh } from 'three';
+import { each, get, times } from 'lodash';
+import {
+  BufferAttribute, BufferGeometry, MeshBasicMaterial, Mesh
+} from 'three';
 
 import BaseView from './baseView';
 
@@ -56,8 +58,8 @@ class TrafficGraphView extends BaseView {
   }
 
   updateState () {
-    _.each(this.trafficGraph.nodes, node => this.updateObject(node));
-    _.each(this.trafficGraph.connections, connection => this.updateObject(connection));
+    each(this.trafficGraph.nodes, node => this.updateObject(node));
+    each(this.trafficGraph.connections, connection => this.updateObject(connection));
     this.rendered = this.container.children.length !== 0;
 
     this.invalidateInteractiveChildren();
@@ -67,20 +69,20 @@ class TrafficGraphView extends BaseView {
   setOpacity (opacity) {
     if (this.opacity !== opacity) {
       this.opacity = opacity;
-      _.each(this.trafficGraph.nodes, node => node.getView().setOpacity(opacity));
-      _.each(this.trafficGraph.connections, connection => connection.getView().setOpacity(opacity));
+      each(this.trafficGraph.nodes, node => node.getView().setOpacity(opacity));
+      each(this.trafficGraph.connections, connection => connection.getView().setOpacity(opacity));
     }
   }
 
   getInteractiveChildren () {
     if (this.interactiveChildren === undefined) {
       this.interactiveChildren = [];
-      _.each(this.trafficGraph.nodes, (node) => {
+      each(this.trafficGraph.nodes, (node) => {
         if (node.isVisible()) {
           this.interactiveChildren = this.interactiveChildren.concat(node.getView().getInteractiveChildren());
         }
       });
-      _.each(this.trafficGraph.connections, (connection) => {
+      each(this.trafficGraph.connections, (connection) => {
         if (connection.isVisible()) {
           this.interactiveChildren = this.interactiveChildren.concat(connection.getView().getInteractiveChildren());
         }
@@ -89,7 +91,7 @@ class TrafficGraphView extends BaseView {
     return this.interactiveChildren;
   }
 
-  /* **** LOCAL FUNCTIONS *****/
+  /* **** LOCAL FUNCTIONS **** */
 
   getOverlappingAreas (node) {
     const labelBox = node.view.nameView.boundingBox;
@@ -106,10 +108,10 @@ class TrafficGraphView extends BaseView {
       top: 0
     };
 
-    _.each(this.trafficGraph.nodes, (nodeB) => {
+    each(this.trafficGraph.nodes, (nodeB) => {
       if (node.getName() !== nodeB.getName() && nodeB.isVisible()) {
-        const nodeArea = overlappingArea(labelBox, _.get(nodeB, 'boundingBox', emptyBoundingBox));
-        const labelArea = overlappingArea(labelBox, _.get(nodeB, 'view.nameView.boundingBox', emptyBoundingBox));
+        const nodeArea = overlappingArea(labelBox, get(nodeB, 'boundingBox', emptyBoundingBox));
+        const labelArea = overlappingArea(labelBox, get(nodeB, 'view.nameView.boundingBox', emptyBoundingBox));
         areas.nodes = Math.max(areas.nodes, nodeArea);
         areas.labels = Math.max(areas.labels, labelArea);
       }
@@ -123,7 +125,7 @@ class TrafficGraphView extends BaseView {
     let otherAreas = { nodes: 0, labels: 0 };
 
     // Do two passed at placing the labels in case some flipping caused better locations to be opened up
-    _.times(2, _.each(this.trafficGraph.nodes, (node) => {
+    times(2, each(this.trafficGraph.nodes, (node) => {
       if (node.view && node.view.nameView) {
         defaultAreas = { nodes: 0, labels: 0 };
         otherAreas = { nodes: 0, labels: 0 };
@@ -150,7 +152,7 @@ class TrafficGraphView extends BaseView {
     }));
 
     // n passes have completed, now apply the position
-    _.each(this.trafficGraph.nodes, (node) => {
+    each(this.trafficGraph.nodes, (node) => {
       if (node.view) {
         node.view.applyLabelPosition();
       }

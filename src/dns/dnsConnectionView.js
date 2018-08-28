@@ -21,7 +21,7 @@
 
 
 import * as THREE from 'three';
-import _ from 'lodash';
+import { each } from 'lodash';
 
 import ConnectionView from '../base/connectionView';
 import GlobalStyles from '../globalStyles';
@@ -72,7 +72,7 @@ class DnsConnectionView extends ConnectionView {
 
   cleanup () {
     super.cleanup();
-    _.each([
+    each([
       this.annotationMaterial,
       this.annotationTexture,
       this.annotationGeometry,
@@ -131,7 +131,7 @@ class DnsConnectionView extends ConnectionView {
       const nodeRadius = this.object.source.getView().radius;
 
 
-      _.each(this.object.annotations, (annotation, index) => {
+      each(this.object.annotations, (annotation, index) => {
         drawArrowHalfHead(ctx, width, height, bump, nodeRadius, GlobalStyles.getColorTraffic(annotation.class), index + 1);
         if (annotation.label) {
           drawText(ctx, width, height, bump, annotation.label, GlobalStyles.getColorTraffic(annotation.class), index + 1);
@@ -185,7 +185,7 @@ function drawArrowHalfHead (ctx, width, height, bump, nodeRadius, style, i) {
   };
 
 
-    // find the angle perpendicular to the vector between start and end on the clockwise side.
+  // find the angle perpendicular to the vector between start and end on the clockwise side.
   let theta = Math.atan((end.y - start.y) / (end.x - start.x));
   if (start.x <= end.x) {
     theta -= Math.PI / 2;
@@ -193,27 +193,27 @@ function drawArrowHalfHead (ctx, width, height, bump, nodeRadius, style, i) {
     theta += Math.PI / 2;
   }
 
-    // find a point perpendicular to the segment between start and end that is `bump` distance away.
+  // find a point perpendicular to the segment between start and end that is `bump` distance away.
   const offset = {
     x: (end.x + start.x) / 2 + Math.cos(theta) * bump * i,
     y: (end.y + start.y) / 2 + Math.sin(theta) * bump * i
   };
 
-    // get the center of the circle whose arc goes through all three points, its radius and connect the dots
+  // get the center of the circle whose arc goes through all three points, its radius and connect the dots
   const center = CalculateCircleCenter(start, end, offset);
   const radius = Math.sqrt(Math.pow(start.x - center.x, 2) + Math.pow(start.y - center.y, 2));
   const startAngle = Math.atan2(start.y - center.y, start.x - center.x);
   const endAngle = Math.atan2(end.y - center.y, end.x - center.x);
   drawCircle(ctx, center, startAngle, endAngle, radius, style);
 
-    // to draw the arrowhead, we create a small circle opposite the end point from the main arc's center
+  // to draw the arrowhead, we create a small circle opposite the end point from the main arc's center
   const t2 = Math.atan((end.y - center.y) / (end.x - center.x));
   let stubCenter = {
     x: end.x + Math.cos(t2) * stubRadius,
     y: end.y + Math.sin(t2) * stubRadius
   };
 
-    // if we didn't actually go on the *opposite* side of the end point, make sure we do that ;)
+  // if we didn't actually go on the *opposite* side of the end point, make sure we do that ;)
   if (distance(stubCenter, center) < distance(end, center)) {
     stubCenter = {
       x: end.x - Math.cos(t2) * stubRadius,
