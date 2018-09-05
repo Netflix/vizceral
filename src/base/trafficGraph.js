@@ -230,6 +230,10 @@ class TrafficGraph extends EventEmitter {
       const nodes = filter(this.nodes, (node) => {
         const matchTargets = [node.getName()];
         if (node.displayName) { matchTargets.push(node.displayName); }
+
+        // Allow to filter results based on services' owner/team defined on metadata object.
+        if (node.metadata && node.metadata.owner) { matchTargets.push(node.metadata.owner); }
+
         if (node.nodes) { Array.prototype.push.apply(matchTargets, node.nodes.map(n => n.name)); }
 
         const match = (node === this.highlightedObject || matchTargets.join().toLowerCase().indexOf(searchString.toLowerCase()) !== -1);
