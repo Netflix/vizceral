@@ -12,7 +12,7 @@
     "doc": "documentation build ./src/vizceral.js --shallow -f md > USAGE.md",
     "lint": "eslint src --fix",
     "build": "npm run doc && npm run build:js",
-    "build:js": "webpack --bail && webpack --bail -p",
+    "build:js": "webpack --bail --mode=production && webpack --bail -p",
     "watch": "webpack --watch -d",
     "release": "release",
     "validate": "npm ls"
@@ -34,7 +34,7 @@
     "release-script": "^1.0.2",
     "style-loader": "^0.23.0",
     "url-loader": "^1.1.1",
-    "webpack": "^3.12.0",
+    "webpack": "^4.17.1",
     "webpack-command": "^0.4.1",
     "worker-loader": "^2.0.0",
     "yargs": "^12.0.1"

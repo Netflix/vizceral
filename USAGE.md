@@ -3,12 +3,12 @@
 ### Table of Contents
 
 -   [isEqual](#isequal)
+-   [objectHovered](#objecthovered)
 -   [objectHighlighted](#objecthighlighted)
 -   [viewChanged](#viewchanged)
 -   [nodeContextSizeChanged](#nodecontextsizechanged)
 -   [matchesFound](#matchesfound)
 -   [viewUpdated](#viewupdated)
--   [objectHovered](#objecthovered)
 -   [constructor](#constructor)
 -   [getStyles](#getstyles)
 -   [updateStyles](#updatestyles)
@@ -38,6 +38,16 @@ Copyright 2016 Netflix, Inc.
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+
+## objectHovered
+
+The `objectHovered` event is fired whenever on mouseover on a 'node' or 'connection' .
+`object.type` will be either 'node' or 'connection'. In case another 'node' or 'connection'
+ is already in focus (because of click/highlight event), then this event won't be triggered.
+
+**Properties**
+
+-   `object` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The object that has been hovered,
 
 ## objectHighlighted
 
@@ -75,16 +85,6 @@ The `matchesFound` event is fired whenever nodes are found via findNodes().
 ## viewUpdated
 
 The `viewUpdated` event is fired whenever the current displayed graph's view updates.
-
-## objectHovered
-
-The `objectHovered` event is fired whenever on mouseover on a 'node' or 'connection' .
-`object.type` will be either 'node' or 'connection'. In case another 'node' or 'connection'
- is already in focus (because of click/highlight event), then this event won't be triggered.
-
-**Properties**
-
--   `object` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The object that has been hovered,
 
 ## constructor
 

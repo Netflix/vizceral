@@ -21,7 +21,7 @@ class ShapeParent {
     this.customNode = {};
     this.customNode.name = node.node_type ? node.node_type : 'default';
     this.customNode.innerGeometry = this._createInnerGeometry(radius, 32);
-    if (this.customNode.innerGeometry) {  // Because, the default shape, a.k.a. circle, doesn't have an inner geometry
+    if (this.customNode.innerGeometry) { // Because, the default shape, a.k.a. circle, doesn't have an inner geometry
       this.customNode.innerGeometry.name = `${this.customNode.name}-innerGeom`;
     }
     this.customNode.innerCircleGeometry = this._createInnerCircleGeometry(radius, 32);
@@ -32,7 +32,7 @@ class ShapeParent {
     if (node.nodeStatus && GlobalStyles.styles.colorNodeStatus[node.nodeStatus]) {
       this.customNode.material = this._createMaterial(GlobalStyles.styles.colorNodeStatus[node.nodeStatus]);
     } else {
-      this.customNode.material = this._createMaterial(GlobalStyles.styles.colorNodeStatus.default);
+      this.customNode.material = this._createMaterial(GlobalStyles.getColorTrafficRGBA(node.getClass()));
     }
 
     this.customNode.borderMaterial = this._createMaterial(GlobalStyles.getColorTrafficRGBA(node.getClass()));
