@@ -64,7 +64,6 @@ class ShapeParent {
   _createMaterial (rgb) {
     return new THREE.MeshBasicMaterial({ color: rgb, transparent: true, overdraw: 0.5 });
   }
-
 }
 
 export default ShapeParent;

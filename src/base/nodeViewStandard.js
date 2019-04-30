@@ -40,6 +40,7 @@ class NodeViewStandard extends NodeView {
     this.meshes.outerBorder = this.addChildElement(shape.outerBorder, this.borderMaterial);
     this.meshes.innerCircle = this.addChildElement(shape.innerCircleGeometry, this.innerCircleMaterial);
     if (shape.innerGeometry !== undefined) {
+      this.innerGeometry = shape.innerGeometry;
       this.meshes.innerGeometry = this.addChildElement(shape.innerGeometry, this.shapeMaterial);
     }
 
@@ -62,6 +63,10 @@ class NodeViewStandard extends NodeView {
 
   setOpacity (opacity) {
     super.setOpacity(opacity);
+    const borderOpacity = opacity * this.borderColor.a;
+    if (this.innerGeometry) {
+      this.shapeMaterial.opacity = borderOpacity;
+    }
     if (this.object.hasNotices()) {
       this.dotMaterial.opacity = opacity * this.dotColor.a;
     }
