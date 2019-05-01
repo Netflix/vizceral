@@ -16,6 +16,7 @@
  *
  */
 import * as THREE from 'three';
+import {isEqual} from 'lodash';
 
 import NodeView from './nodeView';
 import NodeNameView from './nodeNameView';
@@ -29,6 +30,7 @@ class NodeViewStandard extends NodeView {
   constructor (service) {
     super(service);
     this.radius = radius;
+    let dotRadius = radius;
 
     this.dotColor = GlobalStyles.getColorTrafficRGBA(this.object.getClass());
     this.dotMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(this.dotColor.r, this.dotColor.g, this.dotColor.b), transparent: true, opacity: this.dotColor.a });
@@ -38,13 +40,20 @@ class NodeViewStandard extends NodeView {
     this.shapeMaterial = shape.material;
 
     this.meshes.outerBorder = this.addChildElement(shape.outerBorder, this.borderMaterial);
+    this.meshes.outerBorder.renderOrder = 0;
     this.meshes.innerCircle = this.addChildElement(shape.innerCircleGeometry, this.innerCircleMaterial);
+    this.meshes.innerCircle.renderOrder = 1;
     if (shape.innerGeometry !== undefined) {
-      this.innerGeometry = shape.innerGeometry;
       this.meshes.innerGeometry = this.addChildElement(shape.innerGeometry, this.shapeMaterial);
+      this.meshes.innerGeometry.renderOrder = 100; // Keeps the icon above the inner circle and any notice that may be present.
     }
 
-    this.meshes.noticeDot = this.addChildElement(NodeView.getNoticeDotGeometry(radius), this.dotMaterial);
+    if (shape.innerGeometry) {
+      // Since inside NodeView.getNoticeDotGeometry it takes radius input and halves it this will make the dot fill the inner circle when a node has an icon.
+      dotRadius = this.radius * 2;
+    }
+    this.meshes.noticeDot = this.addChildElement(NodeView.getNoticeDotGeometry(dotRadius), this.dotMaterial);
+    this.meshes.noticeDot.renderOrder = 2;
     // if (shape.innerGeometry != undefined) {
     //   this.meshes.noticeDot = this.addChildElement(shape.innerGeometry, this.shapeMaterial);
     //   if (this.object.hasNotices()) {
@@ -55,6 +64,11 @@ class NodeViewStandard extends NodeView {
     // }
 
     this.refreshNotices();
+
+    // There is an inner icon and a notice and they are the same color, so set icon to white
+    if (service.hasNotices() && isEqual(this.dotMaterial.color, this.shapeMaterial.color)) {
+      this.shapeMaterial.color.setRGB(1, 1, 1); // Set icon to white so it will stand out
+    }
 
     // Add the service name
     this.nameView = new NodeNameView(this, false);
