@@ -16,7 +16,7 @@
  *
  */
 import * as THREE from 'three';
-import {isEqual} from 'lodash';
+import { isEqual } from 'lodash';
 
 import NodeView from './nodeView';
 import NodeNameView from './nodeNameView';
