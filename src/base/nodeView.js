@@ -204,6 +204,16 @@ class NodeView extends BaseView {
     }
   }
 
+  // Scale the node as a whole entity.
+  setScaleXYZ (xScale, yScale, zScale) {
+    this.container.scale.set(xScale, yScale, zScale);
+  }
+
+  // Get the scale the entire node is using. Returned as a THree Vector3
+  getScale () {
+    return this.container.scale;
+  }
+
   cleanup () {
     if (this.nameView) { this.nameView.cleanup(); }
     this.borderMaterial.dispose();

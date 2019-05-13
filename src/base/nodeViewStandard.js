@@ -54,14 +54,23 @@ class NodeViewStandard extends NodeView {
     }
     this.meshes.noticeDot = this.addChildElement(NodeView.getNoticeDotGeometry(dotRadius), this.dotMaterial);
     this.meshes.noticeDot.renderOrder = 2;
-    // if (shape.innerGeometry != undefined) {
-    //   this.meshes.noticeDot = this.addChildElement(shape.innerGeometry, this.shapeMaterial);
-    //   if (this.object.hasNotices()) {
-    //     this.dotMaterial = this.shapeMaterial;
-    //   }
-    // } else {
-    //   this.meshes.noticeDot = this.addChildElement(NodeView.getNoticeDotGeometry(radius), this.dotMaterial);
-    // }
+    /**
+     * This section would make the inner geometry/icon be the notice geometry and so if
+     * the notice severity level would set the color of the icon.  Switching the icons
+     * to be the notices was to big a jump for me without community feedback, so I left
+     * this behind to spark ideas and feedback.  aSqrd-eSqrd, 30-Apr-2019
+     **
+     * if (shape.innerGeometry != undefined) {
+     *   this.meshes.noticeDot = this.addChildElement(shape.innerGeometry, this.shapeMaterial);
+     *   this.meshes.noticeDot.renderOrder = 2;
+     *   if (this.object.hasNotices()) {
+     *     this.dotMaterial = this.shapeMaterial;
+     *   }
+     * } else {
+     *  this.meshes.noticeDot = this.addChildElement(NodeView.getNoticeDotGeometry(radius), this.dotMaterial);
+     *  this.meshes.noticeDot.renderOrder = 2;
+     * }
+     */
 
     this.refreshNotices();
 

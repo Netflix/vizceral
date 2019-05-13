@@ -46,7 +46,7 @@ class ShapeParent {
        *       overlapping (radius > 16) or awkwardly far from the node (radius < 16)
        * aSqrd-eSqrd, 30-Apr-2019
        */
-      this.scale(0.47619);
+      this.scale(0.47619); // Scales the icon/inner geometry to fit inside the circle
     }
 
     this.customNode.innerCircleGeometry = this._createInnerCircleGeometry(radius, 32);
@@ -57,7 +57,9 @@ class ShapeParent {
 
     // Set Inner Geometry/Icon's color based on nodeStatus (if present)
     if (node.nodeStatus && GlobalStyles.styles.colorNodeStatus[node.nodeStatus]) {
-      this.customNode.material = this._createMaterial(GlobalStyles.styles.colorNodeStatus[node.nodeStatus]);
+      // NOTE: This is an example of how one might create/access a customized method to set the icon's color
+      // this.customNode.material = this._createMaterial(GlobalStyles.styles.colorNodeStatus[node.nodeStatus]);
+      this.customNode.material = this._createMaterial(GlobalStyles.getColorTrafficRGBA(node.getClass()));
     } else {
       this.customNode.material = this._createMaterial(GlobalStyles.getColorTrafficRGBA(node.getClass()));
     }
@@ -67,12 +69,10 @@ class ShapeParent {
     return this.customNode;
   }
 
-  // Scale the geometries
+  // Scale the inner geometry/icon ONLY
   scale (factor) {
     const scaleParams = new Array(3).fill(factor);
     this.customNode.innerGeometry.scale(...scaleParams);
-    // this.innerCircleGeometry = this.innerCircleGeometry.scale(...scaleParams);
-    // this.outerBorder = this.outerBorder.scale(...scaleParams);
   }
 
   // The Inner Circle Geometry. Used to "hide" the connection line and particles behind/under the node

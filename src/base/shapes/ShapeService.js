@@ -24,7 +24,7 @@ class ShapeService extends ShapeParent {
     // X-offset: -20.47, Y-offset: -20.485 puts the center of the shape at (0,0)
     const polyShape = ShapesFactoryUtils.getShapeFromPolyPoints(rawPolyString, ' ', -20.47, -20.485);
 
-    // If you really want a circle punched out of the center of the gear then uncomment the following
+    // NOTE: If you really want a circle punched out of the center of the gear icon then uncomment the following
     // const gearCenter = new THREE.Path();
     // gearCenter.absarc(0, 0, radius / 2.5, 0, Math.PI * 2, false);
     // polyShape.holes.push(gearCenter);
