@@ -95,15 +95,6 @@ class ShapeParent {
     this.customNode.innerGeometry.scale(...scaleParams);
   }
 
-  // ORIGINAL VERSION -- no geometery reuse
-  // // The Inner Circle Geometry. Used to "hide" the connection line and particles behind/under the node
-  // _createInnerCircleGeometry (radius, curveSegments) {
-  //   const circleShape = new THREE.Shape();
-  //   circleShape.moveTo(radius, 0);
-  //   circleShape.absarc(0, 0, radius, 0, 2 * Math.PI, false);
-  //   return new THREE.ShapeGeometry(circleShape, curveSegments);
-  // }
-
   // The Inner Circle Geometry. Used to "hide" the connection line and particles behind/under the node
   static getInnerCircleGeometry (radius, curveSegments) {
     return getOrSet(innerCircleGeometries, radius, () => {
@@ -114,24 +105,7 @@ class ShapeParent {
     });
   }
 
-  // Inner Geometry/Icon.
-  _createInnerGeometry () {
-    // No-op
-  }
-
-  // ORIGINAL VERSION -- no geometery reuse
-  // // The Outer Border Geometry. The ring that is the node
-  // _createOuterBorder (radius, curveSegments) {
-  //   const border = new THREE.Shape();
-  //   border.moveTo(radius, 0);
-  //   border.absarc(0, 0, radius + 2, 0, Math.PI * 2, false);
-  //   const hole = new THREE.Path();
-  //   hole.absarc(0, 0, radius, 0, Math.PI * 2, true);
-  //   border.holes.push(hole);
-  //   return new THREE.ShapeGeometry(border, curveSegments);
-  // }
-
-  // The Outer Border Geometry. The ring that is the node
+  // The Outer Border Geometry. The ring that is the node outline
   static getOuterBorderGeometry (radius, curveSegments) {
     return getOrSet(outerBorderGeometries, radius, () => {
       const border = new THREE.Shape();
@@ -141,6 +115,32 @@ class ShapeParent {
       border.holes.push(borderHole);
       return new THREE.ShapeGeometry(border, curveSegments);
     });
+  }
+
+  /** TODO: FIXME: Need to expand the "key" generation used to find and get the geometries
+   *  via getOrSet() so as to allow more specificity... i.e. we could and should
+   *  reuse the inner geometry/icons for memory efficiency, but since right now,
+   *  21-May-2019, radius and curveSegments are the defining inputs to createInnerGeometry()
+   *  using the radius as the key won't uniquely identify an icon.  We need to add the icon
+   *  name or abbreviation to the key creation.  The same as is done for getDonutGeometry()
+   *  in nodeView.js.
+   *    This will also open the door to actually having selectable/custom node shapes.  The
+   *  ShapeFactory as it is now lets us have custom/selectable icons inside our standard
+   *  node shape (circle).  Ideally, in the future without a lot more work (though the
+   *  customizing the focused/donut graph nodes will require more work) this setup could
+   *  be extended to create true node shape customization, i.e. square nodes instead of circles.
+   *  I'd likely rename the current ShapeXXX to IconXXX so we could more easily distinguish what
+   *  does what and added a shape and icon JSON field to the traffic data format.  But just like
+   *  with the current shapes/icons we need more specificity in our keys to enable the reuse.
+   *  Since, radius is our critical dimension and our key in order to differentiate a
+   *  radius=16 circle versus a radius=16 (side=32) square and a storage icon versus a user icon
+   *  versus an azure icon.
+   *    aSqrd-eSqrd, 21-May-2019
+   */
+
+  // Inner Geometry/Icon.
+  _createInnerGeometry () {
+    // No-op
   }
 
   // Helper for setting the color and opacity of a new MeshBasicMaterial

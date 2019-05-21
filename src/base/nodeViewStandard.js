@@ -87,7 +87,7 @@ class NodeViewStandard extends NodeView {
   setOpacity (opacity) {
     super.setOpacity(opacity);
     const borderOpacity = opacity * this.borderColor.a;
-    if (this.innerGeometry) {
+    if (this.meshes.innerGeometry) {
       this.shapeMaterial.opacity = borderOpacity;
     }
     if (this.object.hasNotices()) {

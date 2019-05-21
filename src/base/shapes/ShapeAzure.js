@@ -15,7 +15,6 @@
  */
 import * as THREE from 'three';
 import ShapesFactory from '../ShapesFactory';
-import ShapesFactoryUtils from '../ShapesFactoryUtils';
 import ShapeParent from './ShapeParent';
 
 class ShapeAzure extends ShapeParent {
@@ -26,7 +25,7 @@ class ShapeAzure extends ShapeParent {
     ];
     // X-offset: -21, Y-offset: -21 puts the center of the shape at (0,0), but visual since it is
     // a triangle it doesn't look quite right vertically, hence the Y-offset of -17.
-    const newShapes = ShapesFactoryUtils.getShapeFromPolyPointsArray(polyPath, ',', -21, -17);
+    const newShapes = ShapesFactory.getShapeFromPolyPointsArray(polyPath, ',', -21, -17);
 
     return new THREE.ShapeGeometry(newShapes, curveSegments);
   }

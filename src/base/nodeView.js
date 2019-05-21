@@ -227,35 +227,6 @@ class NodeView extends BaseView {
     this.innerCircleMaterial.dispose();
   }
 
-  /** =======================================================
-   *  == Original Circle Only Geometry Getters and Setters ==
-   *  =======================================================
-   * NOTE: These functions were moved into the ShapeFactory/ShapeParent
-   * setup so as to retain the resuse/de-duplication of the THREE
-   * ShapeGeometries used
-   *  =======================================================
-     // Used by all nodes.
-     static getOuterBorderGeometry (radius) {
-       return getOrSet(outerBorderGeometries, radius, () => {
-         const border = new THREE.Shape();
-         border.absarc(0, 0, radius + 2, 0, Math.PI * 2, false);
-         const borderHole = new THREE.Path();
-         borderHole.absarc(0, 0, radius, 0, Math.PI * 2, true);
-         border.holes.push(borderHole);
-         return new THREE.ShapeGeometry(border, curveSegments);
-       });
-     }
-
-     // Used by all nodes.
-     static getInnerCircleGeometry (radius) {
-       return getOrSet(innerCircleGeometries, radius, () => {
-         const circleShape = new THREE.Shape();
-         circleShape.moveTo(radius, 0);
-         circleShape.absarc(0, 0, radius, 0, 2 * Math.PI, false);
-         return new THREE.ShapeGeometry(circleShape, curveSegments);
-       });
-     }
-   */
   // Used by Focused nodes (a.k.a. Donut Graph nodes)
   static getInnerBorderGeometry (radius) {
     return getOrSet(innerBorderGeometries, radius, () => {

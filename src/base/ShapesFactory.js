@@ -13,6 +13,8 @@
  *     limitations under the License.
  *
  */
+import * as THREE from 'three';
+
 const ShapesFactory = {};
 ShapesFactory.shapes = [];
 ShapesFactory.registerShape = function (shapeName, shapeClass) {
@@ -27,6 +29,28 @@ ShapesFactory.getShape = function (node, radius) {
     return new ShapesFactory.shapes[shapeName](node, radius);
   }
   return new ShapesFactory.shapes.default(node, radius);
+};
+
+ShapesFactory.getShapeFromPolyPoints = function (str, tokenizer, offsetX, offsetY) {
+  const arr = str.split(tokenizer);
+  const shape = new THREE.Shape();
+  if (arr.length < 2) {
+    return shape;
+  }
+  shape.moveTo(offsetX + parseFloat(arr[0]), offsetY + parseFloat(arr[1]));
+
+  for (let i = 2; i < arr.length; i += 2) {
+    shape.lineTo(offsetX + parseFloat(arr[i]), offsetY + parseFloat(arr[i + 1]));
+  }
+  return shape;
+};
+
+ShapesFactory.getShapeFromPolyPointsArray = function (arrPoly, tokenizer, offsetX, offsetY) {
+  const newShapes = [];
+  for (let i = 0; i < arrPoly.length; i++) {
+    newShapes.push(ShapesFactory.getShapeFromPolyPoints(arrPoly[i], tokenizer, offsetX, offsetY));
+  }
+  return newShapes;
 };
 
 export default ShapesFactory;

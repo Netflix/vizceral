@@ -15,7 +15,6 @@
  */
 import * as THREE from 'three';
 import ShapesFactory from '../ShapesFactory';
-import ShapesFactoryUtils from '../ShapesFactoryUtils';
 import ShapeParent from './ShapeParent';
 
 class ShapeStorage extends ShapeParent {
@@ -28,7 +27,7 @@ class ShapeStorage extends ShapeParent {
     ];
 
     // X-offset: -22.5, Y-offset: -26 puts the center of the shape at (0,0)
-    const newShapes = ShapesFactoryUtils.getShapeFromPolyPointsArray(polyPath, ',', -22.5, -26);
+    const newShapes = ShapesFactory.getShapeFromPolyPointsArray(polyPath, ',', -22.5, -26);
 
     return new THREE.ShapeGeometry(newShapes, curveSegments);
   }
