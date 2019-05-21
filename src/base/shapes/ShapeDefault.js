@@ -13,28 +13,28 @@
  *     limitations under the License.
  *
  */
-import * as THREE from 'three';
+// import * as THREE from 'three';
 import ShapesFactory from '../ShapesFactory';
 import ShapeParent from './ShapeParent';
 
 class ShapeDefault extends ShapeParent {
-  _createInnerCircleGeometry (radius, curveSegments) {
-    const circleShape = new THREE.Shape();
-    circleShape.moveTo(radius, 0);
-    circleShape.absarc(0, 0, radius, 0, 2 * Math.PI, false);
-    return new THREE.ShapeGeometry(circleShape, curveSegments);
-  }
+  // _createInnerCircleGeometry (radius, curveSegments) {
+  //   const circleShape = new THREE.Shape();
+  //   circleShape.moveTo(radius, 0);
+  //   circleShape.absarc(0, 0, radius, 0, 2 * Math.PI, false);
+  //   return new THREE.ShapeGeometry(circleShape, curveSegments);
+  // }
 
-  _createOuterBorder (radius, curveSegments) {
-    // const radius = 16;
-    // const curveSegments = 32;
-    const border = new THREE.Shape();
-    border.absarc(0, 0, radius + 2, 0, Math.PI * 2, false);
-    const borderHole = new THREE.Path();
-    borderHole.absarc(0, 0, radius, 0, Math.PI * 2, true);
-    border.holes.push(borderHole);
-    return new THREE.ShapeGeometry(border, curveSegments);
-  }
+  // _createOuterBorder (radius, curveSegments) {
+  //   // const radius = 16;
+  //   // const curveSegments = 32;
+  //   const border = new THREE.Shape();
+  //   border.absarc(0, 0, radius + 2, 0, Math.PI * 2, false);
+  //   const borderHole = new THREE.Path();
+  //   borderHole.absarc(0, 0, radius, 0, Math.PI * 2, true);
+  //   border.holes.push(borderHole);
+  //   return new THREE.ShapeGeometry(border, curveSegments);
+  // }
 }
 ShapesFactory.registerShape('default', ShapeDefault);
 export default ShapeDefault;

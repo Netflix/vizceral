@@ -26,6 +26,7 @@ import GlobalDefinitions from '../globalDefinitions';
 import GlobalStyles from '../globalStyles';
 import NodeView from '../base/nodeView';
 import NodeNameView from '../base/nodeNameView';
+import ShapeParent from '../base/shapes/ShapeParent';
 
 const Console = console;
 
@@ -60,10 +61,11 @@ class FocusedNodeView extends NodeView {
     this.arcMeterSegments = [];
 
     this.radius = this.object.size;
+    this.curveSegments = 32; // Eventually, use shape to select this, e.g. 32 for circle, 4 for square, etc.
     this.innerRadius = this.radius * 0.8;
 
-    this.meshes.outerBorder = this.addChildElement(NodeView.getOuterBorderGeometry(this.radius), this.borderMaterial);
-    this.meshes.innerCircle = this.addChildElement(NodeView.getInnerCircleGeometry(this.radius), this.innerCircleMaterial);
+    this.meshes.outerBorder = this.addChildElement(ShapeParent.getOuterBorderGeometry(this.radius, this.curveSegments), this.borderMaterial);
+    this.meshes.innerCircle = this.addChildElement(ShapeParent.getInnerCircleGeometry(this.radius, this.curveSegments), this.innerCircleMaterial);
     this.meshes.innerCircle.position.setZ(-10);
     this.meshes.donut = this.addChildElement(NodeView.getDonutGeometry(this.radius, this.innerRadius), this.donutMaterial, 'donut');
     this.meshes.innerBorder = this.addChildElement(NodeView.getInnerBorderGeometry(this.innerRadius), this.borderMaterial);

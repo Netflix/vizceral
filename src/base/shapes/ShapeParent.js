@@ -16,19 +16,39 @@
 import * as THREE from 'three';
 import GlobalStyles from '../../globalStyles';
 
+/** NOTE: The getOrSet function plus the "const xyzGeometries" constants below
+ * allowes the sharing/reuse of THREE geometries between nodes.  The "key"
+ * identifies the radius and/or outer radius+inner radius of the geometry the
+ * node is going to use and if it already exist it isn't duplicated but will
+ * "reuse" the existing geometry of the same configuration.
+ *   FYI: materials aren't shared to allow per node color.
+ * aSqrd-eSqrd, 20-May-2019
+ */
+function getOrSet (obj, key, func) {
+  let result = obj[key];
+  if (result === undefined) {
+    result = func();
+    obj[key] = result;
+  }
+  return result;
+}
+
+const outerBorderGeometries = {};
+const innerCircleGeometries = {};
+
 class ShapeParent {
   constructor (node, radius) {
     this.customNode = {};
     this.customNode.name = node.node_type ? node.node_type : 'default';
 
-    // Inner Geometry, a.k.a. the special shape, default is none
+    // Inner Geometry, a.k.a. the special shape/icon, default is none
     this.customNode.innerGeometry = this._createInnerGeometry(radius, 32);
     if (this.customNode.innerGeometry) { // Because, the default shape, a.k.a. circle, doesn't have an inner geometry
       this.customNode.innerGeometry.name = `${this.customNode.name}-innerGeom`;
       this.customNode.innerGeometry.computeBoundingSphere();
 
-      // Scale
-      /* NOTE: While recentering all the awesome shapes @vshamgin made so that the origin of each icon was (0,0) I
+      /** Scale
+       * NOTE: While recentering all the awesome shapes @vshamgin made so that the origin of each icon was (0,0) I
        *  calculated the width in the X and Y direction.  The largest icon dimension was for the User shape at 43.77
        *  units in the y-direction.  Divide that in half to get radius if 21.855.  The radius of all node's is
        *  hardcoded (was as of 30-Apr-19) to 16 units. The exception is focused nodes, but the custom shapes/inner
@@ -49,10 +69,10 @@ class ShapeParent {
       this.scale(0.47619); // Scales the icon/inner geometry to fit inside the circle
     }
 
-    this.customNode.innerCircleGeometry = this._createInnerCircleGeometry(radius, 32);
+    this.customNode.innerCircleGeometry = ShapeParent.getInnerCircleGeometry(radius, 32);
     this.customNode.innerCircleGeometry.name = `${this.customNode.name}-innerCircleGeom`;
 
-    this.customNode.outerBorder = this._createOuterBorder(radius, 32);
+    this.customNode.outerBorder = ShapeParent.getOuterBorderGeometry(radius, 32);
     this.customNode.outerBorder.name = `${this.customNode.name}-outerBorder`;
 
     // Set Inner Geometry/Icon's color based on nodeStatus (if present)
@@ -75,12 +95,23 @@ class ShapeParent {
     this.customNode.innerGeometry.scale(...scaleParams);
   }
 
+  // ORIGINAL VERSION -- no geometery reuse
+  // // The Inner Circle Geometry. Used to "hide" the connection line and particles behind/under the node
+  // _createInnerCircleGeometry (radius, curveSegments) {
+  //   const circleShape = new THREE.Shape();
+  //   circleShape.moveTo(radius, 0);
+  //   circleShape.absarc(0, 0, radius, 0, 2 * Math.PI, false);
+  //   return new THREE.ShapeGeometry(circleShape, curveSegments);
+  // }
+
   // The Inner Circle Geometry. Used to "hide" the connection line and particles behind/under the node
-  _createInnerCircleGeometry (radius, curveSegments) {
-    const circleShape = new THREE.Shape();
-    circleShape.moveTo(radius, 0);
-    circleShape.absarc(0, 0, radius, 0, 2 * Math.PI, false);
-    return new THREE.ShapeGeometry(circleShape, curveSegments);
+  static getInnerCircleGeometry (radius, curveSegments) {
+    return getOrSet(innerCircleGeometries, radius, () => {
+      const circleShape = new THREE.Shape();
+      circleShape.moveTo(radius, 0);
+      circleShape.absarc(0, 0, radius, 0, 2 * Math.PI, false);
+      return new THREE.ShapeGeometry(circleShape, curveSegments);
+    });
   }
 
   // Inner Geometry/Icon.
@@ -88,16 +119,28 @@ class ShapeParent {
     // No-op
   }
 
-  // The Outer Border Geometry. The ring that is the node
-  _createOuterBorder (radius, curveSegments) {
-    const border = new THREE.Shape();
-    border.moveTo(radius, 0);
-    border.absarc(0, 0, radius + 2, 0, Math.PI * 2, false);
-    const hole = new THREE.Path();
-    hole.absarc(0, 0, radius, 0, Math.PI * 2, true);
-    border.holes.push(hole);
+  // ORIGINAL VERSION -- no geometery reuse
+  // // The Outer Border Geometry. The ring that is the node
+  // _createOuterBorder (radius, curveSegments) {
+  //   const border = new THREE.Shape();
+  //   border.moveTo(radius, 0);
+  //   border.absarc(0, 0, radius + 2, 0, Math.PI * 2, false);
+  //   const hole = new THREE.Path();
+  //   hole.absarc(0, 0, radius, 0, Math.PI * 2, true);
+  //   border.holes.push(hole);
+  //   return new THREE.ShapeGeometry(border, curveSegments);
+  // }
 
-    return new THREE.ShapeGeometry(border, curveSegments);
+  // The Outer Border Geometry. The ring that is the node
+  static getOuterBorderGeometry (radius, curveSegments) {
+    return getOrSet(outerBorderGeometries, radius, () => {
+      const border = new THREE.Shape();
+      border.absarc(0, 0, radius + 2, 0, Math.PI * 2, false);
+      const borderHole = new THREE.Path();
+      borderHole.absarc(0, 0, radius, 0, Math.PI * 2, true);
+      border.holes.push(borderHole);
+      return new THREE.ShapeGeometry(border, curveSegments);
+    });
   }
 
   // Helper for setting the color and opacity of a new MeshBasicMaterial

@@ -18,15 +18,17 @@
 import * as THREE from 'three';
 import GlobalStyles from '../globalStyles';
 import NodeView from '../base/nodeView';
+import ShapeParent from '../base/shapes/ShapeParent';
 
 
 class DnsNodeView extends NodeView {
   constructor (service) {
     super(service);
     this.radius = this.object.size;
+    this.curveSegments = 32; // Eventually, use shape to select this, e.g. 32 for circle, 4 for square, etc.
     this.innerRadius = this.radius * 0.8;
-    this.meshes.outerBorder = this.addChildElement(NodeView.getOuterBorderGeometry(this.radius), this.borderMaterial);
-    this.meshes.innerCircle = this.addChildElement(NodeView.getInnerCircleGeometry(this.radius), this.innerCircleMaterial);
+    this.meshes.outerBorder = this.addChildElement(ShapeParent.getOuterBorderGeometry(this.radius, this.curveSegments), this.borderMaterial);
+    this.meshes.innerCircle = this.addChildElement(ShapeParent.getInnerCircleGeometry(this.radius, this.curveSegments), this.innerCircleMaterial);
     this.meshes.innerCircle.position.setZ(-10);
 
 
