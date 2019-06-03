@@ -24,7 +24,14 @@ import Constants from './constants';
 
 const curveSegments = 32;
 
-
+/** NOTE: The getOrSet function plus the "const xyzGeometries" constants below
+ * allowes the sharing/reuse of THREE geometries between nodes.  The "key"
+ * identifies the radius and/or outer radius+inner radius of the geometry the
+ * node is going to use and if it already exist it isn't duplicated but will
+ * "reuse" the existing geometry of the same configuration.
+ *   FYI: materials aren't shared to allow per node color.
+ * aSqrd-eSqrd, 20-May-2019
+ */
 function getOrSet (obj, key, func) {
   let result = obj[key];
   if (result === undefined) {
@@ -34,10 +41,10 @@ function getOrSet (obj, key, func) {
   return result;
 }
 
-const outerBorderGeometries = {};
-const innerCircleGeometries = {};
+// Used only by the Focused nodes (a.k.a. Donut Graph nodes).
 const innerBorderGeometries = {};
 const donutGeometries = {};
+// Used by all notices.
 const noticeDotGeometries = {};
 
 class NodeView extends BaseView {
@@ -204,32 +211,23 @@ class NodeView extends BaseView {
     }
   }
 
+  // Scale the node as a whole entity.
+  setScaleXYZ (xScale, yScale, zScale) {
+    this.container.scale.set(xScale, yScale, zScale);
+  }
+
+  // Get the scale the entire node is using. Returned as a THree Vector3
+  getScale () {
+    return this.container.scale;
+  }
+
   cleanup () {
     if (this.nameView) { this.nameView.cleanup(); }
     this.borderMaterial.dispose();
     this.innerCircleMaterial.dispose();
   }
 
-  static getOuterBorderGeometry (radius) {
-    return getOrSet(outerBorderGeometries, radius, () => {
-      const border = new THREE.Shape();
-      border.absarc(0, 0, radius + 2, 0, Math.PI * 2, false);
-      const borderHole = new THREE.Path();
-      borderHole.absarc(0, 0, radius, 0, Math.PI * 2, true);
-      border.holes.push(borderHole);
-      return new THREE.ShapeGeometry(border, curveSegments);
-    });
-  }
-
-  static getInnerCircleGeometry (radius) {
-    return getOrSet(innerCircleGeometries, radius, () => {
-      const circleShape = new THREE.Shape();
-      circleShape.moveTo(radius, 0);
-      circleShape.absarc(0, 0, radius, 0, 2 * Math.PI, false);
-      return new THREE.ShapeGeometry(circleShape, curveSegments);
-    });
-  }
-
+  // Used by Focused nodes (a.k.a. Donut Graph nodes)
   static getInnerBorderGeometry (radius) {
     return getOrSet(innerBorderGeometries, radius, () => {
       const innerBorder = new THREE.Shape();
@@ -241,6 +239,7 @@ class NodeView extends BaseView {
     });
   }
 
+  // Used by Focused nodes (a.k.a. Donut Graph nodes)
   static getDonutGeometry (radius, innerRadius) {
     return getOrSet(donutGeometries, `${radius}:${innerRadius}`, () => {
       const arcShape = new THREE.Shape();
@@ -252,6 +251,14 @@ class NodeView extends BaseView {
     });
   }
 
+  /** Used for node notice dots/icons.
+   * NOTE: Not all nodes will show notices dot depending on the renderer, the
+   *  zoom level, and the type of node.  For example, at the global level the
+   *  donut graph nodes will show the text overlay on hover, but not the icon.
+   *  If at the service/node zoom level the notice dot and text show, unless you
+   *  are using the DNS renderer.
+   *    aSqrd-eSqrd, 21-May-2019
+   */
   static getNoticeDotGeometry (radius) {
     return getOrSet(noticeDotGeometries, radius, () => {
       const noticeShape = new THREE.Shape();

@@ -235,7 +235,9 @@ class Node extends GraphObject {
       const percentGlobal = this.data.volume / totalVolume;
       // generate global class percents
       each(this.data.classPercents, (classPercent, key) => {
-        this.data.globalClassPercents[key] = classPercent * percentGlobal;
+        // Emprically found that percentages smaller than 5e-8 will cause THREE RingGeometry(see addDonutSlice) to have a
+        // thetaLength so short it won't generate faces.  This prevents too small values. aSqrd-eSqrd, 29-Apr-2019
+        this.data.globalClassPercents[key] = (classPercent * percentGlobal) < 5e-8 ? 5e-8 : (classPercent * percentGlobal);
       });
     }
 

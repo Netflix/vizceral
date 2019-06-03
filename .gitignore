@@ -11,6 +11,8 @@ npm-debug.log
 *.map
 .jshintignore
 .jshintrc
+*.swp
+*.*~
 
 # System files
 .DS_Store
