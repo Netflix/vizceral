@@ -73,7 +73,7 @@ class FocusedNodeView extends NodeView {
 
     // Add the service name
     if ((this.object.graphRenderer === 'global' && !this.object.isEntryNode())
-        || this.object.graphRenderer === 'region') {
+        || this.object.graphRenderer === 'region' || this.object.displayName) {
       this.nameView = new NodeNameView(this, this.object.graphRenderer === 'global');
       this.showLabel(this.object.options.showLabel);
     }
