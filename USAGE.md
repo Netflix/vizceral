@@ -2,28 +2,44 @@
 
 ### Table of Contents
 
--   [isEqual](#isequal)
--   [objectHovered](#objecthovered)
--   [objectHighlighted](#objecthighlighted)
--   [viewChanged](#viewchanged)
--   [nodeContextSizeChanged](#nodecontextsizechanged)
--   [matchesFound](#matchesfound)
--   [viewUpdated](#viewupdated)
--   [constructor](#constructor)
--   [getStyles](#getstyles)
--   [updateStyles](#updatestyles)
--   [updateDefinitions](#updatedefinitions)
--   [updateData](#updatedata)
--   [setHighlightedNode](#sethighlightednode)
--   [setHighlightedConnection](#sethighlightedconnection)
--   [findNodes](#findnodes)
--   [setView](#setview)
--   [setModes](#setmodes)
--   [zoomOutViewLevel](#zoomoutviewlevel)
--   [getNode](#getnode)
--   [setFilters](#setfilters)
+-   [Copyright_Notice][1]
+-   [objectHovered][2]
+    -   [Properties][3]
+-   [objectHighlighted][4]
+    -   [Properties][5]
+-   [viewChanged][6]
+    -   [Properties][7]
+-   [nodeContextSizeChanged][8]
+    -   [Properties][9]
+-   [matchesFound][10]
+    -   [Properties][11]
+-   [viewUpdated][12]
+-   [constructor][13]
+    -   [Parameters][14]
+-   [getStyles][15]
+-   [updateStyles][16]
+    -   [Parameters][17]
+-   [updateDefinitions][18]
+    -   [Parameters][19]
+-   [updateData][20]
+    -   [Parameters][21]
+-   [setHighlightedNode][22]
+    -   [Parameters][23]
+-   [setHighlightedConnection][24]
+    -   [Parameters][25]
+-   [findNodes][26]
+    -   [Parameters][27]
+-   [setView][28]
+    -   [Parameters][29]
+-   [setModes][30]
+    -   [Parameters][31]
+-   [zoomOutViewLevel][32]
+-   [getNode][33]
+    -   [Parameters][34]
+-   [setFilters][35]
+    -   [Parameters][36]
 
-## isEqual
+## Copyright_Notice
 
 Copyright 2016 Netflix, Inc.
 
@@ -45,42 +61,42 @@ The `objectHovered` event is fired whenever on mouseover on a 'node' or 'connect
 `object.type` will be either 'node' or 'connection'. In case another 'node' or 'connection'
  is already in focus (because of click/highlight event), then this event won't be triggered.
 
-**Properties**
+### Properties
 
--   `object` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The object that has been hovered,
+-   `object` **[object][37]** The object that has been hovered,
 
 ## objectHighlighted
 
 The `objectHighlighted` event is fired whenever an object is highlighted.
 `object.type` will be either 'node' or 'connection'
 
-**Properties**
+### Properties
 
--   `object` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The object that has been highlighted, or the highlighted object that has been updated.
+-   `object` **[object][37]** The object that has been highlighted, or the highlighted object that has been updated.
 
 ## viewChanged
 
 The `viewChanged` event is fired whenever the view changes
 
-**Properties**
+### Properties
 
--   `view` **[array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** The currently selected view (e.g. \[] for global, ['us-east-1'] for one node deep, ['us-east-1', 'api'] for two nodes deep)
+-   `view` **[array][38]** The currently selected view (e.g. \[] for global, ['us-east-1'] for one node deep, ['us-east-1', 'api'] for two nodes deep)
 
 ## nodeContextSizeChanged
 
 The `nodeContextSizeChanged` event is fired whenever the context panel size for node context size changes
 
-**Properties**
+### Properties
 
--   `dimensions` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The dimensions of the node context panels
+-   `dimensions` **[object][37]** The dimensions of the node context panels
 
 ## matchesFound
 
 The `matchesFound` event is fired whenever nodes are found via findNodes().
 
-**Properties**
+### Properties
 
--   `matches` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The matches object { total, visible }
+-   `matches` **[object][37]** The matches object { total, visible }
 
 ## viewUpdated
 
@@ -90,71 +106,71 @@ The `viewUpdated` event is fired whenever the current displayed graph's view upd
 
 Represents a Vizceral component.
 
-**Parameters**
+### Parameters
 
--   `canvas` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** The canvas to render the graph onto; if not provided, will create a canvas accessible by this.renderer.domElement
--   `targetFramerate` **[Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?** Target frame rate to render at. Will not limit FPS if not provided or set to 0.
+-   `canvas` **[object][37]?** The canvas to render the graph onto; if not provided, will create a canvas accessible by this.renderer.domElement
+-   `targetFramerate` **[Number][39]?** Target frame rate to render at. Will not limit FPS if not provided or set to 0.
 
 ## getStyles
 
 Get an array of all possible defined styles
 
-Returns **[array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** Array of all possible styles
+Returns **[array][38]** Array of all possible styles
 
 ## updateStyles
 
 Update the global styles
 
-**Parameters**
+### Parameters
 
 -   `styles`  
--   `An` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** object map of style names to values
+-   `An` **[Object][37]** object map of style names to values
 
 ## updateDefinitions
 
 Update the global definitions
 
-**Parameters**
+### Parameters
 
 -   `definitions`  
--   `An` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** object map of definitions. See the format and defaults in (<https://github.com/Netflix/Vizceral/wiki/Configuration#definitions-for-data-to-display>)
+-   `An` **[Object][37]** object map of definitions. See the format and defaults in ([https://github.com/Netflix/Vizceral/wiki/Configuration#definitions-for-data-to-display][40])
 
 ## updateData
 
 Set the new set of traffic data to render. This is expected to be called
 with the complete set of traffic data anytime there is an update.
 
-**Parameters**
+### Parameters
 
 -   `trafficData`  
--   `data` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The traffic data that matches the format in (<https://github.com/Netflix/Vizceral/wiki/How-to-Use#graph-data-format>)
+-   `data` **[object][37]** The traffic data that matches the format in ([https://github.com/Netflix/Vizceral/wiki/How-to-Use#graph-data-format][41])
 
 ## setHighlightedNode
 
 Sets the highlighted node.  If the node is undefined, clears any highlighting.
 
-**Parameters**
+### Parameters
 
--   `node` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The node to highlight
+-   `node` **[object][37]** The node to highlight
 
 ## setHighlightedConnection
 
 Sets the highlighted connection.  If the connection is undefined, clears any highlighting.
 
-**Parameters**
+### Parameters
 
--   `connection` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The connection to highlight
+-   `connection` **[object][37]** The connection to highlight
 
 ## findNodes
 
 Highlight nodes that match searchString.  Searches the node name and the list
 of sub nodes, if nodes have one.
 
-**Parameters**
+### Parameters
 
--   `searchString` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** The string to match against the nodes.
+-   `searchString` **[string][42]** The string to match against the nodes.
 
-Returns **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** { total, totalMatches, visible, visibleMatches }
+Returns **[object][37]** { total, totalMatches, visible, visibleMatches }
 
 ## setView
 
@@ -168,16 +184,16 @@ Ex:
 ['us-east-1'] - show the graph view for 'us-east-1' if it exists
 ['us-east-1', 'api'] - show the view for the api node in the us-east-1 graph if it exists
 
-**Parameters**
+### Parameters
 
--   `viewArray` **[array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** the array containing the view to set. (optional, default `[]`)
--   `objectNameToHighlight` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** a node or connection to set as highlighted in the current viewArray
+-   `viewArray` **[array][38]** the array containing the view to set. (optional, default `[]`)
+-   `objectNameToHighlight` **[string][42]** a node or connection to set as highlighted in the current viewArray
 
 ## setModes
 
 Set the current modes of vizceral
 
-**Parameters**
+### Parameters
 
 -   `modes`  
 
@@ -190,14 +206,100 @@ If in the global view, this is a noop.
 
 Get a specific node object
 
-**Parameters**
+### Parameters
 
--   `viewArray` **[array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)** e.g. [ node1, node2 ]
+-   `viewArray` **[array][38]** e.g. [ node1, node2 ]
 
 ## setFilters
 
 Set the set of filters to apply along with their current values.
 
-**Parameters**
+### Parameters
 
--   `filters` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** The filters that match the format in (<https://github.com/Netflix/Vizceral/wiki/Configuration#filters>)
+-   `filters` **[object][37]** The filters that match the format in ([https://github.com/Netflix/Vizceral/wiki/Configuration#filters][43])
+
+[1]: #copyright_notice
+
+[2]: #objecthovered
+
+[3]: #properties
+
+[4]: #objecthighlighted
+
+[5]: #properties-1
+
+[6]: #viewchanged
+
+[7]: #properties-2
+
+[8]: #nodecontextsizechanged
+
+[9]: #properties-3
+
+[10]: #matchesfound
+
+[11]: #properties-4
+
+[12]: #viewupdated
+
+[13]: #constructor
+
+[14]: #parameters
+
+[15]: #getstyles
+
+[16]: #updatestyles
+
+[17]: #parameters-1
+
+[18]: #updatedefinitions
+
+[19]: #parameters-2
+
+[20]: #updatedata
+
+[21]: #parameters-3
+
+[22]: #sethighlightednode
+
+[23]: #parameters-4
+
+[24]: #sethighlightedconnection
+
+[25]: #parameters-5
+
+[26]: #findnodes
+
+[27]: #parameters-6
+
+[28]: #setview
+
+[29]: #parameters-7
+
+[30]: #setmodes
+
+[31]: #parameters-8
+
+[32]: #zoomoutviewlevel
+
+[33]: #getnode
+
+[34]: #parameters-9
+
+[35]: #setfilters
+
+[36]: #parameters-10
+
+[37]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+
+[38]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+
+[39]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+
+[40]: https://github.com/Netflix/Vizceral/wiki/Configuration#definitions-for-data-to-display
+
+[41]: https://github.com/Netflix/Vizceral/wiki/How-to-Use#graph-data-format
+
+[42]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+
+[43]: https://github.com/Netflix/Vizceral/wiki/Configuration#filters

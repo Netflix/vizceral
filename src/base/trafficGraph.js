@@ -19,7 +19,7 @@ import {
   clone, each, every, filter, includes, reduce, sumBy, transform
 } from 'lodash';
 import EventEmitter from 'events';
-import TWEEN from 'tween.js';
+import TWEEN from '@tweenjs/tween.js';
 import ParticleSystem from '../physics/particleSystem';
 import Notices from '../notices';
 import TrafficGraphView from './trafficGraphView';
