@@ -41,7 +41,7 @@
     "yargs": "^12.0.1"
   },
   "dependencies": {
-    "@tweenjs/tween.js": "^16.7.0",
+    "@tweenjs/tween.js": "^16.8.0",
     "chroma-js": "^1.1.1",
     "hammerjs": "^2.0.8",
     "lodash": "^4.17.14",
