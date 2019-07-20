@@ -146,7 +146,7 @@ class ShapeParent {
   // Helper for setting the color and opacity of a new MeshBasicMaterial
   _createMaterial (rgba) {
     return new THREE.MeshBasicMaterial({
-      color: new THREE.Color(rgba.r, rgba.g, rgba.b), transparent: true, opacity: rgba.a, overdraw: 0.5
+      color: new THREE.Color(rgba.r, rgba.g, rgba.b), transparent: true, opacity: rgba.a
     });
   }
 }

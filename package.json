@@ -12,7 +12,8 @@
     "doc": "documentation build ./src/vizceral.js --shallow -f md > USAGE.md",
     "lint": "eslint src --fix",
     "build": "npm run doc && npm run build:js",
-    "build:js": "webpack --bail --mode=production && webpack --bail -p",
+    "build:js": "webpack --bail --mode=production && webpack --bail -p --mode=production",
+    "build:dev": "webpack --bail --mode=development && webpack --bail -d --mode=development",
     "watch": "webpack --watch -d",
     "release": "release",
     "validate": "npm ls"
@@ -24,7 +25,7 @@
     "babel-plugin-lodash": "^3.3.4",
     "babel-preset-env": "^1.7.0",
     "css-loader": "^1.0.0",
-    "documentation": "^4.0.0-beta2",
+    "documentation": "^8.1.2",
     "eslint": "^5.4.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.0.1",
@@ -40,12 +41,12 @@
     "yargs": "^12.0.1"
   },
   "dependencies": {
+    "@tweenjs/tween.js": "^16.8.0",
     "chroma-js": "^1.1.1",
     "hammerjs": "^2.0.8",
-    "lodash": "^4.12.0",
+    "lodash": "^4.17.14",
     "numeral": "^1.5.3",
-    "three": "^0.96.0",
-    "tween.js": "16.6.0"
+    "three": "^0.106.2"
   },
   "keywords": [
     "webgl",

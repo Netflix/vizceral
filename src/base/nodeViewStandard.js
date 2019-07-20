@@ -40,20 +40,19 @@ class NodeViewStandard extends NodeView {
     this.shapeMaterial = shape.material;
 
     this.meshes.outerBorder = this.addChildElement(shape.outerBorder, this.borderMaterial);
-    this.meshes.outerBorder.renderOrder = 0;
     this.meshes.innerCircle = this.addChildElement(shape.innerCircleGeometry, this.innerCircleMaterial);
-    this.meshes.innerCircle.renderOrder = 1;
-    if (shape.innerGeometry !== undefined) {
-      this.meshes.innerGeometry = this.addChildElement(shape.innerGeometry, this.shapeMaterial);
-      this.meshes.innerGeometry.renderOrder = 100; // Keeps the icon above the inner circle and any notice that may be present.
-    }
 
     if (shape.innerGeometry) {
       // Since inside NodeView.getNoticeDotGeometry it takes radius input and halves it this will make the dot fill the inner circle when a node has an icon.
       dotRadius = this.radius * 2;
     }
     this.meshes.noticeDot = this.addChildElement(NodeView.getNoticeDotGeometry(dotRadius), this.dotMaterial);
-    this.meshes.noticeDot.renderOrder = 2;
+
+    // The order things are added to the meshes object matters so make sure the innerGeometry, a.k.a. icon is last so it is on top. aSqrd-eSqrd, 18-July-2019
+    if (shape.innerGeometry !== undefined) {
+      this.meshes.innerGeometry = this.addChildElement(shape.innerGeometry, this.shapeMaterial);
+    }
+
     /**
      * This section would make the inner geometry/icon be the notice geometry and so if
      * the notice severity level would set the color of the icon.  Switching the icons
@@ -62,13 +61,11 @@ class NodeViewStandard extends NodeView {
      **
      * if (shape.innerGeometry != undefined) {
      *   this.meshes.noticeDot = this.addChildElement(shape.innerGeometry, this.shapeMaterial);
-     *   this.meshes.noticeDot.renderOrder = 2;
      *   if (this.object.hasNotices()) {
      *     this.dotMaterial = this.shapeMaterial;
      *   }
      * } else {
      *  this.meshes.noticeDot = this.addChildElement(NodeView.getNoticeDotGeometry(radius), this.dotMaterial);
-     *  this.meshes.noticeDot.renderOrder = 2;
      * }
      */
 

@@ -14,13 +14,15 @@
  *     See the License for the specific language governing permissions and
  *     limitations under the License.
  *
+ * @name Copyright_Notice
  */
+
 import {
   clone, each, every, find, isEqual
 } from 'lodash';
 import EventEmitter from 'events';
 import * as THREE from 'three';
-import TWEEN from 'tween.js';
+import TWEEN from '@tweenjs/tween.js';
 import Hammer from 'hammerjs';
 
 import DNSLayout from './layouts/dnsLayout';
@@ -101,6 +103,7 @@ class Vizceral extends EventEmitter {
     this.renderer = new THREE.WebGLRenderer(parameters);
     this.renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
     this.renderer.autoClear = false;
+    // this.renderer.sortObjects = false;
     this.renderer.setClearColor(0x2d2d2d, 1);
     this.renderer.domElement.style.width = '100%';
     this.renderer.domElement.style.height = '100%';
