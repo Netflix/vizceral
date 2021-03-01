@@ -46,7 +46,7 @@
     "hammerjs": "^2.0.8",
     "lodash": "^4.17.14",
     "numeral": "^1.5.3",
-    "three": "^0.106.2"
+    "three": "^0.125.0"
   },
   "keywords": [
     "webgl",
