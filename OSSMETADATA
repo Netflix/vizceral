@@ -1,1 +1,1 @@
-osslifecycle=maintenance
+osslifecycle=archived
